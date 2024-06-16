@@ -2,7 +2,7 @@
 
 module DocumentStore
   class Response
-    include PawsMovin::Paginator::DocumentStoreExtensions
+    include FemboyFans::Paginator::DocumentStoreExtensions
 
     delegate_missing_to :records
     attr_reader :klass, :search

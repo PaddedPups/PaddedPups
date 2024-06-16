@@ -42,7 +42,7 @@
   <%= f.input(:source, as: :text, label: "Sources", input_html: { size: "60x5", spellcheck: false }) %>
 
   <div class="input">
-    <%= f.input(:description, as: :dtext, limit: PawsMovin.config.post_descr_max_size) %>
+    <%= f.input(:description, as: :dtext, limit: FemboyFans.config.post_descr_max_size) %>
   </div>
 
   <% if can_use_any_attribute?(post, :is_note_locked, :is_rating_locked, :is_comment_locked, :is_status_locked) %>

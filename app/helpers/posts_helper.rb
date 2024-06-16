@@ -179,7 +179,7 @@ module PostsHelper
   end
 
   def generate_report_signature(value)
-    verifier = ActiveSupport::MessageVerifier.new(PawsMovin.config.report_key, serializer: JSON, digest: "SHA256")
+    verifier = ActiveSupport::MessageVerifier.new(FemboyFans.config.report_key, serializer: JSON, digest: "SHA256")
     verifier.generate("#{value},#{session[:session_id]}")
   end
 

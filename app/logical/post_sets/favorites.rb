@@ -24,7 +24,7 @@ module PostSets
       @posts ||= begin
         favs = ::Favorite.for_user(@user.id).includes(:post).order(created_at: :desc).paginate_posts(page, total_count: @post_count, limit: @limit)
         new_opts = { pagination_mode: :numbered, records_per_page: favs.records_per_page, total_count: @post_count, current_page: current_page }
-        PawsMovin::Paginator::PaginatedArray.new(favs.map(&:post), new_opts)
+        FemboyFans::Paginator::PaginatedArray.new(favs.map(&:post), new_opts)
       end
     end
 

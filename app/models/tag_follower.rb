@@ -28,7 +28,7 @@ class TagFollower < ApplicationRecord
   end
 
   def validate_user_can_follow_tags
-    limit = PawsMovin.config.followed_tag_limit(user)
+    limit = FemboyFans.config.followed_tag_limit(user)
     if user.followed_tags.count >= limit
       errors.add(:user, "cannot follow more than #{limit} tags")
     end

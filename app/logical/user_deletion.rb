@@ -36,7 +36,7 @@ class UserDeletion
       recent_tags:            "",
       favorite_tags:          "",
       blacklisted_tags:       "",
-      time_zone:              PawsMovin.config.default_user_timezone,
+      time_zone:              FemboyFans.config.default_user_timezone,
       email:                  "",
       email_verification_key: "1",
       avatar_id:              nil,

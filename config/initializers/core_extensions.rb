@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module PawsMovin
+module FemboyFans
   module Extensions
     module String
       def to_escaped_for_sql_like
@@ -27,5 +27,5 @@ module PawsMovin
 end
 
 class String
-  include PawsMovin::Extensions::String
+  include FemboyFans::Extensions::String
 end

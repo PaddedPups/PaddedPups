@@ -31,7 +31,7 @@ Shoulda::Matchers.configure do |config|
 end
 
 WebMock.disable_net_connect!(allow: [
-  PawsMovin.config.opensearch_host,
+  FemboyFans.config.opensearch_host,
 ])
 
 FactoryBot::SyntaxRunner.class_eval do
@@ -54,15 +54,15 @@ class ActiveSupport::TestCase # rubocop:disable Style/ClassAndModuleChildren
 
   setup do
     Socket.stubs(:gethostname).returns("www.example.com")
-    PawsMovin.config.stubs(:enable_sock_puppet_validation?).returns(false)
-    PawsMovin.config.stubs(:disable_throttles?).returns(true)
-    PawsMovin.config.stubs(:reports_enabled?).returns(false)
+    FemboyFans.config.stubs(:enable_sock_puppet_validation?).returns(false)
+    FemboyFans.config.stubs(:disable_throttles?).returns(true)
+    FemboyFans.config.stubs(:reports_enabled?).returns(false)
 
     FileUtils.mkdir_p(Rails.root.join("tmp/test-storage2").to_s)
     storage_manager = StorageManager::Local.new(base_dir: Rails.root.join("tmp/test-storage2").to_s)
-    PawsMovin.config.stubs(:storage_manager).returns(storage_manager)
-    PawsMovin.config.stubs(:backup_storage_manager).returns(StorageManager::Null.new)
-    PawsMovin.config.stubs(:enable_email_verification?).returns(false)
+    FemboyFans.config.stubs(:storage_manager).returns(storage_manager)
+    FemboyFans.config.stubs(:backup_storage_manager).returns(StorageManager::Null.new)
+    FemboyFans.config.stubs(:enable_email_verification?).returns(false)
     CurrentUser.ip_addr = "127.0.0.1"
   end
 

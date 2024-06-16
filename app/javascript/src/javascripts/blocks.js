@@ -120,11 +120,11 @@ class Block {
   }
 
   static reinitialize_listeners() {
-    $(".deactivate-blocks").off("click.pawsmovin.block").on("click.pawsmovin.block", function(event) {
+    $(".deactivate-blocks").off("click.femboyfans.block").on("click.femboyfans.block", function(event) {
       event.preventDefault();
       Block.deactivateType($(event.currentTarget).data("block-type"));
     });
-    $(".reactivate-blocks").off("click.pawsmovin.block").on("click.pawsmovin.block", function(event) {
+    $(".reactivate-blocks").off("click.femboyfans.block").on("click.femboyfans.block", function(event) {
       event.preventDefault();
       Block.activateType($(event.currentTarget).data("block-type"));
     });

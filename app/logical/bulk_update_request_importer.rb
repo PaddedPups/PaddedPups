@@ -143,7 +143,7 @@ class BulkUpdateRequestImporter
         token
 
       when :nuke_tag
-        errors << "You cannot use nuke" unless PawsMovin.config.can_bur_nuke?(user)
+        errors << "You cannot use nuke" unless FemboyFans.config.can_bur_nuke?(user)
         existing = Tag.find_by(name: token[1]).present?
         token[3] = existing
         token
@@ -151,7 +151,7 @@ class BulkUpdateRequestImporter
         errors << "Unknown token: #{token[0]}"
       end
     end
-    limit = PawsMovin.config.bur_entry_limit(user)
+    limit = FemboyFans.config.bur_entry_limit(user)
     errors << "Cannot create BUR with more than #{limit} entries" if tokens.size > limit
     [errors, BulkUpdateRequestImporter.untokenize(annotated).join("\n")]
   end

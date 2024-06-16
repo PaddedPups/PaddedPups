@@ -17,7 +17,7 @@ class WikiPage < ApplicationRecord
   validates :title, tag_name: true, if: :title_changed?
   validates :body, presence: true, unless: -> { parent.present? }
   validates :title, length: { minimum: 1, maximum: 100 }
-  validates :body, length: { maximum: PawsMovin.config.wiki_page_max_size }
+  validates :body, length: { maximum: FemboyFans.config.wiki_page_max_size }
   validate :validate_name_not_restricted, on: :create
   validate :user_not_limited
   validate :validate_rename

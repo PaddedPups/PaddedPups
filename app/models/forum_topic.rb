@@ -20,7 +20,7 @@ class ForumTopic < ApplicationRecord
   after_destroy :log_delete
   after_save :log_save
 
-  attribute :category_id, :integer, default: -> { PawsMovin.config.default_forum_category }
+  attribute :category_id, :integer, default: -> { FemboyFans.config.default_forum_category }
 
   def validate_not_aibur
     return if CurrentUser.is_moderator? || !original_post&.is_aibur?
@@ -239,7 +239,7 @@ class ForumTopic < ApplicationRecord
   end
 
   def last_page
-    (response_count / PawsMovin.config.records_per_page.to_f).ceil
+    (response_count / FemboyFans.config.records_per_page.to_f).ceil
   end
 
   def hide!

@@ -6,11 +6,11 @@ class ApplicationRecord < ActiveRecord::Base
   concerning :SearchMethods do
     class_methods do
       def paginate(page, options = {})
-        extending(PawsMovin::Paginator::ActiveRecordExtension).paginate(page, options)
+        extending(FemboyFans::Paginator::ActiveRecordExtension).paginate(page, options)
       end
 
       def paginate_posts(page, options = {})
-        extending(PawsMovin::Paginator::ActiveRecordExtension).paginate_posts(page, options)
+        extending(FemboyFans::Paginator::ActiveRecordExtension).paginate_posts(page, options)
       end
 
       def qualified_column_for(attr)
@@ -218,7 +218,7 @@ class ApplicationRecord < ActiveRecord::Base
         connection.execute("SET STATEMENT_TIMEOUT = #{time}") unless Rails.env.test?
         yield
       rescue ::ActiveRecord::StatementInvalid => e
-        PawsMovin::Logger.log(e, expected: true)
+        FemboyFans::Logger.log(e, expected: true)
         default_value
       ensure
         connection.execute("SET STATEMENT_TIMEOUT = #{CurrentUser.user.try(:statement_timeout) || 3_000}") unless Rails.env.test?

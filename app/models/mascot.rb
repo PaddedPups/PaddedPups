@@ -13,7 +13,7 @@ class Mascot < ApplicationRecord
   validate :set_file_properties
   validates :md5, uniqueness: true
   validate if: :mascot_file do |mascot|
-    FileValidator.new(mascot, mascot_file.path).validate(max_file_sizes: PawsMovin.config.max_mascot_file_sizes, max_width: PawsMovin.config.max_mascot_width, max_height: PawsMovin.config.max_mascot_height)
+    FileValidator.new(mascot, mascot_file.path).validate(max_file_sizes: FemboyFans.config.max_mascot_file_sizes, max_width: FemboyFans.config.max_mascot_width, max_height: FemboyFans.config.max_mascot_height)
   end
 
   after_create :log_create
@@ -33,13 +33,13 @@ class Mascot < ApplicationRecord
   def write_storage_file
     return if mascot_file.blank?
 
-    PawsMovin.config.storage_manager.delete_mascot(md5_previously_was, file_ext_previously_was)
-    PawsMovin.config.storage_manager.store_mascot(mascot_file, self)
+    FemboyFans.config.storage_manager.delete_mascot(md5_previously_was, file_ext_previously_was)
+    FemboyFans.config.storage_manager.store_mascot(mascot_file, self)
   end
 
   def self.active_for_browser
     mascots = Cache.fetch("active_mascots", expires_in: 1.day) do
-      query = Mascot.where(active: true).where("? = ANY(available_on)", PawsMovin.config.app_name)
+      query = Mascot.where(active: true).where("? = ANY(available_on)", FemboyFans.config.app_name)
       mascots = query.map do |mascot|
         mascot.slice(:id, :background_color, :artist_url, :artist_name, :hide_anonymous).merge(background_url: mascot.url_path)
       end
@@ -58,15 +58,15 @@ class Mascot < ApplicationRecord
   end
 
   def remove_storage_file
-    PawsMovin.config.storage_manager.delete_mascot(md5, file_ext)
+    FemboyFans.config.storage_manager.delete_mascot(md5, file_ext)
   end
 
   def url_path
-    PawsMovin.config.storage_manager.mascot_url(self)
+    FemboyFans.config.storage_manager.mascot_url(self)
   end
 
   def file_path
-    PawsMovin.config.storage_manager.mascot_path(self)
+    FemboyFans.config.storage_manager.mascot_path(self)
   end
 
   concerning :ValidationMethods do
@@ -83,7 +83,7 @@ class Mascot < ApplicationRecord
     end
 
     def file_size
-      @file_size ||= PawsMovin.config.storage_manager.open(mascot_file.path).size
+      @file_size ||= FemboyFans.config.storage_manager.open(mascot_file.path).size
     end
   end
 

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module PawsMovin
+module FemboyFans
   module Paginator
     module BaseExtension
       attr_reader :current_page, :pagination_mode
@@ -40,7 +40,7 @@ module PawsMovin
           [1, :numbered]
         elsif page =~ /\A\d+\z/
           if page.to_i > max_numbered_pages
-            raise(PawsMovin::Paginator::PaginationError, "You cannot go beyond page #{max_numbered_pages}. Please narrow your search terms.")
+            raise(FemboyFans::Paginator::PaginationError, "You cannot go beyond page #{max_numbered_pages}. Please narrow your search terms.")
           end
           [[page.to_i, 1].max, :numbered]
         elsif page =~ /b(\d+)/
@@ -48,21 +48,21 @@ module PawsMovin
         elsif page =~ /a(\d+)/
           [$1.to_i, :sequential_after]
         else
-          raise(PawsMovin::Paginator::PaginationError, "Invalid page number.")
+          raise(FemboyFans::Paginator::PaginationError, "Invalid page number.")
         end
       end
 
       def max_numbered_pages
         if @paginator_options[:max_count]
-          [PawsMovin.config.max_numbered_pages, @paginator_options[:max_count] / records_per_page].min
+          [FemboyFans.config.max_numbered_pages, @paginator_options[:max_count] / records_per_page].min
         else
-          PawsMovin.config.max_numbered_pages
+          FemboyFans.config.max_numbered_pages
         end
       end
 
       def records_per_page
-        limit = @paginator_options.try(:[], :limit) || PawsMovin.config.records_per_page
-        limit.to_i.clamp(0, PawsMovin.config.max_per_page)
+        limit = @paginator_options.try(:[], :limit) || FemboyFans.config.records_per_page
+        limit.to_i.clamp(0, FemboyFans.config.max_per_page)
       end
 
       # When paginating large tables, we want to avoid doing an expensive count query

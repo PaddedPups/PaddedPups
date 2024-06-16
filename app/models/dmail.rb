@@ -3,7 +3,7 @@
 class Dmail < ApplicationRecord
   validates :title, :body, presence: { on: :create }
   validates :title, length: { minimum: 1, maximum: 250 }
-  validates :body, length: { minimum: 1, maximum: PawsMovin.config.dmail_max_size }
+  validates :body, length: { minimum: 1, maximum: FemboyFans.config.dmail_max_size }
   validate :recipient_accepts_dmails, on: :create
   validate :user_not_limited, on: :create
   has_secure_token :key

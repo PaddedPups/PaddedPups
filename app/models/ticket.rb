@@ -10,8 +10,8 @@ class Ticket < ApplicationRecord
   after_initialize :classify
   before_validation :initialize_fields, on: :create
   validates :reason, presence: true
-  validates :reason, length: { minimum: 2, maximum: PawsMovin.config.ticket_max_size }
-  validates :response, length: { minimum: 2, maximum: PawsMovin.config.ticket_max_size }, on: :update
+  validates :reason, length: { minimum: 2, maximum: FemboyFans.config.ticket_max_size }
+  validates :response, length: { minimum: 2, maximum: FemboyFans.config.ticket_max_size }, on: :update
   validates :report_type, presence: true
   validate :validate_report_type_for_ticket
   enum :status, %i[pending partial approved rejected].index_with(&:to_s)

@@ -6,7 +6,7 @@ class UserTest < ActiveSupport::TestCase
   context "A user" do
     setup do
       # stubbed to true in test_helper.rb
-      PawsMovin.config.stubs(:disable_throttles?).returns(false)
+      FemboyFans.config.stubs(:disable_throttles?).returns(false)
       @user = create(:user)
       CurrentUser.user = @user
     end
@@ -63,14 +63,14 @@ class UserTest < ActiveSupport::TestCase
 
     should "limit comment votes" do
       # allow creating one more comment than votes so creating a vote can fail later on
-      PawsMovin.config.stubs(:comment_vote_limit).returns(1)
-      PawsMovin.config.stubs(:member_comment_limit).returns(PawsMovin.config.comment_vote_limit + 1)
+      FemboyFans.config.stubs(:comment_vote_limit).returns(1)
+      FemboyFans.config.stubs(:member_comment_limit).returns(FemboyFans.config.comment_vote_limit + 1)
       assert_equal(@user.can_comment_vote_with_reason, :REJ_NEWBIE)
       @user.update_column(:created_at, 1.year.ago)
       user2 = create(:user, created_at: 1.year.ago)
 
       comments = as(user2) do
-        create_list(:comment, PawsMovin.config.comment_vote_limit)
+        create_list(:comment, FemboyFans.config.comment_vote_limit)
       end
       comments.each { |c| VoteManager::Comments.vote!(comment: c, user: @user, score: -1) }
       assert_equal(@user.can_comment_vote_with_reason, :REJ_LIMITED)
@@ -87,14 +87,14 @@ class UserTest < ActiveSupport::TestCase
     end
 
     should "limit comments" do
-      PawsMovin.config.stubs(:member_comment_limit).returns(2)
+      FemboyFans.config.stubs(:member_comment_limit).returns(2)
       assert_equal(@user.can_comment_with_reason, :REJ_NEWBIE)
       @user.update_column(:level, User::Levels::TRUSTED)
       assert(@user.can_comment_with_reason)
       @user.update_column(:level, User::Levels::MEMBER)
       @user.update_column(:created_at, 1.year.ago)
       assert(@user.can_comment_with_reason)
-      create_list(:comment, PawsMovin.config.member_comment_limit)
+      create_list(:comment, FemboyFans.config.member_comment_limit)
       assert_equal(@user.can_comment_with_reason, :REJ_LIMITED)
     end
 
@@ -103,7 +103,7 @@ class UserTest < ActiveSupport::TestCase
       @user.update_column(:created_at, 1.year.ago)
       topic = create(:forum_topic)
       # Creating a topic automatically creates a post
-      (PawsMovin.config.member_comment_limit - 1).times do
+      (FemboyFans.config.member_comment_limit - 1).times do
         create(:forum_post, topic_id: topic.id)
       end
       assert_equal(@user.can_forum_post_with_reason, :REJ_LIMITED)
@@ -145,8 +145,8 @@ class UserTest < ActiveSupport::TestCase
     end
 
     context "name" do
-      should "be #{PawsMovin.config.default_guest_name} given an invalid user id" do
-        assert_equal(PawsMovin.config.default_guest_name, User.id_to_name(-1))
+      should "be #{FemboyFans.config.default_guest_name} given an invalid user id" do
+        assert_equal(FemboyFans.config.default_guest_name, User.id_to_name(-1))
       end
 
       should "not contain whitespace" do
@@ -264,7 +264,7 @@ class UserTest < ActiveSupport::TestCase
     context "that might be a sock puppet" do
       setup do
         @user = create(:user, last_ip_addr: "127.0.0.2")
-        PawsMovin.config.unstub(:enable_sock_puppet_validation?)
+        FemboyFans.config.unstub(:enable_sock_puppet_validation?)
       end
 
       should "not validate" do

@@ -45,15 +45,15 @@ class PostPresenter < Presenter
 
     locals[:tooltip] = "Rating: #{post.rating}\nID: #{post.id}\nDate: #{post.created_at}\nStatus: #{post.status}\nScore: #{post.score}\n\n#{post.tag_string}"
 
-    locals[:cropped_url] = if PawsMovin.config.enable_image_cropping? && options[:show_cropped] && post.has_cropped? && !CurrentUser.user.disable_cropped_thumbnails?
+    locals[:cropped_url] = if FemboyFans.config.enable_image_cropping? && options[:show_cropped] && post.has_cropped? && !CurrentUser.user.disable_cropped_thumbnails?
                              post.crop_file_url
                            else
                              post.preview_file_url
                            end
 
-    locals[:cropped_url] = PawsMovin.config.deleted_preview_url if post.deleteblocked?
+    locals[:cropped_url] = FemboyFans.config.deleted_preview_url if post.deleteblocked?
     locals[:preview_url] = if post.deleteblocked?
-                             PawsMovin.config.deleted_preview_url
+                             FemboyFans.config.deleted_preview_url
                            else
                              post.preview_file_url
                            end
@@ -138,7 +138,7 @@ class PostPresenter < Presenter
 
   def self.post_attribute_attribute(post)
     alternate_samples = {}
-    PawsMovin.config.video_rescales.each do |k, v|
+    FemboyFans.config.video_rescales.each do |k, v|
       next unless post.has_sample_size?(k)
       dims = post.scaled_sample_dimensions(v)
       alternate_samples[k] = {
@@ -156,7 +156,7 @@ class PostPresenter < Presenter
         urls:   post.visible? ? [nil, post.file_url_ext("mp4")] : [nil, nil],
       }
     end
-    PawsMovin.config.image_rescales.each do |k, v|
+    FemboyFans.config.image_rescales.each do |k, v|
       next unless post.has_sample_size?(k)
       dims = post.scaled_sample_dimensions(v)
       alternate_samples[k] = {

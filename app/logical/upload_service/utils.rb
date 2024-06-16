@@ -19,7 +19,7 @@ class UploadService
         return
       end
 
-      PawsMovin.config.storage_manager.delete_post_files(md5, file_ext)
+      FemboyFans.config.storage_manager.delete_post_files(md5, file_ext)
     end
 
     def distribute_files(file, record, type, original_post_id: nil)
@@ -28,7 +28,7 @@ class UploadService
       post.id = original_post_id if original_post_id.present?
       post.md5 = record.md5
       post.file_ext = record.file_ext
-      [PawsMovin.config.storage_manager, PawsMovin.config.backup_storage_manager].each do |sm|
+      [FemboyFans.config.storage_manager, FemboyFans.config.backup_storage_manager].each do |sm|
         sm.store_file(file, post, type)
       end
     end
@@ -69,7 +69,7 @@ class UploadService
     end
 
     def automatic_tags(upload, file)
-      return "" unless PawsMovin.config.enable_autotagging?
+      return "" unless FemboyFans.config.enable_autotagging?
 
       tags = []
       tags += %w[animated_gif animated] if upload.is_animated_gif?(file.path)

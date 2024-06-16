@@ -23,6 +23,6 @@ module Maintenance
     ActiveRecord::Base.connection.execute("set statement_timeout = 0")
     yield
   rescue StandardError => e
-    PawsMovin::Logger.log(e)
+    FemboyFans::Logger.log(e)
   end
 end

@@ -3,7 +3,7 @@
 module DiscordReport
   class JanitorStats < Base
     def webhook_url
-      PawsMovin.config.janitor_reports_discord_webhook_url
+      FemboyFans.config.janitor_reports_discord_webhook_url
     end
 
     def report

@@ -43,7 +43,7 @@ module Admin
         context "on an user with a blank email" do
           setup do
             @user = create(:user, email: "")
-            PawsMovin.config.stubs(:enable_email_verification?).returns(true)
+            FemboyFans.config.stubs(:enable_email_verification?).returns(true)
           end
 
           should "succeed" do
@@ -62,9 +62,9 @@ module Admin
 
         context "on a user with duplicate email" do
           setup do
-            @user1 = create(:user, email: "test@pawsmov.in")
-            @user2 = create(:user, email: "test@pawsmov.in")
-            PawsMovin.config.stubs(:enable_email_verification?).returns(true)
+            @user1 = create(:user, email: "test@femboy.fan")
+            @user2 = create(:user, email: "test@femboy.fan")
+            FemboyFans.config.stubs(:enable_email_verification?).returns(true)
           end
 
           should "allow editing if the email is not changed" do
@@ -74,9 +74,9 @@ module Admin
           end
 
           should "allow changing the email" do
-            put_auth admin_user_path(@user1), @admin, params: { user: { email: "abc@pawsmov.in" } }
+            put_auth admin_user_path(@user1), @admin, params: { user: { email: "abc@femboy.fan" } }
             @user1.reload
-            assert_equal("abc@pawsmov.in", @user1.email)
+            assert_equal("abc@femboy.fan", @user1.email)
           end
         end
 

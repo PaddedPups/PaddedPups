@@ -82,7 +82,7 @@ class ApplicationController < ActionController::Base
       render_error_page(405, exception)
     when ActionController::UnknownFormat, ActionView::MissingTemplate
       render_unsupported_format
-    when PawsMovin::Paginator::PaginationError
+    when FemboyFans::Paginator::PaginationError
       render_expected_error(410, exception.message)
     when TagQuery::CountExceededError
       render_expected_error(422, exception.message)
@@ -130,11 +130,11 @@ class ApplicationController < ActionController::Base
     @backtrace = Rails.backtrace_cleaner.clean(@exception.backtrace)
     format = :html unless format.in?(%i[html json atom])
 
-    if !PawsMovin.config.show_backtrace?(CurrentUser.user, @exception.backtrace) && message == exception.message
+    if !FemboyFans.config.show_backtrace?(CurrentUser.user, @exception.backtrace) && message == exception.message
       @message = "An unexpected error occurred."
     end
 
-    PawsMovin::Logger.log(@exception, expected: @expected)
+    FemboyFans::Logger.log(@exception, expected: @expected)
     log = ExceptionLog.add(exception, CurrentUser.id, request) unless @expected
     @log_code = log&.code
     render("static/error", status: status, formats: format)
@@ -170,7 +170,7 @@ class ApplicationController < ActionController::Base
   def reset_current_user
     CurrentUser.user = nil
     CurrentUser.ip_addr = nil
-    CurrentUser.safe_mode = PawsMovin.config.safe_mode?
+    CurrentUser.safe_mode = FemboyFans.config.safe_mode?
   end
 
   def requires_reauthentication

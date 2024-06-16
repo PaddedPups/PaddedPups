@@ -5,7 +5,7 @@ class PostFlag < ApplicationRecord
   end
 
   COOLDOWN_PERIOD = 1.day
-  MAPPED_REASONS = PawsMovin.config.flag_reasons.to_h { |i| [i[:name], i[:reason]] }
+  MAPPED_REASONS = FemboyFans.config.flag_reasons.to_h { |i| [i[:name], i[:reason]] }
 
   belongs_to_creator class_name: "User", counter_cache: "post_flag_count"
   belongs_to :post

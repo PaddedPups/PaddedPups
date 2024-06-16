@@ -24,7 +24,7 @@ module Seeds
 
   def self.api_request(path)
     puts("-> GET #{read_resources['base_url']}#{path}")
-    response = Faraday.get("#{read_resources['base_url']}#{path}", nil, user_agent: "pawmovin/seeding")
+    response = Faraday.get("#{read_resources['base_url']}#{path}", nil, user_agent: "femboyfans/seeding")
     JSON.parse(response.body)
   end
 
@@ -163,7 +163,7 @@ module Seeds
       return post["file"]["url"] unless post["file"]["url"].nil?
       puts("post #{post['id']} returned a nil url, attempting to reconstruct url.")
       return "https://static1.e621.net/data/#{post['file']['md5'][0..1]}/#{post['file']['md5'][2..3]}/#{post['file']['md5']}.#{post['file']['ext']}" if /e621\.net/i =~ base_url
-      "https://static.pawsmov.in/#{post['file']['md5'][0..1]}/#{post['file']['md5'][2..3]}/#{post['file']['md5']}.#{post['file']['ext']}"
+      "https://static.femboy.fan/#{post['file']['md5'][0..1]}/#{post['file']['md5'][2..3]}/#{post['file']['md5']}.#{post['file']['ext']}"
     end
   end
 
@@ -186,7 +186,7 @@ module Seeds
           masc.background_color = mascot["background_color"]
           masc.artist_url = mascot["artist_url"]
           masc.artist_name = mascot["artist_name"]
-          masc.available_on_string = PawsMovin.config.app_name
+          masc.available_on_string = FemboyFans.config.app_name
           masc.active = mascot["active"]
         end
       end
@@ -201,7 +201,7 @@ module Seeds
           masc.background_color = mascot["color"]
           masc.artist_url = mascot["artist_url"]
           masc.artist_name = mascot["artist_name"]
-          masc.available_on_string = PawsMovin.config.app_name
+          masc.available_on_string = FemboyFans.config.app_name
           masc.active = mascot["active"]
           masc.hide_anonymous = mascot["hide_anonymous"]
         end

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module PawsMovin
+module FemboyFans
   module Paginator
     class PaginationError < StandardError
     end

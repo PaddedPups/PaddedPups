@@ -124,7 +124,7 @@ module Tags
         end
 
         should "not approve the implication if its estimated count is greater than allowed" do
-          PawsMovin.config.stubs(:tag_change_request_update_limit).returns(1)
+          FemboyFans.config.stubs(:tag_change_request_update_limit).returns(1)
           create_list(:post, 2, tag_string: "aaa")
           put_auth approve_tag_implication_path(@tag_implication), @admin, params: { format: :json }
           assert_response :forbidden

@@ -4,12 +4,12 @@ class Pool < ApplicationRecord
   class RevertError < StandardError
   end
 
-  array_attribute :post_ids, parse: %r{(?:https://pawsmov.in/posts/)?(\d+)}i, cast: :to_i
+  array_attribute :post_ids, parse: %r{(?:https://femboy.fan/posts/)?(\d+)}i, cast: :to_i
   belongs_to_creator
 
   validates :name, uniqueness: { case_sensitive: false, if: :name_changed? }
   validates :name, length: { minimum: 1, maximum: 250 }
-  validates :description, length: { maximum: PawsMovin.config.pool_descr_max_size }
+  validates :description, length: { maximum: FemboyFans.config.pool_descr_max_size }
   validate :user_not_create_limited, on: :create
   validate :user_not_limited, on: :update, if: :limited_attribute_changed?
   validate :user_not_posts_limited, on: :update, if: :post_ids_changed?
@@ -174,8 +174,8 @@ class Pool < ApplicationRecord
     post_ids_before = post_ids_before_last_save || post_ids_was
     added = post_ids - post_ids_before
     return if added.empty?
-    if post_ids.size > PawsMovin.config.pool_post_limit
-      errors.add(:base, "Pools can only have up to #{ActiveSupport::NumberHelper.number_to_delimited(PawsMovin.config.pool_post_limit)} posts each")
+    if post_ids.size > FemboyFans.config.pool_post_limit
+      errors.add(:base, "Pools can only have up to #{ActiveSupport::NumberHelper.number_to_delimited(FemboyFans.config.pool_post_limit)} posts each")
       false
     else
       true
@@ -226,7 +226,7 @@ class Pool < ApplicationRecord
 
   def artists
     return artist_names if Cache.fetch("pa:#{id}", expires_in: 12.hours) == "1"
-    names = posts.flat_map(&:artist_tags).map(&:name).reject { |name| PawsMovin.config.artist_exclusion_tags.include?(name) }
+    names = posts.flat_map(&:artist_tags).map(&:name).reject { |name| FemboyFans.config.artist_exclusion_tags.include?(name) }
     update_column(:artist_names, names)
     self.artist_names = names
     Cache.write("pa:#{id}", "1", expires_in: 12.hours)

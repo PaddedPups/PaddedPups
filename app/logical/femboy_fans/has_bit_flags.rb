@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module PawsMovin
+module FemboyFans
   module HasBitFlags
     extend ActiveSupport::Concern
 

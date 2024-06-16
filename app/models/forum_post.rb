@@ -19,7 +19,7 @@ class ForumPost < ApplicationRecord
   before_destroy :validate_topic_is_unlocked
   after_destroy :update_topic_updated_at_on_destroy
   validates :body, :creator_id, presence: true
-  validates :body, length: { minimum: 1, maximum: PawsMovin.config.forum_post_max_size }
+  validates :body, length: { minimum: 1, maximum: FemboyFans.config.forum_post_max_size }
   validate :validate_topic_is_unlocked
   validate :validate_topic_id_not_invalid
   validate :validate_topic_is_not_restricted, on: :create
@@ -235,7 +235,7 @@ class ForumPost < ApplicationRecord
   end
 
   def forum_topic_page
-    (ForumPost.where("topic_id = ? and created_at <= ?", topic_id, created_at).count / PawsMovin.config.records_per_page.to_f).ceil
+    (ForumPost.where("topic_id = ? and created_at <= ?", topic_id, created_at).count / FemboyFans.config.records_per_page.to_f).ceil
   end
 
   def is_original_post?(original_post_id = nil)

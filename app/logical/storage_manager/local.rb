@@ -36,7 +36,7 @@ module StorageManager
         move_file(path, new_path)
       end
       return unless post.is_video?
-      PawsMovin.config.video_rescales.each_key do |k|
+      FemboyFans.config.video_rescales.each_key do |k|
         %w[mp4 webm].each do |ext|
           path = file_path(post, ext, :scaled, protected: false, scale_factor: k.to_s)
           new_path = file_path(post, ext, :scaled, protected: true, scale_factor: k.to_s)
@@ -55,7 +55,7 @@ module StorageManager
         move_file(path, new_path)
       end
       return unless post.is_video?
-      PawsMovin.config.video_rescales.each_key do |k|
+      FemboyFans.config.video_rescales.each_key do |k|
         %w[mp4 webm].each do |ext|
           path = file_path(post, ext, :scaled, protected: true, scale_factor: k.to_s)
           new_path = file_path(post, ext, :scaled, protected: false, scale_factor: k.to_s)

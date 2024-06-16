@@ -1405,7 +1405,7 @@ class PostTest < ActiveSupport::TestCase
         end
 
         should "error if the tagcount is above the limit" do
-          PawsMovin.config.stubs(:max_tags_per_post).returns(5)
+          FemboyFans.config.stubs(:max_tags_per_post).returns(5)
           post = create(:post, tag_string: "1 2 3 4 5")
           post.add_tag("6")
           post.save
@@ -1413,7 +1413,7 @@ class PostTest < ActiveSupport::TestCase
         end
 
         should "error if the tagcount via implications is above the limit" do
-          PawsMovin.config.stubs(:max_tags_per_post).returns(2)
+          FemboyFans.config.stubs(:max_tags_per_post).returns(2)
           create(:tag_implication, antecedent_name: "2", consequent_name: "3")
           post = create(:post, tag_string: "1")
           post.add_tag("2")
@@ -1422,7 +1422,7 @@ class PostTest < ActiveSupport::TestCase
         end
 
         should "allow removing tags when the post is above the limit" do
-          PawsMovin.config.stubs(:max_tags_per_post).returns(2)
+          FemboyFans.config.stubs(:max_tags_per_post).returns(2)
           post = build(:post, tag_string: "1 2 3")
           post.save(validate: false)
           post.remove_tag("3")
@@ -2103,8 +2103,8 @@ class PostTest < ActiveSupport::TestCase
     should "not count free tags against the user's search limit" do
       post1 = create(:post, tag_string: "aaa bbb rating:s")
 
-      PawsMovin.config.expects(:is_unlimited_tag?).with("rating:s").once.returns(true)
-      PawsMovin.config.expects(:is_unlimited_tag?).with(anything).twice.returns(false)
+      FemboyFans.config.expects(:is_unlimited_tag?).with("rating:s").once.returns(true)
+      FemboyFans.config.expects(:is_unlimited_tag?).with(anything).twice.returns(false)
       assert_tag_match([post1], "aaa bbb rating:s")
     end
 
@@ -2227,7 +2227,7 @@ class PostTest < ActiveSupport::TestCase
 
     context "Moving votes to a parent post" do
       setup do
-        PawsMovin.config.stubs(:disable_age_checks?).returns(true)
+        FemboyFans.config.stubs(:disable_age_checks?).returns(true)
         @parent = create(:post)
         @child = create(:post, parent: @parent)
 
@@ -2360,8 +2360,8 @@ class PostTest < ActiveSupport::TestCase
   #           post1 = create(:post, tag_string: "aaa bbb rating:s")
   #           post2 = create(:post, tag_string: "aaa bbb rating:e")
   #
-  #           PawsMovin.config.expects(:is_unlimited_tag?).with("rating:s").once.returns(true)
-  #           PawsMovin.config.expects(:is_unlimited_tag?).with(anything).twice.returns(false)
+  #           FemboyFans.config.expects(:is_unlimited_tag?).with("rating:s").once.returns(true)
+  #           FemboyFans.config.expects(:is_unlimited_tag?).with(anything).twice.returns(false)
   #           assert_equal(1, Post.fast_count("aaa bbb"))
   #         end
   #
@@ -2456,10 +2456,10 @@ class PostTest < ActiveSupport::TestCase
     should "generate the correct urls for animated gifs" do
       @post = build(:post, md5: "deadbeef", file_ext: "gif", tag_string: "animated_gif")
 
-      assert_equal("#{PawsMovin.config.hostname}/data/preview/deadbeef.webp", @post.preview_file_url)
+      assert_equal("#{FemboyFans.config.hostname}/data/preview/deadbeef.webp", @post.preview_file_url)
 
-      assert_equal("#{PawsMovin.config.hostname}/data/deadbeef.gif", @post.large_file_url)
-      assert_equal("#{PawsMovin.config.hostname}/data/deadbeef.gif", @post.file_url)
+      assert_equal("#{FemboyFans.config.hostname}/data/deadbeef.gif", @post.large_file_url)
+      assert_equal("#{FemboyFans.config.hostname}/data/deadbeef.gif", @post.file_url)
     end
   end
 

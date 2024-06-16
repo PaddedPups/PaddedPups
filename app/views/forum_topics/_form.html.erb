@@ -10,7 +10,7 @@
     </div>
 
     <%= f.simple_fields_for(:original_post) do |pf| %>
-      <%= pf.input(:body, as: :dtext, limit: PawsMovin.config.forum_post_max_size) %>
+      <%= pf.input(:body, as: :dtext, limit: FemboyFans.config.forum_post_max_size) %>
     <% end %>
 
     <% if can_use_attribute?(forum_topic, :is_sticky) %>

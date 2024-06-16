@@ -51,8 +51,8 @@
 <%= javascript_tag nonce: true do -%>
   const spacing = $(`<%= render partial: "spacing" %>`);
   function reinitRemoveListener() {
-    $(".link-remove-spacing").off("click.pawsmovin.spacing");
-    $(".link-remove-spacing").on("click.pawsmovin.spacing", function(event) {
+    $(".link-remove-spacing").off("click.femboyfans.spacing");
+    $(".link-remove-spacing").on("click.femboyfans.spacing", function(event) {
       event.preventDefault();
       $(this).closest("tr").remove();
     });
@@ -63,19 +63,19 @@
     return JSON.stringify(Array.from($("#post-deletion-reasons-table tr")).slice(1).map((element, index) => ({ id: element.dataset.id ? Number(element.dataset.id) : null, order: index + 1 })));
   }
 
-  $(".link-add-spacing-below").on("click.pawsmovin.spacing", function(event) {
+  $(".link-add-spacing-below").on("click.femboyfans.spacing", function(event) {
     event.preventDefault();
     spacing.insertAfter($(this).closest("tr"));
     reinitRemoveListener();
   });
 
-  $(".link-add-spacing-above").on("click.pawsmovin.spacing", function(event) {
+  $(".link-add-spacing-above").on("click.femboyfans.spacing", function(event) {
     event.preventDefault();
     spacing.insertBefore($(this).closest("tr"));
     reinitRemoveListener();
   });
 
-  $(".edit-order-link").on("click.pawsmovin.sorting", function(event) {
+  $(".edit-order-link").on("click.femboyfans.sorting", function(event) {
     event.preventDefault();
     $(".save-order-link").show();
     $(".edit-order-link").hide();
@@ -85,7 +85,7 @@
     Danbooru.notice("Drag and drop to reorder.");
   });
 
-  $(".save-order-link").on("click.pawsmovin.sorting", function(event) {
+  $(".save-order-link").on("click.femboyfans.sorting", function(event) {
     event.preventDefault();
     $(".save-order-link").hide();
     $(".add-spacing-link").hide();

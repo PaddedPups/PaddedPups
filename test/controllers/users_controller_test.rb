@@ -69,7 +69,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     context "new action" do
       setup do
-        PawsMovin.config.stubs(:enable_recaptcha?).returns(false)
+        FemboyFans.config.stubs(:enable_recaptcha?).returns(false)
       end
 
       should "render" do
@@ -85,13 +85,13 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
         end
         created_user = User.find(session[:user_id])
         assert_equal("xxx", created_user.name)
-        assert_equal(PawsMovin.config.records_per_page, created_user.per_page)
+        assert_equal(FemboyFans.config.records_per_page, created_user.per_page)
         assert_not_nil(created_user.last_ip_addr)
       end
 
       context "with sockpuppet validation enabled" do
         setup do
-          PawsMovin.config.unstub(:enable_sock_puppet_validation?)
+          FemboyFans.config.unstub(:enable_sock_puppet_validation?)
           @user.update(last_ip_addr: "127.0.0.1")
         end
 
@@ -117,7 +117,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
       context "with email validation" do
         setup do
-          PawsMovin.config.stubs(:enable_email_verification?).returns(true)
+          FemboyFans.config.stubs(:enable_email_verification?).returns(true)
         end
 
         should "reject invalid emails" do
@@ -130,10 +130,10 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
         end
 
         should "reject duplicate emails" do
-          create(:user, email: "valid@pawsmov.in")
+          create(:user, email: "valid@femboy.fan")
 
           assert_no_difference(-> { User.count }) do
-            post users_path, params: { user: { name: "test2", password: "xxxxxx", password_confirmation: "xxxxxx", email: "VaLid@pawsmov.in" } }
+            post users_path, params: { user: { name: "test2", password: "xxxxxx", password_confirmation: "xxxxxx", email: "VaLid@femboy.fan" } }
             assert_match(/Email has already been taken/, flash[:notice])
           end
         end
@@ -177,7 +177,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
       context "for an user with blank email" do
         setup do
           @user = create(:user, email: "")
-          PawsMovin.config.stubs(:enable_email_verification?).returns(true)
+          FemboyFans.config.stubs(:enable_email_verification?).returns(true)
         end
 
         should "force them to update their email" do

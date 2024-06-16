@@ -33,9 +33,9 @@
 
     <%= f.input(:avatar_id, as: :string, label: "Avatar Post ID") %>
 
-    <%= f.input(:profile_about, as: :dtext, label: "About Me", limit: PawsMovin.config.user_about_max_size) %>
+    <%= f.input(:profile_about, as: :dtext, label: "About Me", limit: FemboyFans.config.user_about_max_size) %>
 
-    <%= f.input(:profile_artinfo, as: :dtext, label: "Commission Info", limit: PawsMovin.config.user_about_max_size) %>
+    <%= f.input(:profile_artinfo, as: :dtext, label: "Commission Info", limit: FemboyFans.config.user_about_max_size) %>
 
     <%= f.input(:time_zone, include_blank: false) %>
 
@@ -43,7 +43,7 @@
 
     <%= f.input(:comment_threshold, hint: "Comments below this score will be hidden by default.") %>
 
-    <%= f.input(:default_image_size, hint: "Show original image size, scaled to fit, scaled to fit vertically, or show resized #{PawsMovin.config.large_image_width} pixel sample version.", label: "Default image width", collection: [%w[Original original], ["Fit (Horizonal)", "fit"], ["Fit (Vertical)", "fitv"], ["Sample (#{PawsMovin.config.large_image_width}px)", "large"]], include_blank: false) %>
+    <%= f.input(:default_image_size, hint: "Show original image size, scaled to fit, scaled to fit vertically, or show resized #{FemboyFans.config.large_image_width} pixel sample version.", label: "Default image width", collection: [%w[Original original], ["Fit (Horizonal)", "fit"], ["Fit (Vertical)", "fitv"], ["Sample (#{FemboyFans.config.large_image_width}px)", "large"]], include_blank: false) %>
 
     <%= f.input(:per_page, label: "Posts per page", as: :select, collection: (25..250), include_blank: false) %>
 
@@ -89,7 +89,7 @@
     <%= f.input(:show_hidden_comments, label: "Show Own Hidden Comments", as: :select, collection: [%w[No false], %w[Yes true]], include_blank: false,
                 hint: "Show your own hidden comments on comment pages.") %>
 
-    <% if @user.post_active_count >= PawsMovin.config.compact_uploader_minimum_posts %>
+    <% if @user.post_active_count >= FemboyFans.config.compact_uploader_minimum_posts %>
       <%= f.input(:enable_compact_uploader, label: "Enable Compact Uploader", as: :select,
       collection: [%w[No false], %w[Yes true]], include_blank: false,
       hint: "Enables a more compact and less guided post uploader.") %>

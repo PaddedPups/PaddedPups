@@ -37,7 +37,7 @@
     allowLockedTags: <%= policy(Upload).can_use_attribute?(:locked_tags).to_json %>,
     allowRatingLock: <%= policy(Upload).can_use_attribute?(:locked_rating).to_json %>,
     allowUploadAsPending: <%= policy(Upload).can_use_attribute?(:as_pending).to_json %>,
-    maxFileSize: <%= PawsMovin.config.max_file_size %>,
+    maxFileSize: <%= FemboyFans.config.max_file_size %>,
   };
   Danbooru.Uploader.init();
 <% end -%>

@@ -62,7 +62,7 @@ class TagRelationshipRequest
       original_post_attributes: {
         body: "Reason: #{reason}",
       },
-      category_id:              PawsMovin.config.alias_implication_forum_category,
+      category_id:              FemboyFans.config.alias_implication_forum_category,
     )
   end
 

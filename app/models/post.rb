@@ -23,7 +23,7 @@ class Post < ApplicationRecord
     end
   end
 
-  include PawsMovin::HasBitFlags
+  include FemboyFans::HasBitFlags
   has_bit_flags(Flags.map)
 
   before_validation :initialize_uploader, on: :create
@@ -39,7 +39,7 @@ class Post < ApplicationRecord
   validates :md5, uniqueness: { on: :create, message: ->(obj, _data) { "duplicate: #{Post.find_by(md5: obj.md5).id}" } }
   validates :rating, inclusion: { in: %w[s q e], message: "rating must be s, q, or e" }
   validates :bg_color, format: { with: /\A[A-Fa-f0-9]{6}\z/ }, allow_nil: true
-  validates :description, length: { maximum: PawsMovin.config.post_descr_max_size }, if: :description_changed?
+  validates :description, length: { maximum: FemboyFans.config.post_descr_max_size }, if: :description_changed?
   validate :added_tags_are_valid, if: :should_process_tags?
   validate :removed_tags_are_valid, if: :should_process_tags?
   validate :has_artist_tag, if: :should_process_tags?
@@ -102,7 +102,7 @@ class Post < ApplicationRecord
           raise(DeletionError, "Files still in use; skipping deletion.")
         end
 
-        PawsMovin.config.storage_manager.delete_post_files(md5, file_ext)
+        FemboyFans.config.storage_manager.delete_post_files(md5, file_ext)
       end
     end
 
@@ -111,15 +111,15 @@ class Post < ApplicationRecord
     end
 
     def move_files_on_delete
-      PawsMovin.config.storage_manager.move_file_delete(self)
+      FemboyFans.config.storage_manager.move_file_delete(self)
     end
 
     def move_files_on_undelete
-      PawsMovin.config.storage_manager.move_file_undelete(self)
+      FemboyFans.config.storage_manager.move_file_undelete(self)
     end
 
     def storage_manager
-      PawsMovin.config.storage_manager
+      FemboyFans.config.storage_manager
     end
 
     def file(type = :original)
@@ -192,7 +192,7 @@ class Post < ApplicationRecord
     end
 
     def file_url_for(user)
-      if user.default_image_size == "large" && image_width > PawsMovin.config.large_image_width
+      if user.default_image_size == "large" && image_width > FemboyFans.config.large_image_width
         large_file_url
       else
         file_url
@@ -223,7 +223,7 @@ class Post < ApplicationRecord
       image_width.present? && image_height.present?
     end
 
-    def preview_dimensions(max_px = PawsMovin.config.small_image_width)
+    def preview_dimensions(max_px = FemboyFans.config.small_image_width)
       return [max_px, max_px] unless has_dimensions?
       height = width = max_px
       dimension_ratio = image_width.to_f / image_height
@@ -281,7 +281,7 @@ class Post < ApplicationRecord
       return true if is_video?
       return false if is_gif?
       return false if has_tag?("animated_gif", "animated_png")
-      is_image? && image_width.present? && image_width > PawsMovin.config.large_image_width
+      is_image? && image_width.present? && image_width > FemboyFans.config.large_image_width
     end
 
     def has_large
@@ -290,14 +290,14 @@ class Post < ApplicationRecord
 
     def large_image_width
       if has_large?
-        [PawsMovin.config.large_image_width, image_width].min
+        [FemboyFans.config.large_image_width, image_width].min
       else
         image_width
       end
     end
 
     def large_image_height
-      ratio = PawsMovin.config.large_image_width.to_f / image_width.to_f
+      ratio = FemboyFans.config.large_image_width.to_f / image_width.to_f
       if has_large? && ratio < 1
         (image_height * ratio).to_i
       else
@@ -359,7 +359,7 @@ class Post < ApplicationRecord
     end
 
     def apply_source_diff
-      if PawsMovin.config.enable_autotagging? && !should_process_tags?
+      if FemboyFans.config.enable_autotagging? && !should_process_tags?
         tags = add_automatic_tags(tag_array)
         set_tag_string(tags.uniq.sort.join(" "))
       end
@@ -594,7 +594,7 @@ class Post < ApplicationRecord
       return if do_not_version_changes || automated_edit
       return if do_not_version_changes || automated_edit
 
-      max_count = PawsMovin.config.max_tags_per_post
+      max_count = FemboyFans.config.max_tags_per_post
       if TagQuery.scan(tag_string).size > max_count
         errors.add(:tag_string, "tag count exceeds maximum of #{max_count}")
         throw(:abort)
@@ -720,7 +720,7 @@ class Post < ApplicationRecord
     end
 
     def add_automatic_tags(tags)
-      return tags unless PawsMovin.config.enable_autotagging?
+      return tags unless FemboyFans.config.enable_autotagging?
 
       tags -= %w[thumbnail low_res hi_res absurd_res superabsurd_res huge_filesize webm mp4 wide_image long_image invalid_source]
 
@@ -1575,7 +1575,7 @@ class Post < ApplicationRecord
 
     def alternate_samples
       alternates = {}
-      PawsMovin.config.video_rescales.each do |k, v|
+      FemboyFans.config.video_rescales.each do |k, v|
         next unless has_sample_size?(k)
         dims = scaled_sample_dimensions(v)
         alternates[k] = {
@@ -1594,7 +1594,7 @@ class Post < ApplicationRecord
           urls:   visible? ? [nil, file_url_ext("mp4")] : [nil, nil],
         }
       end
-      PawsMovin.config.image_rescales.each do |k, v|
+      FemboyFans.config.image_rescales.each do |k, v|
         next unless has_sample_size?(k)
         dims = scaled_sample_dimensions(v)
         alternates[k] = {
@@ -1941,16 +1941,16 @@ class Post < ApplicationRecord
   extend SearchMethods
 
   def safeblocked?
-    return true if PawsMovin.config.safe_mode? && rating != "s"
-    CurrentUser.safe_mode? && (rating != "s" || has_tag?(*PawsMovin.config.safeblocked_tags))
+    return true if FemboyFans.config.safe_mode? && rating != "s"
+    CurrentUser.safe_mode? && (rating != "s" || has_tag?(*FemboyFans.config.safeblocked_tags))
   end
 
   def deleteblocked?
-    !PawsMovin.config.can_user_see_post?(CurrentUser.user, self)
+    !FemboyFans.config.can_user_see_post?(CurrentUser.user, self)
   end
 
   def loginblocked?
-    CurrentUser.is_anonymous? && (hide_from_anonymous? || PawsMovin.config.user_needs_login_for_post?(self))
+    CurrentUser.is_anonymous? && (hide_from_anonymous? || FemboyFans.config.user_needs_login_for_post?(self))
   end
 
   def visible?

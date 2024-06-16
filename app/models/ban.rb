@@ -15,7 +15,7 @@ class Ban < ApplicationRecord
   belongs_to :banner, class_name: "User"
   validate :user_is_inferior
   validates :reason, :duration, presence: true
-  validates :reason, length: { minimum: 1, maximum: PawsMovin.config.user_feedback_max_size }
+  validates :reason, length: { minimum: 1, maximum: FemboyFans.config.user_feedback_max_size }
 
   scope :unexpired, -> { where("bans.expires_at > ? OR bans.expires_at IS NULL", Time.now) }
   scope :expired, -> { where.not(bans: { expires_at: nil }).where("bans.expires_at <= ?", Time.now) }

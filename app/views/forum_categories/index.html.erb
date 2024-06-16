@@ -43,7 +43,7 @@
     return JSON.stringify(Array.from($("#forum-categories-table tr")).slice(1).map((element, index) => ({ id: Number(element.dataset.id), order: index + 1 })));
   }
 
-  $(".edit-order-link").on("click.pawsmovin.sorting", function(event) {
+  $(".edit-order-link").on("click.femboyfans.sorting", function(event) {
     event.preventDefault();
     $(".save-order-link").show();
     $(".edit-order-link").hide();
@@ -53,7 +53,7 @@
     Danbooru.notice("Drag and drop to reorder.");
   });
 
-  $(".save-order-link").on("click.pawsmovin.sorting", function(event) {
+  $(".save-order-link").on("click.femboyfans.sorting", function(event) {
     event.preventDefault();
     $(".save-order-link").hide();
     $(".add-spacing-link").hide();

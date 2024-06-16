@@ -59,12 +59,12 @@ class StaticController < ApplicationController
     end
     if request.post?
       time = (Time.now + 5.minutes).to_i
-      secret = PawsMovin.config.discord_secret
+      secret = FemboyFans.config.discord_secret
       # TODO: Proper HMAC
       hashed_values = Digest::SHA256.hexdigest("#{CurrentUser.id};#{CurrentUser.name};#{time};#{secret};index")
       user_hash = "?user_id=#{CurrentUser.id}&user_name=#{CurrentUser.name}&time=#{time}&hash=#{hashed_values}"
 
-      redirect_to(PawsMovin.config.discord_site + user_hash, allow_other_host: true)
+      redirect_to(FemboyFans.config.discord_site + user_hash, allow_other_host: true)
     end
   end
 

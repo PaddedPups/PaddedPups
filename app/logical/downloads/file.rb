@@ -20,9 +20,9 @@ module Downloads
       validate!
     end
 
-    def download!(max_size: PawsMovin.config.max_file_size)
+    def download!(max_size: FemboyFans.config.max_file_size)
       file = Tempfile.new(binmode: true)
-      conn = Faraday.new(PawsMovin.config.faraday_options) do |f|
+      conn = Faraday.new(FemboyFans.config.faraday_options) do |f|
         f.response(:follow_redirects, callback: ->(_old_env, new_env) { validate_uri_allowed!(new_env.url) })
         f.request(:retry, max: 3, retry_block: ->(*) { file = Tempfile.new(binmode: true) })
       end

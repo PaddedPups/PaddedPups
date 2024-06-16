@@ -109,7 +109,7 @@ class User < ApplicationRecord
     end
   end
 
-  include PawsMovin::HasBitFlags
+  include FemboyFans::HasBitFlags
   has_bit_flags(Preferences.map, field: "bit_prefs")
 
   attr_accessor :password, :old_password, :validate_email_format, :is_admin_edit
@@ -124,22 +124,22 @@ class User < ApplicationRecord
 
   validates :name, user_name: true, on: :create
   validates :default_image_size, inclusion: { in: %w[large fit fitv original] }
-  validates :per_page, inclusion: { in: 1..PawsMovin.config.max_per_page }
+  validates :per_page, inclusion: { in: 1..FemboyFans.config.max_per_page }
   validates :comment_threshold, presence: true
   validates :comment_threshold, numericality: { only_integer: true, less_than: 50_000, greater_than: -50_000 }
   validates :password, length: { minimum: 6, maximum: 128, if: ->(rec) { rec.new_record? || rec.password.present? || rec.old_password.present? } }, unless: :is_system?
   validates :password, confirmation: true, unless: :is_system?
   validates :password_confirmation, presence: { if: ->(rec) { rec.new_record? || rec.old_password.present? } }, unless: :is_system?
   validate :validate_ip_addr_is_not_banned, on: :create
-  validate :validate_sock_puppets, on: :create, if: -> { PawsMovin.config.enable_sock_puppet_validation? && !is_system? }
+  validate :validate_sock_puppets, on: :create, if: -> { FemboyFans.config.enable_sock_puppet_validation? && !is_system? }
   validate :validate_prefs, if: :will_save_change_to_bit_prefs?
   before_validation :normalize_blacklisted_tags, if: ->(rec) { rec.blacklisted_tags_changed? }
   before_validation :staff_cant_disable_dmail
   before_validation :blank_out_nonexistent_avatars
-  validates :blacklisted_tags, length: { maximum: PawsMovin.config.blacklisted_tags_max_size }
-  validates :custom_style, length: { maximum: PawsMovin.config.custom_style_max_size }
-  validates :profile_about, length: { maximum: PawsMovin.config.user_about_max_size }
-  validates :profile_artinfo, length: { maximum: PawsMovin.config.user_about_max_size }
+  validates :blacklisted_tags, length: { maximum: FemboyFans.config.blacklisted_tags_max_size }
+  validates :custom_style, length: { maximum: FemboyFans.config.custom_style_max_size }
+  validates :profile_about, length: { maximum: FemboyFans.config.user_about_max_size }
+  validates :profile_artinfo, length: { maximum: FemboyFans.config.user_about_max_size }
   validates :time_zone, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }
   before_create :promote_to_owner_if_first_user
   before_create :encrypt_password_on_create
@@ -228,7 +228,7 @@ class User < ApplicationRecord
           return RequestStore[:id_name_cache][user_id]
         end
         name = Cache.fetch("uin:#{user_id}", expires_in: 4.hours) do
-          User.where(id: user_id).pick(:name) || PawsMovin.config.default_guest_name
+          User.where(id: user_id).pick(:name) || FemboyFans.config.default_guest_name
         end
         RequestStore[:id_name_cache][user_id] = name
         name
@@ -332,11 +332,11 @@ class User < ApplicationRecord
 
     module ClassMethods
       def anonymous
-        PawsMovin.config.anonymous_user
+        FemboyFans.config.anonymous_user
       end
 
       def system
-        PawsMovin.config.system_user
+        FemboyFans.config.system_user
       end
 
       def owner
@@ -359,7 +359,7 @@ class User < ApplicationRecord
     def promote_to_owner_if_first_user
       return if Rails.env.test?
 
-      if name != PawsMovin.config.system_user_name && !User.exists?(level: Levels::OWNER)
+      if name != FemboyFans.config.system_user_name && !User.exists?(level: Levels::OWNER)
         self.level = Levels::OWNER
         self.created_at = 2.weeks.ago
         self.can_approve_posts = true
@@ -430,7 +430,7 @@ class User < ApplicationRecord
     def enable_email_verification?
       # Allow admins to edit users with blank/duplicate emails
       return false if is_admin_edit && !email_changed?
-      PawsMovin.config.enable_email_verification? && validate_email_format
+      FemboyFans.config.enable_email_verification? && validate_email_format
     end
 
     def validate_email_address_allowed
@@ -491,12 +491,12 @@ class User < ApplicationRecord
 
   module LimitMethods
     def younger_than(duration)
-      return false if PawsMovin.config.disable_age_checks?
+      return false if FemboyFans.config.disable_age_checks?
       created_at > duration.ago
     end
 
     def older_than(duration)
-      return true if PawsMovin.config.disable_age_checks?
+      return true if FemboyFans.config.disable_age_checks?
       created_at < duration.ago
     end
 
@@ -504,7 +504,7 @@ class User < ApplicationRecord
       define_method(:"#{name}_limit", limiter)
 
       define_method(:"can_#{name}_with_reason") do
-        return true if PawsMovin.config.disable_throttles?
+        return true if FemboyFans.config.disable_throttles?
         return send(checker) if checker && send(checker)
         return :REJ_NEWBIE if newbie_duration && younger_than(newbie_duration)
         return :REJ_LIMITED if send("#{name}_limit") <= 0
@@ -520,41 +520,41 @@ class User < ApplicationRecord
       is_trusted?
     end
 
-    create_user_throttle(:artist_edit, -> { PawsMovin.config.artist_edit_limit - ArtistVersion.for_user(id).where("updated_at > ?", 1.hour.ago).count },
+    create_user_throttle(:artist_edit, -> { FemboyFans.config.artist_edit_limit - ArtistVersion.for_user(id).where("updated_at > ?", 1.hour.ago).count },
                          :general_bypass_throttle?, 7.days)
-    create_user_throttle(:post_edit, -> { PawsMovin.config.post_edit_limit - PostVersion.for_user(id).where("updated_at > ?", 1.hour.ago).count },
+    create_user_throttle(:post_edit, -> { FemboyFans.config.post_edit_limit - PostVersion.for_user(id).where("updated_at > ?", 1.hour.ago).count },
                          :general_bypass_throttle?, 7.days)
-    create_user_throttle(:wiki_edit, -> { PawsMovin.config.wiki_edit_limit - WikiPageVersion.for_user(id).where("updated_at > ?", 1.hour.ago).count },
+    create_user_throttle(:wiki_edit, -> { FemboyFans.config.wiki_edit_limit - WikiPageVersion.for_user(id).where("updated_at > ?", 1.hour.ago).count },
                          :general_bypass_throttle?, 7.days)
-    create_user_throttle(:pool, -> { PawsMovin.config.pool_limit - Pool.for_user(id).where("created_at > ?", 1.hour.ago).count },
+    create_user_throttle(:pool, -> { FemboyFans.config.pool_limit - Pool.for_user(id).where("created_at > ?", 1.hour.ago).count },
                          :is_janitor?, 7.days)
-    create_user_throttle(:pool_edit, -> { PawsMovin.config.pool_edit_limit - PoolVersion.for_user(id).where("updated_at > ?", 1.hour.ago).count },
+    create_user_throttle(:pool_edit, -> { FemboyFans.config.pool_edit_limit - PoolVersion.for_user(id).where("updated_at > ?", 1.hour.ago).count },
                          :is_janitor?, 3.days)
-    create_user_throttle(:pool_post_edit, -> { PawsMovin.config.pool_post_edit_limit - PoolVersion.for_user(id).where("updated_at > ?", 1.hour.ago).group(:pool_id).count(:pool_id).length },
+    create_user_throttle(:pool_post_edit, -> { FemboyFans.config.pool_post_edit_limit - PoolVersion.for_user(id).where("updated_at > ?", 1.hour.ago).group(:pool_id).count(:pool_id).length },
                          :general_bypass_throttle?, 7.days)
-    create_user_throttle(:note_edit, -> { PawsMovin.config.note_edit_limit - NoteVersion.for_user(id).where("updated_at > ?", 1.hour.ago).count },
+    create_user_throttle(:note_edit, -> { FemboyFans.config.note_edit_limit - NoteVersion.for_user(id).where("updated_at > ?", 1.hour.ago).count },
                          :general_bypass_throttle?, 3.days)
-    create_user_throttle(:comment, -> { PawsMovin.config.member_comment_limit - Comment.for_creator(id).where("created_at > ?", 1.hour.ago).count },
+    create_user_throttle(:comment, -> { FemboyFans.config.member_comment_limit - Comment.for_creator(id).where("created_at > ?", 1.hour.ago).count },
                          :general_bypass_throttle?, 7.days)
-    create_user_throttle(:forum_post, -> { PawsMovin.config.member_comment_limit - ForumPost.for_user(id).where("created_at > ?", 1.hour.ago).count },
+    create_user_throttle(:forum_post, -> { FemboyFans.config.member_comment_limit - ForumPost.for_user(id).where("created_at > ?", 1.hour.ago).count },
                          nil, 3.days)
-    create_user_throttle(:dmail_minute, -> { PawsMovin.config.dmail_minute_limit - Dmail.sent_by_id(id).where("created_at > ?", 1.minute.ago).count },
+    create_user_throttle(:dmail_minute, -> { FemboyFans.config.dmail_minute_limit - Dmail.sent_by_id(id).where("created_at > ?", 1.minute.ago).count },
                          nil, 7.days)
-    create_user_throttle(:dmail, -> { PawsMovin.config.dmail_limit - Dmail.sent_by_id(id).where("created_at > ?", 1.hour.ago).count },
+    create_user_throttle(:dmail, -> { FemboyFans.config.dmail_limit - Dmail.sent_by_id(id).where("created_at > ?", 1.hour.ago).count },
                          nil, 7.days)
-    create_user_throttle(:dmail_day, -> { PawsMovin.config.dmail_day_limit - Dmail.sent_by_id(id).where("created_at > ?", 1.day.ago).count },
+    create_user_throttle(:dmail_day, -> { FemboyFans.config.dmail_day_limit - Dmail.sent_by_id(id).where("created_at > ?", 1.day.ago).count },
                          nil, 7.days)
-    create_user_throttle(:comment_vote, -> { PawsMovin.config.comment_vote_limit - CommentVote.for_user(id).where("created_at > ?", 1.hour.ago).count },
+    create_user_throttle(:comment_vote, -> { FemboyFans.config.comment_vote_limit - CommentVote.for_user(id).where("created_at > ?", 1.hour.ago).count },
                          :general_bypass_throttle?, 3.days)
-    create_user_throttle(:post_vote, -> { PawsMovin.config.post_vote_limit - PostVote.for_user(id).where("created_at > ?", 1.hour.ago).count },
+    create_user_throttle(:post_vote, -> { FemboyFans.config.post_vote_limit - PostVote.for_user(id).where("created_at > ?", 1.hour.ago).count },
                          :general_bypass_throttle?, nil)
-    create_user_throttle(:post_flag, -> { PawsMovin.config.post_flag_limit - PostFlag.for_creator(id).where("created_at > ?", 1.hour.ago).count },
+    create_user_throttle(:post_flag, -> { FemboyFans.config.post_flag_limit - PostFlag.for_creator(id).where("created_at > ?", 1.hour.ago).count },
                          :can_approve_posts?, 3.days)
-    create_user_throttle(:ticket, -> { PawsMovin.config.ticket_limit - Ticket.for_creator(id).where("created_at > ?", 1.hour.ago).count },
+    create_user_throttle(:ticket, -> { FemboyFans.config.ticket_limit - Ticket.for_creator(id).where("created_at > ?", 1.hour.ago).count },
                          :general_bypass_throttle?, 3.days)
-    create_user_throttle(:suggest_tag, -> { PawsMovin.config.tag_suggestion_limit - (TagAlias.for_creator(id).where("created_at > ?", 1.hour.ago).count + TagImplication.for_creator(id).where("created_at > ?", 1.hour.ago).count + BulkUpdateRequest.for_creator(id).where("created_at > ?", 1.hour.ago).count) },
+    create_user_throttle(:suggest_tag, -> { FemboyFans.config.tag_suggestion_limit - (TagAlias.for_creator(id).where("created_at > ?", 1.hour.ago).count + TagImplication.for_creator(id).where("created_at > ?", 1.hour.ago).count + BulkUpdateRequest.for_creator(id).where("created_at > ?", 1.hour.ago).count) },
                          :is_janitor?, 7.days)
-    create_user_throttle(:forum_vote, -> { PawsMovin.config.forum_vote_limit - ForumPostVote.by(id).where("created_at > ?", 1.hour.ago).count },
+    create_user_throttle(:forum_vote, -> { FemboyFans.config.forum_vote_limit - ForumPostVote.by(id).where("created_at > ?", 1.hour.ago).count },
                          :is_janitor?, 3.days)
 
     def can_remove_from_pools?
@@ -594,11 +594,11 @@ class User < ApplicationRecord
     end
 
     def can_upload_with_reason
-      return :REJ_UPLOAD_HOURLY if hourly_upload_limit <= 0 && !PawsMovin.config.disable_throttles?
+      return :REJ_UPLOAD_HOURLY if hourly_upload_limit <= 0 && !FemboyFans.config.disable_throttles?
       return true if unrestricted_uploads? || is_admin?
       return :REJ_UPLOAD_NEWBIE if younger_than(7.days)
-      return :REJ_UPLOAD_EDIT if !is_trusted? && post_edit_limit <= 0 && !PawsMovin.config.disable_throttles?
-      return :REJ_UPLOAD_LIMIT if upload_limit <= 0 && !PawsMovin.config.disable_throttles?
+      return :REJ_UPLOAD_EDIT if !is_trusted? && post_edit_limit <= 0 && !FemboyFans.config.disable_throttles?
+      return :REJ_UPLOAD_LIMIT if upload_limit <= 0 && !FemboyFans.config.disable_throttles?
       true
     end
 
@@ -606,7 +606,7 @@ class User < ApplicationRecord
       @hourly_upload_limit ||= begin
         post_count = posts.where("created_at >= ?", 1.hour.ago).count
         replacement_count = can_approve_posts? ? 0 : post_replacements.where("created_at >= ? and status != ?", 1.hour.ago, "original").count
-        PawsMovin.config.hourly_upload_limit - post_count - replacement_count
+        FemboyFans.config.hourly_upload_limit - post_count - replacement_count
       end
     end
 
@@ -651,7 +651,7 @@ class User < ApplicationRecord
     end
 
     def tag_query_limit
-      PawsMovin.config.tag_query_limit
+      FemboyFans.config.tag_query_limit
     end
 
     def favorite_limit
@@ -1003,7 +1003,7 @@ class User < ApplicationRecord
 
   def set_per_page
     if per_page.nil?
-      self.per_page = PawsMovin.config.posts_per_page
+      self.per_page = FemboyFans.config.posts_per_page
     end
 
     true
@@ -1056,7 +1056,7 @@ class User < ApplicationRecord
 
   def initialize_attributes
     return if Rails.env.test?
-    PawsMovin.config.customize_new_user(self)
+    FemboyFans.config.customize_new_user(self)
   end
 
   def presenter

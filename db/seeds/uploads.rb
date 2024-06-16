@@ -10,7 +10,7 @@ require "net/http"
 module Uploads
   def self.api_request(path)
     puts("-> GET #{read_resources['base_url']}#{path}")
-    response = Faraday.get("#{read_resources['base_url']}#{path}", nil, user_agent: "pawmovin/seeding")
+    response = Faraday.get("#{read_resources['base_url']}#{path}", nil, user_agent: "femboyfans/seeding")
     JSON.parse(response.body)
   end
 
@@ -81,7 +81,7 @@ module Uploads
     return post["file"]["url"] unless post["file"]["url"].nil?
     puts("post #{post['id']} returned a nil url, attempting to reconstruct url.")
     return "https://static1.e621.net/data/#{post['file']['md5'][0..1]}/#{post['file']['md5'][2..3]}/#{post['file']['md5']}.#{post['file']['ext']}" if /e621\.net/i =~ base_url
-    "https://static.pawsmov.in/#{post['file']['md5'][0..1]}/#{post['file']['md5'][2..3]}/#{post['file']['md5']}.#{post['file']['ext']}"
+    "https://static.femboy.fan/#{post['file']['md5'][0..1]}/#{post['file']['md5'][2..3]}/#{post['file']['md5']}.#{post['file']['ext']}"
   end
 end
 

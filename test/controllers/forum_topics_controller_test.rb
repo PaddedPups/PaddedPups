@@ -99,7 +99,7 @@ class ForumTopicsControllerTest < ActionDispatch::IntegrationTest
     context "create action" do
       should "create a new forum topic and post" do
         assert_difference(["ForumPost.count", "ForumTopic.count"], 1) do
-          post_auth forum_topics_path, @user, params: { forum_topic: { title: "bababa", category_id: PawsMovin.config.alias_implication_forum_category, original_post_attributes: { body: "xaxaxa" } } }
+          post_auth forum_topics_path, @user, params: { forum_topic: { title: "bababa", category_id: FemboyFans.config.alias_implication_forum_category, original_post_attributes: { body: "xaxaxa" } } }
         end
 
         forum_topic = ForumTopic.last
@@ -118,7 +118,7 @@ class ForumTopicsControllerTest < ActionDispatch::IntegrationTest
         get_auth posts_path, @other_user
         assert_select "#nav-forum.unread", false
 
-        post_auth forum_topics_path, @user, params: { forum_topic: { title: "bababa", category_id: PawsMovin.config.alias_implication_forum_category, original_post_attributes: { body: "xaxaxa" } } }
+        post_auth forum_topics_path, @user, params: { forum_topic: { title: "bababa", category_id: FemboyFans.config.alias_implication_forum_category, original_post_attributes: { body: "xaxaxa" } } }
 
         get_auth posts_path, @other_user
         assert_select "#nav-forum.unread"

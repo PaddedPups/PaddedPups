@@ -44,7 +44,7 @@ module Posts
     private
 
     def throttle(search_params)
-      return if PawsMovin.config.disable_throttles?
+      return if FemboyFans.config.disable_throttles?
 
       if %i[file url post_id hash].any? { |key| search_params[key].present? }
         if RateLimiter.check_limit("img:#{CurrentUser.ip_addr}", 1, 2.seconds)

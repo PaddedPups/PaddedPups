@@ -6,11 +6,11 @@ module Reports
   LIMIT = 100
 
   def enabled?
-    PawsMovin.config.reports_enabled?
+    FemboyFans.config.reports_enabled?
   end
 
   def get(path)
-    response = Faraday.new(PawsMovin.config.faraday_options).get("#{PawsMovin.config.reports_server_internal}#{path}")
+    response = Faraday.new(FemboyFans.config.faraday_options).get("#{FemboyFans.config.reports_server_internal}#{path}")
     JSON.parse(response.body)
   end
 

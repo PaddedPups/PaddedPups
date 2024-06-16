@@ -313,14 +313,14 @@ class ArtistTest < ActiveSupport::TestCase
       end
 
       should "fail if the user is limited" do
-        @artist.url_string = "https://pawsmov.in"
+        @artist.url_string = "https://femboy.fan"
         as(create(:user)) { @artist.save }
 
         @artist.reload
-        assert_equal("https://pawsmov.in", @artist.url_string)
+        assert_equal("https://femboy.fan", @artist.url_string)
 
-        PawsMovin.config.stubs(:disable_throttles?).returns(false)
-        PawsMovin.config.stubs(:artist_edit_limit).returns(0)
+        FemboyFans.config.stubs(:disable_throttles?).returns(false)
+        FemboyFans.config.stubs(:artist_edit_limit).returns(0)
 
         @artist.url_string = ""
         assert_no_difference(-> { ArtistVersion.count }) do
@@ -328,25 +328,25 @@ class ArtistTest < ActiveSupport::TestCase
         end
 
         @artist.reload
-        assert_equal("https://pawsmov.in", @artist.url_string)
+        assert_equal("https://femboy.fan", @artist.url_string)
       end
 
       should "not change urls when locked" do
-        @artist.url_string = "https://pawsmov.in"
+        @artist.url_string = "https://femboy.fan"
         as(create(:user)) { @artist.save }
 
         @artist.reload
-        assert_equal("https://pawsmov.in", @artist.url_string)
+        assert_equal("https://femboy.fan", @artist.url_string)
 
         @artist.update_column(:is_locked, true)
 
-        @artist.url_string = "https://sfw.pawsmov.in"
+        @artist.url_string = "https://sfw.femboy.fan"
         assert_no_difference(-> { ArtistVersion.count }) do
           as(create(:user)) { @artist.save }
         end
 
         @artist.reload
-        assert_equal("https://pawsmov.in", @artist.url_string)
+        assert_equal("https://femboy.fan", @artist.url_string)
       end
 
       should "not change notes when locked" do

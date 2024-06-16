@@ -5,9 +5,9 @@ module StorageManager
     attr_reader :base_url, :base_dir, :hierarchical, :large_image_prefix, :protected_prefix, :base_path, :replacement_prefix
 
     def initialize(base_url: default_base_url, base_path: default_base_path, base_dir: DEFAULT_BASE_DIR, hierarchical: false, # rubocop:disable Metrics/ParameterLists
-                   large_image_prefix: PawsMovin.config.large_image_prefix,
-                   protected_prefix: PawsMovin.config.protected_path_prefix,
-                   replacement_prefix: PawsMovin.config.replacement_path_prefix)
+                   large_image_prefix: FemboyFans.config.large_image_prefix,
+                   protected_prefix: FemboyFans.config.protected_path_prefix,
+                   replacement_prefix: FemboyFans.config.replacement_path_prefix)
       @base_url = base_url.chomp("/")
       @base_dir = base_dir
       @base_path = base_path
@@ -63,7 +63,7 @@ module StorageManager
         delete(file_path(md5, file_ext, type, protected: false))
         delete(file_path(md5, file_ext, type, protected: true))
       end
-      PawsMovin.config.video_rescales.each_key do |k|
+      FemboyFans.config.video_rescales.each_key do |k|
         %w[mp4 webm].each do |ext|
           delete(file_path(md5, ext, :scaled, protected: false, scale_factor: k.to_s))
           delete(file_path(md5, ext, :scaled, protected: true, scale_factor: k.to_s))
@@ -90,7 +90,7 @@ module StorageManager
       raise(NotImplementedError, "move_file_undelete not implemented")
     end
 
-    def protected_params(url, _post, secret: PawsMovin.config.protected_file_secret)
+    def protected_params(url, _post, secret: FemboyFans.config.protected_file_secret)
       user_id = CurrentUser.id
       time = (Time.now + 15.minutes).to_i
       hmac = Digest::MD5.base64digest("#{time} #{url} #{user_id} #{secret}").tr("+/", "-_").gsub("==", "")
@@ -128,7 +128,7 @@ module StorageManager
       file = "#{replacement.storage_id}#{'_thumb' if image_size == :preview}.#{replacement.file_ext}"
       base = "#{base_path}/#{replacement_prefix}"
       path = "#{base}/#{subdir}#{file}"
-      "#{base_url}#{path}#{protected_params(path, nil, secret: PawsMovin.config.replacement_file_secret)}"
+      "#{base_url}#{path}#{protected_params(path, nil, secret: FemboyFans.config.replacement_file_secret)}"
     end
 
     def root_url

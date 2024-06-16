@@ -106,13 +106,13 @@
         <%= f.input(:send_update_dmail, label: "Send update DMail", as: :boolean, hint: "A DMail is always sent if the status is changed") %>
       <% end %>
       <div class="ticket-responses">
-        <% PawsMovin.config.ticket_quick_response_buttons.each do |btn| %>
+        <% FemboyFans.config.ticket_quick_response_buttons.each do |btn| %>
         <%= button_tag btn[:name], type: "button", data: { text: btn[:text] } %>
         <% end %>
       </div>
       <table>
         <tr>
-          <td><%= f.input(:response, as: :dtext, limit: PawsMovin.config.dmail_max_size) %></td>
+          <td><%= f.input(:response, as: :dtext, limit: FemboyFans.config.dmail_max_size) %></td>
         </tr>
       </table>
       <%= tag.input(name: "force_claim", type: "hidden", value: params[:force_claim]) %>

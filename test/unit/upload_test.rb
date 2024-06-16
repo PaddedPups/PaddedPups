@@ -14,7 +14,7 @@ class UploadTest < ActiveSupport::TestCase
         setup do
           CurrentUser.user = create(:user, created_at: 1.year.ago)
           User.any_instance.stubs(:upload_limit).returns(0)
-          PawsMovin.config.stubs(:disable_throttles?).returns(false)
+          FemboyFans.config.stubs(:disable_throttles?).returns(false)
         end
 
         should "fail creation" do

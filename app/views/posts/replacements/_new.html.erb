@@ -1,6 +1,6 @@
 <div class="replace-image-dialog-body">
   <div class="dtext-container">
-    <%= format_text(WikiPage.titled(PawsMovin.config.replacement_notice_wiki_page)&.body) %>
+    <%= format_text(WikiPage.titled(FemboyFans.config.replacement_notice_wiki_page)&.body) %>
   </div>
 
   <div>
@@ -15,7 +15,7 @@
 
 <%= javascript_tag nonce: true do -%>
   var uploaderSettings = {
-    maxFileSize: <%= PawsMovin.config.max_file_size %>,
+    maxFileSize: <%= FemboyFans.config.max_file_size %>,
   };
   Danbooru.Replacer.init();
 <% end -%>

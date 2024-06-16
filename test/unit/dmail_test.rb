@@ -80,15 +80,15 @@ class DmailTest < ActiveSupport::TestCase
     end
 
     should "not create a senders copy when validations fail" do
-      PawsMovin.config.stubs(:disable_throttles?).returns(false)
+      FemboyFans.config.stubs(:disable_throttles?).returns(false)
       @user = create(:user, created_at: 2.weeks.ago)
       @recipient = create(:user)
       as(@user) do
-        (PawsMovin.config.dmail_minute_limit + 1).times do
+        (FemboyFans.config.dmail_minute_limit + 1).times do
           Dmail.create_split(attributes_for(:dmail, from_id: @user.id, to_id: @recipient.id))
         end
       end
-      assert_equal(PawsMovin.config.dmail_minute_limit * 2, Dmail.count)
+      assert_equal(FemboyFans.config.dmail_minute_limit * 2, Dmail.count)
     end
 
     should "should parse user names" do

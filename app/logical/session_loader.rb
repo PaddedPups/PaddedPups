@@ -10,7 +10,7 @@ class SessionLoader
     @session = request.session
     @cookies = request.cookie_jar
     @params = request.parameters
-    @remember_validator = ActiveSupport::MessageVerifier.new(PawsMovin.config.remember_key, serializer: JSON, digest: "SHA256")
+    @remember_validator = ActiveSupport::MessageVerifier.new(FemboyFans.config.remember_key, serializer: JSON, digest: "SHA256")
   end
 
   def load
@@ -40,7 +40,7 @@ class SessionLoader
     set_time_zone
     set_safe_mode
     refresh_old_remember_token
-    PawsMovin::Logger.initialize(CurrentUser.user)
+    FemboyFans::Logger.initialize(CurrentUser.user)
   end
 
   def has_api_authentication?
@@ -132,7 +132,7 @@ class SessionLoader
   end
 
   def set_safe_mode
-    safe_mode = PawsMovin.config.safe_mode? || params[:safe_mode].to_s.truthy? || CurrentUser.user.enable_safe_mode?
+    safe_mode = FemboyFans.config.safe_mode? || params[:safe_mode].to_s.truthy? || CurrentUser.user.enable_safe_mode?
     CurrentUser.safe_mode = safe_mode
   end
 end

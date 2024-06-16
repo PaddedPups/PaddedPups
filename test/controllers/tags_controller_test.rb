@@ -126,7 +126,7 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
       end
 
       should "not allow following more than the user's limit" do
-        PawsMovin.config.stubs(:followed_tag_limit).returns(0)
+        FemboyFans.config.stubs(:followed_tag_limit).returns(0)
         put_auth follow_tag_path(@tag), @user, params: { format: :json }
         assert_response(422)
         assert_equal(0, @tag.reload.follower_count)

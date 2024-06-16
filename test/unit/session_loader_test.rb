@@ -18,14 +18,14 @@ class SessionLoaderTest < ActiveSupport::TestCase
 
     context ".safe_mode?" do
       should "return true if the config has safe mode enabled" do
-        PawsMovin.config.stubs(:safe_mode?).returns(true)
+        FemboyFans.config.stubs(:safe_mode?).returns(true)
         SessionLoader.new(@request).load
 
         assert_equal(true, CurrentUser.safe_mode?)
       end
 
       should "return false if the config has safe mode disabled" do
-        PawsMovin.config.stubs(:safe_mode?).returns(false)
+        FemboyFans.config.stubs(:safe_mode?).returns(false)
         SessionLoader.new(@request).load
 
         assert_equal(false, CurrentUser.safe_mode?)

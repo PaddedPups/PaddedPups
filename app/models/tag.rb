@@ -376,7 +376,7 @@ class Tag < ApplicationRecord
   def category_editable_by_implicit?(user)
     return false unless user.is_janitor?
     return false if is_locked?
-    return false if post_count >= PawsMovin.config.tag_type_change_cutoff(user)
+    return false if post_count >= FemboyFans.config.tag_type_change_cutoff(user)
     true
   end
 
@@ -384,7 +384,7 @@ class Tag < ApplicationRecord
     return true if user.is_admin?
     return false if is_locked?
     return false if TagCategory.get(category).admin_only?
-    return true if post_count < PawsMovin.config.tag_type_change_cutoff(user)
+    return true if post_count < FemboyFans.config.tag_type_change_cutoff(user)
     false
   end
 

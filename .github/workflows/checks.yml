@@ -24,7 +24,7 @@ jobs:
         with:
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: pawsmovin
+          tags: femboyfans
 
   rubocop:
     runs-on: ubuntu-22.04
@@ -65,5 +65,4 @@ jobs:
         uses: codecov/codecov-action@v4.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: PawsMovin/PawsMovin
-
+          slug: FemboyFans/FemboyFans

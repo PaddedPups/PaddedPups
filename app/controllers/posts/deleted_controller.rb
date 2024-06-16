@@ -14,7 +14,7 @@ module Posts
       else
         post_flags = PostFlag.where(is_deletion: true).includes(post: %i[uploader flags]).order(id: :desc).paginate(params[:page], limit: params[:limit])
         new_opts = { pagination_mode: :numbered, records_per_page: post_flags.records_per_page, total_count: post_flags.total_count, current_page: post_flags.current_page }
-        @posts = PawsMovin::Paginator::PaginatedArray.new(post_flags.map(&:post), new_opts)
+        @posts = FemboyFans::Paginator::PaginatedArray.new(post_flags.map(&:post), new_opts)
       end
       respond_with(@posts)
     end

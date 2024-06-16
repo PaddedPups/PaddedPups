@@ -1,25 +1,21 @@
 # frozen_string_literal: true
 
-module PawsMovin
+module FemboyFans
   class Configuration
     def version
       GitHelper.short_hash
     end
 
     def app_name
-      "Paws Movin'"
-    end
-
-    def canonical_app_name
-      "Paws Movin'"
+      "Femboy Fans"
     end
 
     def description
-      "We keep your paws movin'!"
+      "The freshest set of femboys you can find."
     end
 
     def domain
-      "pawsmov.in"
+      "femboy.fan"
     end
 
     # Force rating:s on this version of the site.
@@ -42,7 +38,7 @@ module PawsMovin
     end
 
     def source_code_url
-      "https://github.com/PawsMovin/PawsMovin"
+      "https://github.com/FemboyFans/FemboyFans"
     end
 
     # Stripped of any special characters.
@@ -72,7 +68,7 @@ module PawsMovin
 
       def system_user
         User.find_or_create_by!(name: system_user_name, level: User::Levels::SYSTEM) do |user|
-          user.email = "system@pawsmov.in"
+          user.email = "system@femboy.fan"
           user.can_approve_posts = true
           user.unrestricted_uploads = true
         end
@@ -480,7 +476,7 @@ module PawsMovin
       # hierarchical: false - store files in a single directory
       # hierarchical: true - store files in a hierarchical directory structure, based on the MD5 hash
       StorageManager::Local.new(base_dir: Rails.public_path.join("data").to_s, hierarchical: true)
-      # StorageManager::Ftp.new(ftp_hostname, ftp_port, ftp_username, ftp_password, base_dir: "", base_path: "", base_url: "https://static.pawsmov.in", hierarchical: true)
+      # StorageManager::Ftp.new(ftp_hostname, ftp_port, ftp_username, ftp_password, base_dir: "", base_path: "", base_url: "https://static.femboy.fan", hierarchical: true)
 
       # Select the storage method based on the post's id and type (preview, large, or original).
       # StorageManager::Hybrid.new do |id, md5, file_ext, type|
@@ -664,7 +660,7 @@ module PawsMovin
     # Use a recaptcha on the signup page to protect against spambots creating new accounts.
     # https://developers.google.com/recaptcha/intro
     def enable_recaptcha?
-      Rails.env.production? && PawsMovin.config.recaptcha_site_key.present? && PawsMovin.config.recaptcha_secret_key.present?
+      Rails.env.production? && FemboyFans.config.recaptcha_site_key.present? && FemboyFans.config.recaptcha_secret_key.present?
     end
 
     def recaptcha_site_key
@@ -732,19 +728,19 @@ module PawsMovin
         { name: "Already", text: "User already received a record for that message." },
         { name: "Banned", text: "This user is already banned." },
         { name: "Blacklist", text: "If you find the contents of that post objectionable, \"blacklist\":/help/blacklist it." },
-        { name: "Takedown", text: "Artists and character owners may request a takedown here: https://pawsmov.in/static/takedown.\nWe do not accept third party takedowns." },
+        { name: "Takedown", text: "Artists and character owners may request a takedown here: https://femboy.fan/static/takedown.\nWe do not accept third party takedowns." },
       ]
     end
 
     def reports_enabled?
-      PawsMovin.config.reports_server.present?
+      FemboyFans.config.reports_server.present?
     end
 
     def reports_server
     end
 
     def reports_server_internal
-      PawsMovin.config.reports_server
+      FemboyFans.config.reports_server
     end
 
     def report_key
@@ -805,7 +801,7 @@ module PawsMovin
     end
 
     def method_missing(method, *)
-      var = ENV.fetch("PAWSMOVIN_#{method.to_s.upcase.chomp('?')}", nil)
+      var = ENV.fetch("FEMBOYFANS_#{method.to_s.upcase.chomp('?')}", nil)
 
       if var.present?
         env_to_boolean(method, var)

@@ -60,13 +60,13 @@ Rails.application.configure do
 
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address:              PawsMovin.config.smtp_address,
-    port:                 PawsMovin.config.smtp_port,
-    domain:               PawsMovin.config.smtp_domain,
-    user_name:            PawsMovin.config.smtp_username,
-    password:             PawsMovin.config.smtp_password,
-    authentication:       PawsMovin.config.smtp_authentication,
-    enable_starttls_auto: PawsMovin.config.smtp_tls,
+    address:              FemboyFans.config.smtp_address,
+    port:                 FemboyFans.config.smtp_port,
+    domain:               FemboyFans.config.smtp_domain,
+    user_name:            FemboyFans.config.smtp_username,
+    password:             FemboyFans.config.smtp_password,
+    authentication:       FemboyFans.config.smtp_authentication,
+    enable_starttls_auto: FemboyFans.config.smtp_tls,
     open_timeout:         5,
     read_timeout:         5,
   }

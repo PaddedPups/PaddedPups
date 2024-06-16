@@ -27,7 +27,7 @@ class PostVideoConversionJob < ApplicationJob
 
   def move_videos(post, samples)
     md5 = post.md5
-    sm = PawsMovin.config.storage_manager
+    sm = FemboyFans.config.storage_manager
     samples.each do |name, named_samples|
       next if name == :original
       webm_path = sm.file_path(md5, "webm", :scaled, protected: post.is_deleted?, scale_factor: name.to_s)
@@ -43,7 +43,7 @@ class PostVideoConversionJob < ApplicationJob
 
   def generate_video_samples(post)
     outputs = {}
-    PawsMovin.config.video_rescales.each do |size, dims|
+    FemboyFans.config.video_rescales.each do |size, dims|
       next if post.image_width <= dims[0] && post.image_height <= dims[1]
       scaled_dims = post.scaled_sample_dimensions(dims)
       outputs[size] = generate_scaled_video(post.file_path, scaled_dims)
@@ -92,7 +92,7 @@ class PostVideoConversionJob < ApplicationJob
       "-map_metadata",
       "-1",
       "-metadata",
-      'title="pawsmov.in_preview_quality_conversion,_visit_site_for_full_quality_download"',
+      'title="femboy.fan_preview_quality_conversion,_visit_site_for_full_quality_download"',
       webm_file.path,
     ]
     mp4_args = [
@@ -121,7 +121,7 @@ class PostVideoConversionJob < ApplicationJob
       "-map_metadata",
       "-1",
       "-metadata",
-      'title="pawsmov.in_preview_quality_conversion,_visit_site_for_full_quality_download"',
+      'title="femboy.fan_preview_quality_conversion,_visit_site_for_full_quality_download"',
       "-movflags",
       "+faststart",
       mp4_file.path,
@@ -139,7 +139,7 @@ class PostVideoConversionJob < ApplicationJob
     if format != :webm
       args += mp4_args
     end
-    stdout, stderr, status = Open3.capture3(PawsMovin.config.ffmpeg_path, *args)
+    stdout, stderr, status = Open3.capture3(FemboyFans.config.ffmpeg_path, *args)
 
     unless status == 0
       logger.warn("[FFMPEG TRANSCODE STDOUT] #{stdout.chomp}")

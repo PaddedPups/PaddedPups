@@ -15,21 +15,21 @@ HoverZoom.init = function(shiftRequired, stickyShift, playAudio) {
 
 HoverZoom.init_listeners = function() {
   $(document)
-    .off("scroll.pawsmovin.zoom")
-    .off("keydown.pawsmovin.zoom")
-    .off("keyup.pawsmovin.zoom")
-    .off("mousemove.pawsmovin.zoom");
+    .off("scroll.femboyfans.zoom")
+    .off("keydown.femboyfans.zoom")
+    .off("keyup.femboyfans.zoom")
+    .off("mousemove.femboyfans.zoom");
 
   $(window)
-    .off("blur.pawsmovin.zoom")
-    .off("contextmenu.pawsmovin.zoom");
+    .off("blur.femboyfans.zoom")
+    .off("contextmenu.femboyfans.zoom");
 
   $("#page")
-    .off("mouseenter.pawsmovin.zoom", ".post-preview, div.post-thumbnail")
-    .off("mouseleave.pawsmovin.zoom", ".post-preview, div.post-thumbnail");
+    .off("mouseenter.femboyfans.zoom", ".post-preview, div.post-thumbnail")
+    .off("mouseleave.femboyfans.zoom", ".post-preview, div.post-thumbnail");
 
   let throttle = false;
-  $(document).on("mousemove.pawsmovin.zoom", (event) => {
+  $(document).on("mousemove.femboyfans.zoom", (event) => {
     if(throttle) return;
     throttle = true;
     setTimeout(() => { throttle = false }, 25);
@@ -41,7 +41,7 @@ HoverZoom.init_listeners = function() {
 
   let scrolling = false;
   $("#page")
-    .on("mouseenter.pawsmovin.zoom", ".post-preview, div.post-thumbnail", (event) => {
+    .on("mouseenter.femboyfans.zoom", ".post-preview, div.post-thumbnail", (event) => {
       if (scrolling) return;
 
       const ref = $(event.currentTarget)
@@ -53,7 +53,7 @@ HoverZoom.init_listeners = function() {
         HoverZoom.emit("zoom.start", { post: post.id, pageX: this.pageX, pageY: this.pageY });
       }, 0);
     })
-    .on("mouseleave.pawsmovin.zoom", ".post-preview, div.post-thumbnail", (event) => {
+    .on("mouseleave.femboyfans.zoom", ".post-preview, div.post-thumbnail", (event) => {
       const ref = $(event.currentTarget);
       ref.removeAttr("data-hovering");
 
@@ -63,7 +63,7 @@ HoverZoom.init_listeners = function() {
     });
 
   let scrollTimer = 0;
-  $(document).on("scroll.pawsmovin.zoom", (event) => {
+  $(document).on("scroll.femboyfans.zoom", (event) => {
     if(scrollTimer) {
       clearTimeout(scrollTimer);
     }
@@ -74,26 +74,26 @@ HoverZoom.init_listeners = function() {
 
   if(!HoverZoom.shiftRequired) return;
   $(document)
-    .on("keydown.pawsmovin.zoom", (event) => {
+    .on("keydown.femboyfans.zoom", (event) => {
       if (HoverZoom.shiftPressed || event.originalEvent.key !== "Shift") return;
       HoverZoom.shiftPressed = true;
       for (const element of $("[data-hovering=true]")) {
         const ref = $(element);
-        ref.find("img").trigger("mouseenter.pawsmovin.zoom");
+        ref.find("img").trigger("mouseenter.femboyfans.zoom");
       }
     })
-    .on("keyup.pawsmovin.zoom", (event) => {
+    .on("keyup.femboyfans.zoom", (event) => {
       if (!HoverZoom.shiftPressed || event.originalEvent.key !== "Shift") return;
       HoverZoom.shiftPressed = false;
       if(!HoverZoom.stickyShift) resetOnUnshift();
     });
 
   $(window)
-    .on("blur.pawsmovin.zoom", () => {
+    .on("blur.femboyfans.zoom", () => {
       HoverZoom.shiftPressed = false;
       if(!HoverZoom.stickyShift) resetOnUnshift();
     })
-    .on("contextmenu.pawsmovin.zoom", () => {
+    .on("contextmenu.femboyfans.zoom", () => {
       HoverZoom.shiftPressed = false;
       if(!HoverZoom.stickyShift) resetOnUnshift();
     });
@@ -299,13 +299,13 @@ HoverZoom.post_from_element = function(element) {
       urls = {
         preview: element.attr("data-preview-url")
           ? element.attr("data-preview-url")
-          : `https://static.pawsmov.in/preview/${md5.substr(0, 2)}/${md5.substr(2, 2)}/${md5}.webp`,
+          : `https://static.femboy.fan/preview/${md5.substr(0, 2)}/${md5.substr(2, 2)}/${md5}.webp`,
         sample: element.attr("data-large-file-url")
           ? element.attr("data-large-file-url")
           : ((width < 850 || height < 850 || ext === "gif")
-            ? `https://static.pawsmov.in/${md5.substr(0, 2)}/${md5.substr(2, 2)}/${md5}.${ext}`
-            : `https://static.pawsmov.in/sample/${md5.substr(0, 2)}/${md5.substr(2, 2)}/${md5}.webp`),
-        original: `https://static.pawsmov.in/${md5.substr(0, 2)}/${md5.substr(2, 2)}/${md5}.${ext}`,
+            ? `https://static.femboy.fan/${md5.substr(0, 2)}/${md5.substr(2, 2)}/${md5}.${ext}`
+            : `https://static.femboy.fan/sample/${md5.substr(0, 2)}/${md5.substr(2, 2)}/${md5}.webp`),
+        original: `https://static.femboy.fan/${md5.substr(0, 2)}/${md5.substr(2, 2)}/${md5}.${ext}`,
       };
     }
   }

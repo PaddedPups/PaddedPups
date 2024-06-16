@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class PostSet < ApplicationRecord
-  array_attribute :post_ids, parse: %r{(?:https://pawsmov\.in/posts/)?(\d+)}i, cast: :to_i
+  array_attribute :post_ids, parse: %r{(?:https://femboy\.fan/posts/)?(\d+)}i, cast: :to_i
 
   has_many :post_set_maintainers, dependent: :destroy do
     def in_cooldown(user)
@@ -29,7 +29,7 @@ class PostSet < ApplicationRecord
   validates :shortname, length: { minimum: 3, maximum: 50, message: "must be between three and fifty characters long" }
   validates :shortname, format: { with: /\A[\w]+\z/, message: "must only contain numbers, lowercase letters, and underscores" }
   validates :shortname, format: { with: /\A\d*[a-z_][\w]*\z/, message: "must contain at least one lowercase letter or underscore" }
-  validates :description, length: { maximum: PawsMovin.config.pool_descr_max_size }
+  validates :description, length: { maximum: FemboyFans.config.pool_descr_max_size }
   validate :validate_number_of_posts
   validate :can_make_public, if: :is_public_changed?
   validate :set_per_hour_limit, on: :create

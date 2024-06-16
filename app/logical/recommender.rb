@@ -7,7 +7,7 @@ module Recommender
   MIN_USER_FAVS = 50
 
   def enabled?
-    PawsMovin.config.recommender_server.present?
+    FemboyFans.config.recommender_server.present?
   end
 
   def available_for_post?(post)
@@ -19,14 +19,14 @@ module Recommender
   end
 
   def recommend_for_user(user, tags: nil, limit: 50)
-    response = Faraday.new(PawsMovin.config.faraday_options).get("#{PawsMovin.config.recommender_server}/recommend/#{user.id}?limit=#{limit}")
+    response = Faraday.new(FemboyFans.config.faraday_options).get("#{FemboyFans.config.recommender_server}/recommend/#{user.id}?limit=#{limit}")
     return [] unless response.success?
 
     process_recs(JSON.parse(response.body), tags: tags, uploader: user, favoriter: user)
   end
 
   def recommend_for_post(post, tags: nil, limit: 50)
-    response = Faraday.new(PawsMovin.config.faraday_options).get("#{PawsMovin.config.recommender_server}/similar/#{post.id}?limit=#{limit}")
+    response = Faraday.new(FemboyFans.config.faraday_options).get("#{FemboyFans.config.recommender_server}/similar/#{post.id}?limit=#{limit}")
     return [] unless response.success?
 
     process_recs(JSON.parse(response.body), ogpost: post, tags: tags)
@@ -39,13 +39,13 @@ module Recommender
   # training_time: string (00:00:00)
   # user_count: int
   def metrics
-    response = Faraday.new(PawsMovin.config.faraday_options).get("#{PawsMovin.config.recommender_server}/metrics")
+    response = Faraday.new(FemboyFans.config.faraday_options).get("#{FemboyFans.config.recommender_server}/metrics")
     JSON.parse(response.body)
   end
 
   def train!
     return if Rails.env.test?
-    Faraday.new(PawsMovin.config.faraday_options).put("#{PawsMovin.config.recommender_server}/train")
+    Faraday.new(FemboyFans.config.faraday_options).put("#{FemboyFans.config.recommender_server}/train")
   end
 
   def process_recs(recs, ogpost: nil, uploader: nil, favoriter: nil, tags: nil)

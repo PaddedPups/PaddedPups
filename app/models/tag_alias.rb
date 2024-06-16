@@ -243,7 +243,7 @@ class TagAlias < TagRelationship
   end
 
   def ensure_category_consistency
-    return if consequent_tag.post_count > PawsMovin.config.alias_category_change_cutoff # Don't change category of large established tags.
+    return if consequent_tag.post_count > FemboyFans.config.alias_category_change_cutoff # Don't change category of large established tags.
     return if consequent_tag.is_locked? # Prevent accidentally changing tag type if category locked.
     return if consequent_tag.category != TagCategory.general # Don't change the already existing category of the target tag
     return if antecedent_tag.category == TagCategory.general # Don't set the target tag to general

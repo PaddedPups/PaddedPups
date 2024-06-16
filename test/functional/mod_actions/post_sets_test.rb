@@ -17,7 +17,7 @@ module ModActions
       end
 
       should "format set_change_visibility correctly" do
-        PawsMovin.config.stubs(:disable_age_checks?).returns(true)
+        FemboyFans.config.stubs(:disable_age_checks?).returns(true)
         @set.update!(is_public: true)
 
         assert_matches(

@@ -1,14 +1,14 @@
 openapi: "3.1.0"
 info:
-  title: "PawsMovin"
+  title: "FemboyFans"
   version: "1"
-  termsOfService: "https://pawsmov.in/static/terms_of_service"
+  termsOfService: "https://femboy.fan/static/terms_of_service"
   license:
     name: MIT
     url: "https://opensource.org/licenses/MIT"
 
 servers:
-  - url: "https://pawsmov.in"
+  - url: "https://femboy.fan"
     description: "Production Server"
   - url: "http://localhost:3001"
     description: "Development server"
@@ -3647,7 +3647,7 @@ paths:
                             - type: string
                             - type: number
                         examples:
-                          - [["pawsmov.in", 1], ["furaffinity.net", 1]]
+                          - [["femboy.fan", 1], ["furaffinity.net", 1]]
         404:
           $ref: "#/components/responses/NotFound"
     patch:
@@ -7448,7 +7448,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Post"
-  /popular/views.json:
+  /popular/followed_tags.json:
     get:
       summary: List Most Followed Tags
       tags:
@@ -10913,7 +10913,7 @@ paths:
         - $ref: "#/components/parameters/page"
         - $ref: "#/components/parameters/id"
         - name: search[ip_addr]
-        - in: query
+          in: query
           description: Must be Owner+ to use. See [postgres' documentation](https://www.postgresql.org/docs/9.3/functions-net.html) for information on how this is parsed. Specifically, "is contained within or equals" (`<<=`).
           schema:
             type: string
@@ -11413,6 +11413,7 @@ paths:
         403:
           $ref: "#/components/responses/AccessDenied"
         412:
+          description: Precondition Failed
           content:
             application/json:
               type: object

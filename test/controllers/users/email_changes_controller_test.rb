@@ -6,7 +6,7 @@ module Users
   class EmailChangesControllerTest < ActionDispatch::IntegrationTest
     context "in all cases" do
       setup do
-        PawsMovin.config.stubs(:enable_email_verification?).returns(true)
+        FemboyFans.config.stubs(:enable_email_verification?).returns(true)
         @user = create(:user, email: "bob@ogres.net")
       end
 

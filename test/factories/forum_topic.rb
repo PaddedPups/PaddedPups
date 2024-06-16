@@ -5,7 +5,7 @@ FactoryBot.define do
     sequence(:title) { |n| "forum_topic_title_#{n}" }
     is_sticky { false }
     is_locked { false }
-    category_id { PawsMovin.config.alias_implication_forum_category }
+    category_id { FemboyFans.config.alias_implication_forum_category }
 
     creator_ip_addr { "127.0.0.1" }
 

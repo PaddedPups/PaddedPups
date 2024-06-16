@@ -4,8 +4,8 @@
   <p>You must be logged in to view this image. <%= link_to "(learn more)", help_page_path(id: "global_blacklist") %></p>
 <% elsif post.safeblocked? -%>
   <%# TODO: convert name & url to config option %>
-  <p>This image is unavailable in safe mode (<%= PawsMovin.config.app_name %>). Go
-    to <%= link_to("PawsMovin", "https://pawsmov.in/posts/#{post.id}") %> or disable safe mode to view
+  <p>This image is unavailable in safe mode (<%= FemboyFans.config.app_name %>). Go
+    to <%= link_to("FemboyFans", "https://femboy.fan/posts/#{post.id}") %> or disable safe mode to view
     (<%= link_to("learn more", help_page_path(id: "user_settings")) -%>).</p>
 <% elsif post.is_video? -%>
   <%= render("posts/partials/show/video", post: post) -%>

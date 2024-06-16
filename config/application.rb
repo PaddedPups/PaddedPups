@@ -23,7 +23,7 @@ Bundler.require(*Rails.groups)
 require_relative "default_config"
 require_relative "local_config"
 
-module PawsMovin
+module FemboyFans
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults(7.1)
@@ -42,8 +42,8 @@ module PawsMovin
     config.force_ssl = true
     config.active_job.queue_adapter = :sidekiq
 
-    if Rails.env.production? && PawsMovin.config.ssl_options.present?
-      config.ssl_options = PawsMovin.config.ssl_options
+    if Rails.env.production? && FemboyFans.config.ssl_options.present?
+      config.ssl_options = FemboyFans.config.ssl_options
     else
       config.ssl_options = {
         hsts:           false,
@@ -54,7 +54,7 @@ module PawsMovin
 
     config.after_initialize do
       Rails.application.routes.default_url_options = {
-        host: PawsMovin.config.hostname,
+        host: FemboyFans.config.hostname,
       }
     end
 

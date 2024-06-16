@@ -3,10 +3,10 @@
 def cache_store
   if Rails.env.test?
     [:memory_store, { size: 32.megabytes }]
-  elsif PawsMovin.config.disable_cache_store?
+  elsif FemboyFans.config.disable_cache_store?
     :null_store
   else
-    [:mem_cache_store, PawsMovin.config.memcached_servers, { namespace: PawsMovin.config.safe_app_name }]
+    [:mem_cache_store, FemboyFans.config.memcached_servers, { namespace: FemboyFans.config.safe_app_name }]
   end
 end
 
