@@ -12,10 +12,10 @@ class EmailsController < ApplicationController
     raise(User::PrivilegeError, "Must be logged in to resend verification email.") if CurrentUser.is_anonymous?
     raise(User::PrivilegeError, "Account already active.") if CurrentUser.is_verified?
     raise(User::PrivilegeError, "Cannot send confirmation because the email is not allowed.") if EmailBlacklist.is_banned?(CurrentUser.user.email)
-    if RateLimiter.check_limit("emailconfirm:#{CurrentUser.id}", 1, 12.hours)
-      raise(User::PrivilegeError, "Confirmation email sent too recently. Please wait at least 12 hours between sends.")
+    if RateLimiter.check_limit("emailconfirm:#{CurrentUser.id}", 1, 10.minutes)
+      raise(User::PrivilegeError, "Confirmation email sent too recently. Please wait at least 10 minutes between sends.")
     end
-    RateLimiter.hit("emailconfirm:#{CurrentUser.id}", 12.hours)
+    RateLimiter.hit("emailconfirm:#{CurrentUser.id}", 10.minutes)
 
     Users::EmailConfirmationMailer.confirmation(CurrentUser.user).deliver_now
     redirect_to(home_users_path, notice: "Activation email resent")

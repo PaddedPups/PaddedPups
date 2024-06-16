@@ -20,7 +20,6 @@ x-environment: &common-env
   SESSION_SECRET_KEY: 44b4f44e9f253c406cbe727d403d500c1cecff943e4d2aea8f5447f28846fffe
   # Hide annoying output from libvips on corrupt files
   VIPS_WARNING: "0"
-  DD_TRACE_STARTUP_LOGS: false
 
 x-depends-on: &common-depends-on
   opensearch:
@@ -167,7 +166,7 @@ services:
   # Discord integration
 
   discordbot:
-    image: ghcr.io/femboyfans/discordbot:e6399ccd58835762980b3edaedb06b981679f4df
+    image: ghcr.io/femboyfans/discordbot:db89701ea31ff810059fa222cf44f35484c30149
     environment:
       DISCORD_TOKEN: ${DISCORDBOT_DISCORD_TOKEN-}
       DISCORD_ID: ${DISCORDBOT_DISCORD_ID-}
