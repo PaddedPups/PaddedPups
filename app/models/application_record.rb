@@ -321,7 +321,7 @@ class ApplicationRecord < ActiveRecord::Base
         self.mentionable_notified_mentions_column = options[:notified_mentions_column] || "notified_mentions"
         self.mentionable_creator_column = options[:user_column] || "creator_id"
 
-        class_eval do
+        class_eval do # rubocop:disable Metrics/BlockLength
           after_save(:update_mentions, if: :should_update_mentions?)
 
           define_method(:should_update_mentions?) do

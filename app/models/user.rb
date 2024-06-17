@@ -963,7 +963,6 @@ class User < ApplicationRecord
 
   module FollowerMethods
     def tag_followed?(tag)
-      return false # TODO: revert
       tag = tag.name if tag.is_a?(Tag)
       if tag.to_s =~ /\A\d+\z/
         followed_tags.joins(:tag).exists?(tag: { id: tag })

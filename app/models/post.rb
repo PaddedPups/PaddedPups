@@ -2016,6 +2016,10 @@ class Post < ApplicationRecord
     AvoidPosting.active.where(artist_name: artist_tags.map(&:name))
   end
 
+  def followed_tags(user)
+    user.followed_tags.where(tag: tags)
+  end
+
   def download_filename
     name = id.to_s
     artists = typed_tags(TagCategory.artist)

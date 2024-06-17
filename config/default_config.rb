@@ -11,7 +11,7 @@ module FemboyFans
     end
 
     def description
-      "The freshest set of femboys you can find."
+      "Your one-stop shop for femboy furries."
     end
 
     def domain

@@ -8,7 +8,7 @@
   <%= render "posts/partials/index/blacklist" %>
 
   <section id="tag-list">
-    <%= @post.presenter.post_show_sidebar_tag_list_html(current_query: params[:q], highlighted_tags: @post.uploader_linked_artists.map(&:name)) %>
+    <%= @post.presenter.post_show_sidebar_tag_list_html(current_query: params[:q], highlighted_tags: @post.uploader_linked_artists.map(&:name), followed_tags: @post.followed_tags(CurrentUser.user).map(&:tag_name)) %>
   </section>
 
   <section id="post-information">

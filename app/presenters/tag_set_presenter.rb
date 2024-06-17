@@ -17,12 +17,12 @@ class TagSetPresenter < Presenter
     @tag_names = tag_names
   end
 
-  def post_index_sidebar_tag_list_html(current_query: "")
+  def post_index_sidebar_tag_list_html(followed_tags:, current_query: "")
     html = +""
     if ordered_tags.present?
       html += "<ul>"
       ordered_tags.each do |tag|
-        html << build_list_item(tag, current_query: current_query)
+        html << build_list_item(tag, current_query: current_query, followed: followed_tags.include?(tag.name))
       end
       html += "</ul>"
     end
@@ -30,7 +30,7 @@ class TagSetPresenter < Presenter
     html.html_safe
   end
 
-  def post_show_sidebar_tag_list_html(highlighted_tags:, current_query: "")
+  def post_show_sidebar_tag_list_html(highlighted_tags:, followed_tags:, current_query: "")
     html = +""
 
     TagCategory::SPLIT_HEADER_LIST.each do |category|
@@ -40,7 +40,7 @@ class TagSetPresenter < Presenter
       html += %(<h2 class="#{category}-tag-list-header tag-list-header" data-category="#{category}">#{TagCategory.get(category).header}</h2>)
       html += %(<ul class="#{category}-tag-list">)
       typetags.each do |tag|
-        html += build_list_item(tag, current_query: current_query, highlight: highlighted_tags.include?(tag.name))
+        html += build_list_item(tag, current_query: current_query, highlight: highlighted_tags.include?(tag.name), followed: followed_tags.include?(tag.name))
       end
       html << "</ul>"
     end
@@ -124,7 +124,7 @@ class TagSetPresenter < Presenter
     end
   end
 
-  def build_list_item(tag, current_query: "", highlight: false)
+  def build_list_item(tag, current_query: "", highlight: false, followed: false)
     name = tag.name
     count = tag.post_count
     category = tag.category
@@ -163,8 +163,10 @@ class TagSetPresenter < Presenter
     html += %(</span>)
 
     html += %(<div class="tag-actions" data-tag="#{tag.name}">)
-    html += %(<span class="tag-action-blacklist"><a href="#" class="blacklist-tag-toggle" title="Blacklist Tag"><i class='fas fa-times'></i></a></span>)
-    html += %(<span class="tag-action-follow"><a href="#" class="follow-button-minor" title="Follow Tag" data-followed="#{CurrentUser.user.tag_followed?(tag)}"></a></span>)
+    if CurrentUser.user.is_member?
+      html += %(<span class="tag-action-blacklist"><a href="#" class="blacklist-tag-toggle" title="Blacklist Tag"><i class='fas fa-times'></i></a></span>)
+      html += %(<span class="tag-action-follow"><a href="#" class="follow-button-minor" title="Follow Tag" data-followed="#{followed}"></a></span>)
+    end
     html += %(</div>)
 
     html += "</li>"
