@@ -9,6 +9,7 @@
     data-is-sticky="<%= comment.is_sticky %>"
     data-creator-id="<%= comment.creator_id %>"
     data-is-deleted="<%= comment.is_hidden? %>"
+    data-is-spam="<%= comment.is_spam? %>"
   >
 
     <div class="comment-avatar">
@@ -17,13 +18,42 @@
     </div>
 
     <div class="comment-info">
+      <div class="comment-info-left">
       <span class="comment-said">
         <%= link_to_user comment.creator %> said <%= link_to time_ago_in_words_tagged(comment.created_at), post_path(id: comment.post_id, anchor: "comment-#{comment.id}") %>
       </span>
-      <%= comment_edited_notice(comment) %>
-      <% if policy(comment).can_see_ip_addr? %>
-        <span class="comment-ip"><%= link_to_ip comment.creator_ip_addr %></span>
-      <% end %>
+        <%= comment_edited_notice(comment) %>
+      </div>
+
+      <div class="comment-info-right">
+        <% if policy(comment).can_see_ip_addr? %>
+          <li><%= link_to_ip comment.creator_ip_addr %></li>
+        <% end %>
+        <% if comment.is_spam? %>
+          <% if policy(comment).can_see_ip_addr? %>
+            <li class="dot"></li>
+          <% end %>
+          <li>
+            <% if comment.spam_ticket.present? %>
+              <% sign = '<i class="spam-comment fa-solid fa-triangle-exclamation" title="This comment has been detected as potential spam."></i>'.html_safe %>
+              <% if CurrentUser.user.is_moderator? %>
+                <%= link_to(sign, ticket_path(comment.spam_ticket)) %>
+              <% else %>
+                <%= sign %>
+              <% end %>
+            <% else %>
+              <i class="spam-comment fa-solid fa-triangle-exclamation" title="This comment has been marked as spam."></i>
+            <% end %>
+          </li>
+          <% if policy(comment).mark_not_spam? %>
+            <li class="dot"></li>
+            <li><%= link_to("Mark Not Spam", "", class: "comment-mark-not-spam-link item-mark-not-spam", data: { "item-route": "comments", "item-id": comment.id }) %></li>
+          <% end %>
+        <% elsif policy(comment).mark_spam? %>
+          <li class="dot"></li>
+          <li><%= link_to("Mark Spam", "", class: "comment-mark-spam-link item-mark-spam", data: { "item-route": "comments", "item-id": comment.id }) %></li>
+        <% end %>
+      </div>
     </div>
 
     <div class="comment-body dtext-container">

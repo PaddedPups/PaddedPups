@@ -17,6 +17,14 @@ class DmailPolicy < ApplicationPolicy
     unbanned? && (!record.is_a?(Dmail) || record.owner_id == user.id)
   end
 
+  def mark_spam?
+    user.is_moderator? && (!record.is_a?(Dmail) || record.visible_to?(user))
+  end
+
+  def mark_not_spam?
+    user.is_moderator? && (!record.is_a?(Dmail) || record.visible_to?(user))
+  end
+
   def mark_as_read?
     unbanned? && (!record.is_a?(Dmail) || record.owner_id == user.id)
   end

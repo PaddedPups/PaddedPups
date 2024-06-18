@@ -10,11 +10,13 @@ class ForumPost < ApplicationRecord
   belongs_to :topic, class_name: "ForumTopic"
   belongs_to :warning_user, class_name: "User", optional: true
   has_many :votes, class_name: "ForumPostVote"
+  has_many :tickets, as: :model
   has_one :tag_alias
   has_one :tag_implication
   has_one :bulk_update_request
   belongs_to :tag_change_request, polymorphic: true, optional: true
   before_validation :initialize_is_hidden, on: :create
+  before_create :auto_report_spam
   after_create :update_topic_updated_at_on_create
   before_destroy :validate_topic_is_unlocked
   after_destroy :update_topic_updated_at_on_destroy
@@ -266,5 +268,30 @@ class ForumPost < ApplicationRecord
 
   def edited_at
     versions.edited.last&.created_at
+  end
+
+  def auto_report_spam
+    if SpamDetector.new(self, user_ip: creator_ip_addr.to_s).spam?
+      self.is_spam = true
+      tickets << Ticket.new(creator: User.system, creator_ip_addr: "127.0.0.1", reason: "Spam.")
+    end
+  end
+
+  def mark_spam!
+    return if is_spam?
+    update!(is_spam: true)
+    return if spam_ticket.present?
+    SpamDetector.new(self, user_ip: creator_ip_addr.to_s).spam!
+  end
+
+  def mark_not_spam!
+    return unless is_spam?
+    update!(is_spam: false)
+    return if spam_ticket.blank?
+    SpamDetector.new(self, user_ip: creator_ip_addr.to_s).ham!
+  end
+
+  def spam_ticket
+    tickets.where(creator: User.system, reason: "Spam.").first
   end
 end

@@ -196,18 +196,47 @@ article.comment div.comment-info {
     top: 0.5rem;
   }
 
-  span.comment-edited-when {
-    color: var(--color-text-muted);
-    font-size: 85%;
+  .comment-info-left {
+    span.comment-edited-when {
+      color: var(--color-text-muted);
+      font-size: 85%;
 
-    &::before {
-      content: "•";
-      padding: 0 0.25rem;
+      &::before {
+        content: "•";
+        padding: 0 0.25rem;
+      }
     }
   }
 
-  span.comment-ip {
+  .comment-info-right {
     margin-left: auto;
+    display: flex;
+
+    li {
+      display: block;
+      padding: 0.1rem 0.25rem;
+
+      a {
+        white-space: nowrap;
+      }
+
+      &.dot {
+        align-self: center;
+
+        &::after {
+          content: "";
+          display: block;
+          width: 4px;
+          height: 4px;
+          background: var(--color-text-muted);
+          border-radius: 2px;
+        }
+      }
+
+      .spam-comment {
+        color: goldenrod;
+      }
+    }
   }
 }
 

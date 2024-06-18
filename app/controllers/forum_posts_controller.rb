@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ForumPostsController < ApplicationController
-  before_action :load_post, only: %i[edit show update destroy hide unhide warning]
+  before_action :load_post, only: %i[edit show update destroy hide unhide warning mark_spam mark_not_spam]
   respond_to :html, :json
   skip_before_action :api_check
 
@@ -75,11 +75,28 @@ class ForumPostsController < ApplicationController
     else
       @forum_post.user_warned!(params[:record_type], CurrentUser.user)
     end
-    html = render_to_string(partial: "forum_posts/forum_post", locals: { forum_post: @forum_post, original_forum_post_id: @forum_post.topic.original_post.id }, formats: [:html])
-    render(json: { html: html, posts: deferred_posts })
+    respond_with_html_after_update
+  end
+
+  def mark_spam
+    authorize(@forum_post)
+    @forum_post.mark_spam!
+    respond_with_html_after_update
+  end
+
+  def mark_not_spam
+    authorize(@forum_post)
+    @forum_post.mark_not_spam!
+    respond_with_html_after_update
   end
 
   private
+
+  def respond_with_html_after_update
+    @forum_topic = @forum_post.topic
+    html = render_to_string(partial: "forum_posts/forum_post", locals: { forum_post: @forum_post, original_forum_post_id: @forum_post.topic.original_post.id }, formats: [:html])
+    render(json: { html: html, posts: deferred_posts })
+  end
 
   def load_post
     @forum_post = ForumPost.includes(topic: %i[category]).find(params[:id])

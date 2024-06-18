@@ -5,7 +5,7 @@ class Ban < ApplicationRecord
 
   before_validation :initialize_banner_id, on: :create
   before_validation :initialize_permaban, on: %i[update create]
-  after_create :create_feedback
+  before_create :create_feedback
   after_create :update_user_on_create
   after_create :log_create
   after_update :log_update
@@ -56,7 +56,7 @@ class Ban < ApplicationRecord
   end
 
   def initialize_permaban
-    if is_permaban == "1"
+    if is_permaban.to_s.truthy?
       self.duration = -1
     end
   end
@@ -137,7 +137,7 @@ class Ban < ApplicationRecord
 
   def create_feedback
     time = expires_at.nil? ? "permanently" : "for #{humanized_duration}"
-    user.feedback.create(category: "negative", body: "Banned #{time}: #{reason}")
+    user.feedback.create!(category: "negative", body: "Banned #{time}: #{reason}")
   end
 
   module LogMethods

@@ -486,6 +486,7 @@ components:
         - is_sticky
         - warning_type
         - warning_user_id
+        - is_spam
         - mentions
         - creator_name
         - updater_name
@@ -523,6 +524,8 @@ components:
             - ban
         warning_user_id:
           type: ["number", "null"]
+        is_spam:
+          type: boolean
         mentions:
           type: array
           items:
@@ -681,6 +684,7 @@ components:
         - body
         - is_read
         - is_deleted
+        - is_spam
         - created_at
         - updated_at
       properties:
@@ -699,6 +703,8 @@ components:
         is_read:
           type: boolean
         is_deleted:
+          type: boolean
+        is_spam:
           type: boolean
         created_at:
           type: string
@@ -870,6 +876,7 @@ components:
         - warning_user_id
         - tag_change_request_id
         - tag_change_request_type
+        - is_spam
         - mentions
         - creator_name
         - creator_id
@@ -908,6 +915,8 @@ components:
             - BulkUpdateRequest
             - TagAlias
             - TagImplication
+        is_spam:
+          type: boolean
         mentions:
           type: array
           items:
@@ -4739,6 +4748,58 @@ paths:
           $ref: "#/components/responses/AccessDenied"
         404:
           $ref: "#/components/responses/NotFound"
+  /comments/{id}/mark_spam.json:
+    put:
+      summary: Mark Comment As Spam
+      tags:
+        - Comments
+      security:
+        - basicAuth: []
+      description: You must be Moderator+.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the comment.
+          schema:
+            type: number
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DTextResponse"
+        403:
+          $ref: "#/components/responses/AccessDenied"
+        404:
+          $ref: "#/components/responses/NotFound"
+  /comments/{id}/mark_not_spam.json:
+    put:
+      summary: Mark Comment As Not Spam
+      tags:
+        - Comments
+      security:
+        - basicAuth: []
+      description: You must be Moderator+.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the comment.
+          schema:
+            type: number
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DTextResponse"
+        403:
+          $ref: "#/components/responses/AccessDenied"
+        404:
+          $ref: "#/components/responses/NotFound"
   # Comment Votes
   /comments/{id}/votes.json:
     post:
@@ -5071,6 +5132,60 @@ paths:
       responses:
         204:
           description: Success
+        403:
+          $ref: "#/components/responses/AccessDenied"
+        404:
+          $ref: "#/components/responses/NotFound"
+  /dmails/{id}/mark_spam.json:
+    put:
+      summary: Mark DMail Post As Spam
+      tags:
+        - DMails
+      security:
+        - basicAuth: []
+      description: |
+        You must be Moderator+.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the dmail.
+          schema:
+            type: number
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DMail"
+        403:
+          $ref: "#/components/responses/AccessDenied"
+        404:
+          $ref: "#/components/responses/NotFound"
+  /dmails/{id}/mark_not_spam.json:
+    put:
+      summary: Mark DMail As Not Spam
+      tags:
+        - DMails
+      security:
+        - basicAuth: []
+      description: |
+        You must be Moderator+.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the dmail.
+          schema:
+            type: number
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DMail"
         403:
           $ref: "#/components/responses/AccessDenied"
         404:
@@ -5632,6 +5747,60 @@ paths:
             type: number
       requestBody:
         $ref: "#/components/requestBodies/warning"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DTextResponse"
+        403:
+          $ref: "#/components/responses/AccessDenied"
+        404:
+          $ref: "#/components/responses/NotFound"
+  /forum_posts/{id}/mark_spam.json:
+    put:
+      summary: Mark Forum Post As Spam
+      tags:
+        - Forum Posts
+      security:
+        - basicAuth: []
+      description: |
+        You must be Moderator+.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the forum post.
+          schema:
+            type: number
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DTextResponse"
+        403:
+          $ref: "#/components/responses/AccessDenied"
+        404:
+          $ref: "#/components/responses/NotFound"
+  /forum_posts/{id}/mark_not_spam.json:
+    put:
+      summary: Mark Forum Post As Not Spam
+      tags:
+        - Forum Posts
+      security:
+        - basicAuth: []
+      description: |
+        You must be Moderator+.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the forum post.
+          schema:
+            type: number
       responses:
         200:
           description: Success

@@ -257,6 +257,7 @@ GEM
     rainbow (3.1.1)
     raindrops (0.20.1)
     rake (13.1.0)
+    rakismet (1.5.4)
     rdoc (6.6.2)
       psych (>= 4.0.0)
     recaptcha (5.16.0)
@@ -395,6 +396,7 @@ DEPENDENCIES
   pitchfork
   pundit (~> 2.3)
   rails (~> 7.1.0)
+  rakismet (~> 1.5)
   recaptcha
   redis
   request_store

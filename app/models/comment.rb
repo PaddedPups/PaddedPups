@@ -13,6 +13,7 @@ class Comment < ApplicationRecord
   validates :body, presence: { message: "has no content" }
   validates :body, length: { minimum: 1, maximum: FemboyFans.config.comment_max_size }
 
+  before_create :auto_report_spam
   after_create :update_last_commented_at_on_create
   after_update(if: ->(rec) { !rec.saved_change_to_is_hidden? && CurrentUser.id != rec.creator_id }) do |rec|
     ModAction.log!(:comment_update, rec, user_id: rec.creator_id)
@@ -30,6 +31,7 @@ class Comment < ApplicationRecord
   belongs_to :post, counter_cache: :comment_count
   belongs_to :warning_user, class_name: "User", optional: true
   has_many :votes, class_name: "CommentVote", dependent: :destroy
+  has_many :tickets, as: :model
 
   module ApiMethods
     def hidden_attributes
@@ -242,5 +244,30 @@ class Comment < ApplicationRecord
 
   def edited_at
     edited_version&.created_at
+  end
+
+  def auto_report_spam
+    if SpamDetector.new(self, user_ip: creator_ip_addr.to_s).spam?
+      self.is_spam = true
+      tickets << Ticket.new(creator: User.system, creator_ip_addr: "127.0.0.1", reason: "Spam.")
+    end
+  end
+
+  def mark_spam!
+    return if is_spam?
+    update!(is_spam: true)
+    return if spam_ticket.present?
+    SpamDetector.new(self, user_ip: creator_ip_addr.to_s).spam!
+  end
+
+  def mark_not_spam!
+    return unless is_spam?
+    update!(is_spam: false)
+    return if spam_ticket.blank?
+    SpamDetector.new(self, user_ip: creator_ip_addr.to_s).ham!
+  end
+
+  def spam_ticket
+    tickets.where(creator: User.system, reason: "Spam.").first
   end
 end

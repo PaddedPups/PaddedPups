@@ -15,12 +15,14 @@ class Ticket < ApplicationRecord
   validates :report_type, presence: true
   validate :validate_report_type_for_ticket
   enum :status, %i[pending partial approved rejected].index_with(&:to_s)
+  after_create :autoban_accused_user
   after_update :log_update
   after_update :create_dmail
   validate :validate_model_exists, on: :create
   validate :validate_creator_is_not_limited, on: :create
 
   scope :for_creator, ->(uid) { where("creator_id = ?", uid) }
+  scope :automated, -> { for_creator(User.system.id) }
 
   attr_accessor :record_type, :send_update_dmail
 
@@ -330,6 +332,13 @@ class Ticket < ApplicationRecord
       "#{reason[0, 38]}..."
     else
       reason
+    end
+  end
+
+  def autoban_accused_user
+    return if accused.blank?
+    if SpamDetector.is_spammer?(accused)
+      SpamDetector.ban_spammer!(accused)
     end
   end
 

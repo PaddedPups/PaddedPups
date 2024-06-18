@@ -192,15 +192,15 @@ module FemboyFans
     end
 
     def dmail_minute_limit
-      1
+      2
     end
 
     def dmail_limit
-      10
+      30
     end
 
     def dmail_day_limit
-      50
+      60
     end
 
     def tag_suggestion_limit
@@ -744,6 +744,13 @@ module FemboyFans
     end
 
     def report_key
+    end
+
+    def rakismet_key
+    end
+
+    def rakismet_url
+      "https://#{hostname}"
     end
 
     def default_forum_category

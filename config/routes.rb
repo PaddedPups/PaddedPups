@@ -127,12 +127,16 @@ Rails.application.routes.draw do
       put :hide
       put :unhide
       put :warning
+      put :mark_spam
+      put :mark_not_spam
     end
   end
   resources :dmails, only: %i[new create index show destroy] do
     member do
       put :mark_as_read
       put :mark_as_unread
+      put :mark_spam
+      put :mark_not_spam
     end
     collection do
       put :mark_all_as_read
@@ -146,6 +150,8 @@ Rails.application.routes.draw do
       put :hide
       put :unhide
       put :warning
+      put :mark_spam
+      put :mark_not_spam
     end
     collection do
       get :search

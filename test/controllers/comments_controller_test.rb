@@ -166,5 +166,94 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
         assert_equal(0, Comment.where(id: @comment.id).count)
       end
     end
+
+    context "spam" do
+      setup do
+        SpamDetector.stubs(:enabled?).returns(true)
+        stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/comment-check}).to_return(status: 200, body: "true")
+        stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/submit-spam}).to_return(status: 200, body: nil)
+      end
+
+      should "mark spam comments as spam" do
+        SpamDetector.any_instance.stubs(:spam?).returns(true)
+        assert_difference(%w[User.system.tickets.count Comment.count], 1) do
+          post_auth comments_path, @user, params: { comment: { body: "abc", post_id: @post.id } }
+          assert_redirected_to(post_path(@post))
+        end
+        @ticket = User.system.tickets.last
+        @comment = Comment.last
+        assert_equal(@comment, @ticket.model)
+        assert_equal("Spam.", @ticket.reason)
+        assert_equal(true, @comment.is_spam?)
+      end
+
+      should "not mark moderator comments as spam" do
+        # no need to stub anything, it should return false due to Trusted+ bypassing spam checks
+        assert_difference({ "User.system.tickets.count" => 0, "Comment.count" => 1 }) do
+          post_auth comments_path, @mod, params: { comment: { body: "abc", post_id: @post.id } }
+          assert_redirected_to(post_path(@post))
+        end
+        @comment = Comment.last
+        assert_equal(false, @comment.is_spam?)
+      end
+
+      should "auto ban spammers" do
+        SpamDetector.any_instance.stubs(:spam?).returns(true)
+        stub_const(SpamDetector, :AUTOBAN_THRESHOLD, 1) do
+          assert_difference(%w[Ban.count User.system.tickets.count Comment.count], 1) do
+            post_auth comments_path, @user, params: { comment: { body: "abc", post_id: @post.id } }
+            assert_redirected_to(post_path(@post))
+          end
+        end
+        @ticket = User.system.tickets.last
+        @comment = Comment.last
+        assert_equal(@comment, @ticket.model)
+        assert_equal("Spam.", @ticket.reason)
+        assert_equal("Automatically Banned", @ticket.response)
+        assert_equal("approved", @ticket.status)
+        assert_equal(true, @comment.is_spam?)
+        assert_equal(true, @user.reload.is_banned?)
+      end
+
+      context "mark spam action" do
+        should "work and report false negative" do
+          SpamDetector.any_instance.expects(:spam!).times(1)
+          assert_equal(false, @comment.reload.is_spam?)
+          put_auth mark_spam_comment_path(@comment), @mod
+          assert_response(:success)
+          assert_equal(true, @comment.reload.is_spam?)
+        end
+
+        should "work and not report false negative if ticket exists" do
+          SpamDetector.any_instance.expects(:spam!).never
+          User.system.tickets.create!(model: @comment, reason: "Spam.", creator_ip_addr: "127.0.0.1")
+          assert_equal(false, @comment.reload.is_spam?)
+          put_auth mark_spam_comment_path(@comment), @mod
+          assert_response(:success)
+          assert_equal(true, @comment.reload.is_spam?)
+        end
+      end
+
+      context "mark not spam action" do
+        should "work and not report false positive" do
+          SpamDetector.any_instance.expects(:ham!).never
+          @comment.update_column(:is_spam, true)
+          assert_equal(true, @comment.reload.is_spam?)
+          put_auth mark_not_spam_comment_path(@comment), @mod
+          assert_response(:success)
+          assert_equal(false, @comment.reload.is_spam?)
+        end
+
+        should "work and report false positive if ticket exists" do
+          SpamDetector.any_instance.expects(:ham!).times(1)
+          User.system.tickets.create!(model: @comment, reason: "Spam.", creator_ip_addr: "127.0.0.1")
+          @comment.update_column(:is_spam, true)
+          assert_equal(true, @comment.reload.is_spam?)
+          put_auth mark_not_spam_comment_path(@comment), @mod
+          assert_response(:success)
+          assert_equal(false, @comment.reload.is_spam?)
+        end
+      end
+    end
   end
 end

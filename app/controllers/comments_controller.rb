@@ -87,12 +87,28 @@ class CommentsController < ApplicationController
     else
       @comment.user_warned!(params[:record_type], CurrentUser.user)
     end
+    respond_with_html_after_update
+  end
+
+  def mark_spam
+    @comment = authorize(Comment.find(params[:id]))
+    @comment.mark_spam!
+    respond_with_html_after_update
+  end
+
+  def mark_not_spam
+    @comment = authorize(Comment.find(params[:id]))
+    @comment.mark_not_spam!
+    respond_with_html_after_update
+  end
+
+  private
+
+  def respond_with_html_after_update
     @comment_votes = CommentVote.for_comments_and_user([@comment.id], CurrentUser.id)
     html = render_to_string(partial: "comments/partials/show/comment", locals: { comment: @comment, post: nil }, formats: [:html])
     render(json: { html: html, posts: deferred_posts })
   end
-
-  private
 
   def index_by_post
     tags = params[:tags] || ""

@@ -25,6 +25,14 @@ class CommentPolicy < ApplicationPolicy
     user.is_moderator?
   end
 
+  def mark_spam?
+    user.is_moderator?
+  end
+
+  def mark_not_spam?
+    user.is_moderator?
+  end
+
   def destroy?
     user.is_admin?
   end

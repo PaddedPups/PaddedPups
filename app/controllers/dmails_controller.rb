@@ -75,4 +75,18 @@ class DmailsController < ApplicationController
       format.json
     end
   end
+
+  def mark_spam
+    @dmail = authorize(Dmail.find(params[:id]))
+    @dmail.mark_spam!
+    notice("DMail marked as spam")
+    respond_with(@dmail)
+  end
+
+  def mark_not_spam
+    @dmail = authorize(Dmail.find(params[:id]))
+    @dmail.mark_not_spam!
+    notice("DMail marked as not spam")
+    respond_with(@dmail)
+  end
 end

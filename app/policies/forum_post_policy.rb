@@ -29,6 +29,14 @@ class ForumPostPolicy < ApplicationPolicy
     min_level? && user.is_moderator?
   end
 
+  def mark_spam?
+    user.is_moderator?
+  end
+
+  def mark_not_spam?
+    user.is_moderator?
+  end
+
   def min_level?
     return true unless record.is_a?(ForumPost) && record.topic.is_a?(ForumTopic)
     return false unless record.topic.visible?(user)

@@ -40,6 +40,14 @@ div.list-of-forum-posts {
 
         li {
           margin-right: 1em;
+
+          &.spam, &.ip-address {
+            margin-right: 0;
+          }
+
+          &.spam a{
+            color: goldenrod;
+          }
         }
       }
 

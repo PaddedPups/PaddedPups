@@ -12,8 +12,10 @@ class Dmail < ApplicationRecord
   belongs_to :to, class_name: "User"
   belongs_to :from, class_name: "User"
   belongs_to :respond_to, class_name: "User", optional: true
+  has_many :tickets, as: :model
 
   after_initialize :initialize_attributes, if: :new_record?
+  before_create :auto_report_spam
   before_create :auto_read_if_filtered
   after_create :update_recipient
   after_commit :send_email, on: :create, unless: :no_email_notification
@@ -95,6 +97,22 @@ class Dmail < ApplicationRecord
 
     def sent_by(user)
       where(from_id: user.id).and(where.not(owner_id: user.id))
+    end
+
+    def owned_by_id(user_id)
+      where(owner_id: user_id)
+    end
+
+    def owned_by(user)
+      where(owner: user)
+    end
+
+    def not_owned_by_id(user_id)
+      where.not(owner_id: user_id)
+    end
+
+    def not_owned_by(user)
+      where.not(owner: user)
     end
 
     def active
@@ -224,6 +242,14 @@ class Dmail < ApplicationRecord
     from == User.system
   end
 
+  def is_sender?
+    owner == from
+  end
+
+  def is_recipient?
+    owner == to
+  end
+
   def filtered?
     CurrentUser.dmail_filter.try(:filtered?, self) || false
   end
@@ -232,6 +258,32 @@ class Dmail < ApplicationRecord
     if owner_id != from_id && to.dmail_filter.try(:filtered?, self)
       self.is_read = true
     end
+  end
+
+  def auto_report_spam
+    if is_recipient? && !is_sender? && SpamDetector.new(self, user_ip: creator_ip_addr.to_s).spam?
+      self.is_deleted = true
+      self.is_spam = true
+      tickets << Ticket.new(creator: User.system, creator_ip_addr: "127.0.0.1", reason: "Spam.")
+    end
+  end
+
+  def mark_spam!
+    return if is_spam?
+    update!(is_spam: true)
+    return if spam_ticket.present?
+    SpamDetector.new(self, user_ip: creator_ip_addr.to_s).spam!
+  end
+
+  def mark_not_spam!
+    return unless is_spam?
+    update!(is_spam: false)
+    return if spam_ticket.blank?
+    SpamDetector.new(self, user_ip: creator_ip_addr.to_s).ham!
+  end
+
+  def spam_ticket
+    tickets.where(creator: User.system, reason: "Spam.").first
   end
 
   def update_recipient

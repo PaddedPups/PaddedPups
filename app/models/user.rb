@@ -153,13 +153,17 @@ class User < ApplicationRecord
 
   has_many :api_keys, dependent: :destroy
   has_one :dmail_filter
+  has_many :sent_dmails, ->(user) { owned_by(user) }, class_name: "Dmail", foreign_key: "from_id"
+  has_many :received_dmails, ->(user) { owned_by(user) }, class_name: "Dmail", foreign_key: "to_id"
   has_one :recent_ban, -> { order("bans.id desc") }, class_name: "Ban"
   has_many :bans, -> { order("bans.id desc") }
   has_many :dmails, -> { order("dmails.id desc") }, foreign_key: "owner_id"
   has_many :favorites, -> { order(id: :desc) }
   has_many :feedback, class_name: "UserFeedback", dependent: :destroy
+  has_many :comments, foreign_key: "creator_id"
   has_many :forum_posts, -> { order("forum_posts.created_at, forum_posts.id") }, foreign_key: "creator_id"
   has_many :forum_topic_visits
+  has_many :tickets, foreign_key: "creator_id"
   has_many :note_versions, foreign_key: "updater_id"
   has_many :posts, foreign_key: "uploader_id"
   has_many :post_approvals, dependent: :destroy
@@ -492,11 +496,19 @@ class User < ApplicationRecord
   module LimitMethods
     def younger_than(duration)
       return false if FemboyFans.config.disable_age_checks?
+      younger_than!(duration)
+    end
+
+    def younger_than!(duration)
       created_at > duration.ago
     end
 
     def older_than(duration)
       return true if FemboyFans.config.disable_age_checks?
+      older_than!(duration)
+    end
+
+    def older_than!(duration)
       created_at < duration.ago
     end
 
@@ -537,13 +549,13 @@ class User < ApplicationRecord
     create_user_throttle(:comment, -> { FemboyFans.config.member_comment_limit - Comment.for_creator(id).where("created_at > ?", 1.hour.ago).count },
                          :general_bypass_throttle?, 7.days)
     create_user_throttle(:forum_post, -> { FemboyFans.config.member_comment_limit - ForumPost.for_user(id).where("created_at > ?", 1.hour.ago).count },
-                         nil, 3.days)
+                         :general_bypass_throttle?, 3.days)
     create_user_throttle(:dmail_minute, -> { FemboyFans.config.dmail_minute_limit - Dmail.sent_by_id(id).where("created_at > ?", 1.minute.ago).count },
-                         nil, 7.days)
+                         :is_janitor?, 7.days)
     create_user_throttle(:dmail, -> { FemboyFans.config.dmail_limit - Dmail.sent_by_id(id).where("created_at > ?", 1.hour.ago).count },
-                         nil, 7.days)
+                         :is_janitor?, 7.days)
     create_user_throttle(:dmail_day, -> { FemboyFans.config.dmail_day_limit - Dmail.sent_by_id(id).where("created_at > ?", 1.day.ago).count },
-                         nil, 7.days)
+                         :is_janitor?, 7.days)
     create_user_throttle(:comment_vote, -> { FemboyFans.config.comment_vote_limit - CommentVote.for_user(id).where("created_at > ?", 1.hour.ago).count },
                          :general_bypass_throttle?, 3.days)
     create_user_throttle(:post_vote, -> { FemboyFans.config.post_vote_limit - PostVote.for_user(id).where("created_at > ?", 1.hour.ago).count },

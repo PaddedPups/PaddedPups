@@ -159,5 +159,95 @@ class ForumPostsControllerTest < ActionDispatch::IntegrationTest
         assert_equal(false, @forum_post.is_hidden?)
       end
     end
+
+    context "spam" do
+      setup do
+        SpamDetector.stubs(:enabled?).returns(true)
+        stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/comment-check}).to_return(status: 200, body: "true")
+        stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/submit-spam}).to_return(status: 200, body: nil)
+      end
+
+      should "mark spam forum posts as spam" do
+        SpamDetector.any_instance.stubs(:spam?).returns(true)
+        assert_difference("User.system.tickets.count", 1) do
+          assert_difference("ForumPost.count", 1) do
+            post_auth forum_posts_path, @user, params: { forum_post: { body: "abc", topic_id: @forum_topic.id } }
+            @ticket = User.system.tickets.last
+            @forum_post = ForumPost.last
+            assert_redirected_to(forum_topic_path(@forum_topic, page: @forum_topic.last_page, anchor: "forum_post_#{@forum_post.id}"))
+          end
+        end
+        assert_equal(@forum_post, @ticket.model)
+        assert_equal("Spam.", @ticket.reason)
+        assert_equal(true, @forum_post.is_spam?)
+      end
+
+      should "not mark moderator forum posts as spam" do
+        # no need to stub anything, it should return false due to Trusted+ bypassing spam checks
+        assert_difference({ "User.system.tickets.count" => 0, "ForumPost.count" => 1 }) do
+          post_auth forum_posts_path, @mod, params: { forum_post: { body: "abc", topic_id: @forum_topic.id } }
+          @ticket = User.system.tickets.last
+          @forum_post = ForumPost.last
+          assert_redirected_to(forum_topic_path(@forum_topic, page: @forum_topic.last_page, anchor: "forum_post_#{@forum_post.id}"))
+        end
+        @forum_post = ForumPost.last
+        assert_equal(false, @forum_post.is_spam?)
+      end
+
+      should "auto ban spammers" do
+        SpamDetector.any_instance.stubs(:spam?).returns(true)
+        as(User.system) { create_list(:ticket, SpamDetector::AUTOBAN_THRESHOLD - 1, model: @forum_post, reason: "Spam.") }
+        assert_difference(%w[Ban.count User.system.tickets.count ForumPost.count], 1) do
+          post_auth forum_posts_path, @user, params: { forum_post: { body: "abc", topic_id: @forum_topic.id } }
+          @ticket = User.system.tickets.last
+          @forum_post = ForumPost.last
+          assert_redirected_to(forum_topic_path(@forum_topic, page: @forum_topic.last_page, anchor: "forum_post_#{@forum_post.id}"))
+        end
+        assert_equal(@forum_post, @ticket.model)
+        assert_equal("Spam.", @ticket.reason)
+        assert_equal(true, @forum_post.is_spam?)
+        assert_equal(true, @user.reload.is_banned?)
+      end
+
+      context "mark spam action" do
+        should "work and report false negative" do
+          SpamDetector.any_instance.expects(:spam!).times(1)
+          assert_equal(false, @forum_post.reload.is_spam?)
+          put_auth mark_spam_forum_post_path(@forum_post), @mod
+          assert_response(:success)
+          assert_equal(true, @forum_post.reload.is_spam?)
+        end
+
+        should "work and not report false negative if ticket exists" do
+          SpamDetector.any_instance.expects(:spam!).never
+          User.system.tickets.create!(model: @forum_post, reason: "Spam.", creator_ip_addr: "127.0.0.1")
+          assert_equal(false, @forum_post.reload.is_spam?)
+          put_auth mark_spam_forum_post_path(@forum_post), @mod
+          assert_response(:success)
+          assert_equal(true, @forum_post.reload.is_spam?)
+        end
+      end
+
+      context "mark not spam action" do
+        should "work and not report false positive" do
+          SpamDetector.any_instance.expects(:ham!).never
+          @forum_post.update_column(:is_spam, true)
+          assert_equal(true, @forum_post.reload.is_spam?)
+          put_auth mark_not_spam_forum_post_path(@forum_post), @mod
+          assert_response(:success)
+          assert_equal(false, @forum_post.reload.is_spam?)
+        end
+
+        should "work and report false positive if ticket exists" do
+          SpamDetector.any_instance.expects(:ham!).times(1)
+          User.system.tickets.create!(model: @forum_post, reason: "Spam.", creator_ip_addr: "127.0.0.1")
+          @forum_post.update_column(:is_spam, true)
+          assert_equal(true, @forum_post.reload.is_spam?)
+          put_auth mark_not_spam_forum_post_path(@forum_post), @mod
+          assert_response(:success)
+          assert_equal(false, @forum_post.reload.is_spam?)
+        end
+      end
+    end
   end
 end

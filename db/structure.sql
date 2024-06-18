@@ -408,7 +408,8 @@ CREATE TABLE public.comments (
     is_sticky boolean DEFAULT false NOT NULL,
     warning_type integer,
     warning_user_id integer,
-    notified_mentions integer[] DEFAULT '{}'::integer[] NOT NULL
+    notified_mentions integer[] DEFAULT '{}'::integer[] NOT NULL,
+    is_spam boolean DEFAULT false NOT NULL
 );
 
 
@@ -520,7 +521,8 @@ CREATE TABLE public.dmails (
     updated_at timestamp without time zone NOT NULL,
     creator_ip_addr inet NOT NULL,
     key character varying DEFAULT ''::character varying NOT NULL,
-    respond_to_id bigint
+    respond_to_id bigint,
+    is_spam boolean DEFAULT false NOT NULL
 );
 
 
@@ -768,7 +770,8 @@ CREATE TABLE public.forum_posts (
     warning_user_id integer,
     tag_change_request_id bigint,
     tag_change_request_type character varying,
-    notified_mentions integer[] DEFAULT '{}'::integer[] NOT NULL
+    notified_mentions integer[] DEFAULT '{}'::integer[] NOT NULL,
+    is_spam boolean DEFAULT false NOT NULL
 );
 
 
@@ -5188,6 +5191,7 @@ ALTER TABLE ONLY public.staff_notes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20240617181703'),
 ('20240614223206'),
 ('20240614185647'),
 ('20240614154755'),
