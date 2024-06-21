@@ -9,7 +9,7 @@ class RulesController < ApplicationController
     @wiki = WikiPage.find_by(title: "internal:rules_body")
     respond_to do |format|
       format.html
-      format.json { render(json: { rules: @rules, categories: @categories, body: @wiki }) }
+      format.json { render(json: { rules: Rule.order(:category_id, :order), categories: @categories, body: @wiki }) }
     end
   end
 

@@ -293,7 +293,7 @@ Rails.application.routes.draw do
       get :order
       post :reorder
       get :builder
-      resources :categories, controller: "rules/categories", as: "rule_categories" do
+      resources :categories, controller: "rules/categories", as: "rule_categories", except: %i[show] do
         collection do
           get :order
           post :reorder
