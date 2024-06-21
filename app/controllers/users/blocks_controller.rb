@@ -57,7 +57,11 @@ module Users
     end
 
     def load_user
-      @user = User.find(params[:user_id])
+      if params[:user_id] == "current" && !CurrentUser.user.is_anonymous?
+        redirect_to(user_blocks_path(CurrentUser.user))
+      else
+        @user = User.find(params[:user_id])
+      end
     end
   end
 end

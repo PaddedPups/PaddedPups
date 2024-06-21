@@ -516,7 +516,7 @@ module FemboyFans
         {
           name:   "pay_content",
           reason: "Paysite, commercial, or subscription content",
-          text:   "We do not host paysite or commercial content of any kind. This includes Patreon leaks, reposts from piracy websites, and so on.",
+          text:   "We do not host paysite or commercial that is under 2 years old.",
         },
         {
           name:   "trace",
@@ -531,7 +531,7 @@ module FemboyFans
         {
           name:   "real_porn",
           reason: "Real-life pornography",
-          text:   "Posts featuring real-life pornography are not acceptable on this site. No exceptions.\nNote that images featuring non-erotic photographs are acceptable.",
+          text:   "Posts featuring real-life pornography are not acceptable on this site.",
         },
         {
           name:   "corrupt",
