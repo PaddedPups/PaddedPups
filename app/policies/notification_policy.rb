@@ -20,4 +20,8 @@ class NotificationPolicy < ApplicationPolicy
   def mark_all_as_read?
     unbanned?
   end
+
+  def permitted_search_params
+    super + %i[category]
+  end
 end

@@ -191,6 +191,10 @@ x-constants:
   - &notification-categories
     - new_post
     - dmail
+    - mention
+    - feedback_create
+    - feedback_update
+    - feedback_delete
 
 components:
   securitySchemes:
@@ -7207,6 +7211,11 @@ paths:
             enum:
               - id_asc
               - id_desc
+        - name: search[actions]
+          in: query
+          schema:
+            type: string
+            enum: *notification-categories
       responses:
         200:
           description: Success

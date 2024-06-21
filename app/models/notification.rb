@@ -91,4 +91,14 @@ class Notification < ApplicationRecord
     update_column(:is_read, false)
     update_unread_count
   end
+
+  module SearchMethods
+    def search(params)
+      q = super
+      q = q.attribute_matches(:category, Notification.categories.fetch(params[:category], params[:category]).to_s) if params[:category].present?
+      q.apply_basic_order(params)
+    end
+
+    extend SearchMethods
+  end
 end
