@@ -62,7 +62,7 @@ module Recommender
 
   def search(params)
     if params[:user_name].present?
-      user = User.find_by(name: params[:user_name])
+      user = User.find(User.name_to_id(params[:user_name]))
     elsif params[:user_id].present?
       user = User.find(params[:user_id])
     elsif params[:post_id].present?
