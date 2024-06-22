@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/FemboyFans/dtext_rb.git
-  revision: d001482903b801786d4044b5241bba0b240a96f2
+  revision: facbfa596d38305f55f3a9aa52060b2a97df157d
   branch: master
   specs:
     dtext_rb (1.15.4)

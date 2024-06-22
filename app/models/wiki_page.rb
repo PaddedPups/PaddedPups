@@ -5,6 +5,7 @@ class WikiPage < ApplicationRecord
 
   INTERNAL_PREFIXES = %w[internal: help:].freeze
 
+  after_initialize :set_parent_props
   before_validation :normalize_title
   before_validation :normalize_parent
   before_validation :ensure_internal_locked
@@ -25,7 +26,7 @@ class WikiPage < ApplicationRecord
 
   after_save :log_save
 
-  attr_accessor :skip_post_count_rename_check, :edit_reason
+  attr_accessor :skip_post_count_rename_check, :edit_reason, :parent_name, :parent_anchor
 
   belongs_to_creator
   belongs_to_updater
@@ -176,6 +177,18 @@ class WikiPage < ApplicationRecord
 
   def normalize_parent
     self.parent = nil if parent == ""
+    set_parent_props
+  end
+
+  def set_parent_props
+    return if parent.blank?
+    if parent.include?("#")
+      name, anchor = parent.split("#")
+      self.parent_name = name
+      self.parent_anchor = anchor
+    else
+      self.parent_name = parent
+    end
   end
 
   def skip_secondary_validations=(value)

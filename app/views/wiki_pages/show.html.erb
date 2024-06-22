@@ -36,3 +36,9 @@
 <% end %>
 
 <%= render "secondary_links" %>
+
+<% if @wiki_page.parent_anchor.present? %>
+  <%= javascript_tag nonce: true do -%>
+    $(() => { if(!window.location.hash) window.location.hash = "#<%= @wiki_page.parent_anchor %>" });
+  <% end %>
+<% end %>

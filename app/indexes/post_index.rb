@@ -180,8 +180,8 @@ module PostIndex
         end
 
         # rubocop:disable Style/HashTransformValues
-        upvote_ids   = vote_ids.map { |pid, user| [pid, user.reject { |uid, s| s <= 0 }.map {|uid, _| uid}] }.to_h
-        downvote_ids = vote_ids.map { |pid, user| [pid, user.reject { |uid, s| s >= 0 }.map {|uid, _| uid}] }.to_h
+        upvote_ids   = vote_ids.to_h { |pid, user| [pid, user.reject { |_uid, s| s <= 0 }.map { |uid, _| uid }] }
+        downvote_ids = vote_ids.to_h { |pid, user| [pid, user.reject { |_uid, s| s >= 0 }.map { |uid, _| uid }] }
         # rubocop:enable Style/HashTransformValues
 
         empty = []

@@ -53,27 +53,6 @@ class Notification < ApplicationRecord
     end
   end
 
-  module SearchMethods
-    def unread
-      where(is_read: false)
-    end
-
-    def read
-      where(is_read: true)
-    end
-
-    def for_user(user_id)
-      where(user_id: user_id)
-    end
-
-    def search(params)
-      q = super
-      q.order(:is_read, id: :desc)
-    end
-  end
-
-  extend SearchMethods
-
   def update_unread_count
     user.update!(unread_notification_count: user.notifications.unread.count)
   end
@@ -93,12 +72,29 @@ class Notification < ApplicationRecord
   end
 
   module SearchMethods
+    def unread
+      where(is_read: false)
+    end
+
+    def read
+      where(is_read: true)
+    end
+
+    def for_user(user_id)
+      where(user_id: user_id)
+    end
+
     def search(params)
       q = super
       q = q.attribute_matches(:category, Notification.categories.fetch(params[:category], params[:category]).to_s) if params[:category].present?
-      q.apply_basic_order(params)
+      if params[:order].present?
+        q = q.apply_basic_order(params)
+      else
+        q = q.order(:is_read, id: :desc)
+      end
+      q
     end
-
-    extend SearchMethods
   end
+
+  extend SearchMethods
 end

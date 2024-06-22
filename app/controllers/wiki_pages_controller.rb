@@ -40,7 +40,7 @@ class WikiPagesController < ApplicationController
     authorize(@wiki_page, policy_class: WikiPagePolicy)
     if @wiki_page.present?
       unless @wiki_page.parent.nil?
-        @wiki_redirect = WikiPage.titled(@wiki_page.parent)
+        @wiki_redirect = WikiPage.titled(@wiki_page.parent_name)
       end
       respond_with(@wiki_page)
     elsif request.format.html?
