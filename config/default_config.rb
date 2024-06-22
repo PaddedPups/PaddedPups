@@ -789,8 +789,6 @@ module FemboyFans
     def alias_category_change_cutoff
       10_000
     end
-
-    include Users
   end
 
   class EnvironmentConfiguration

@@ -35,6 +35,7 @@ module PostIndex
           tag_count_invalid:        { type: "integer" },
           tag_count_lore:           { type: "integer" },
           tag_count_voice_actor:    { type: "integer" },
+          tag_count_gender:         { type: "integer" },
           comment_count:            { type: "integer" },
 
           file_size:                { type: "integer" },
@@ -168,7 +169,7 @@ module PostIndex
         noter_ids      = conn.execute(noter_sql).values.map(&array_parse).to_h
         child_ids      = conn.execute(child_sql).values.map(&array_parse).to_h
         notes          = Hash.new { |h, k| h[k] = [] }
-        conn.execute(note_sql).each_value { |p, b| notes[p] << b }
+        conn.execute(note_sql).values.each { |p, b| notes[p] << b } # rubocop:disable Style/HashEachMethods
         pending_replacements = conn.execute(pending_replacements_sql).values.to_h
 
         # Special handling for votes to do it with one query
@@ -178,8 +179,10 @@ module PostIndex
           [pid.to_i, uids.zip(scores)]
         end
 
-        upvote_ids   = vote_ids.transform_values { |user| user.reject { |_uid, s| s <= 0 }.map { |uid, _| uid } }
-        downvote_ids = vote_ids.transform_values { |user| user.reject { |_uid, s| s >= 0 }.map { |uid, _| uid } }
+        # rubocop:disable Style/HashTransformValues
+        upvote_ids   = vote_ids.map { |pid, user| [pid, user.reject { |uid, s| s <= 0 }.map {|uid, _| uid}] }.to_h
+        downvote_ids = vote_ids.map { |pid, user| [pid, user.reject { |uid, s| s >= 0 }.map {|uid, _| uid}] }.to_h
+        # rubocop:enable Style/HashTransformValues
 
         empty = []
         batch.map! do |p|
@@ -238,6 +241,7 @@ module PostIndex
       tag_count_species:        tag_count_species,
       tag_count_invalid:        tag_count_invalid,
       tag_count_voice_actor:    tag_count_voice_actor,
+      tag_count_gender:         tag_count_gender,
       comment_count:            options[:comment_count] || comment_count,
 
       file_size:                file_size,
