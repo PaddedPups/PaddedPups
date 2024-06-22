@@ -46,61 +46,59 @@ module FemboyFans
       app_name.gsub(/[^a-zA-Z0-9_-]/, "_")
     end
 
-    module Users
-      # If enabled, users must verify their email addresses.
-      def enable_email_verification?
-        Rails.env.production?
-      end
+    # If enabled, users must verify their email addresses.
+    def enable_email_verification?
+      Rails.env.production?
+    end
 
-      def anonymous_user_name
-        "anonymous"
-      end
+    def anonymous_user_name
+      "anonymous"
+    end
 
-      def anonymous_user
-        user = User.new(name: anonymous_user_name, level: User::Levels::ANONYMOUS, created_at: Time.now)
-        user.readonly!.freeze
-        user
-      end
+    def anonymous_user
+      user = User.new(name: anonymous_user_name, level: User::Levels::ANONYMOUS, created_at: Time.now)
+      user.readonly!.freeze
+      user
+    end
 
-      def system_user_name
-        "System"
-      end
+    def system_user_name
+      "System"
+    end
 
-      def system_user
-        User.find_or_create_by!(name: system_user_name, level: User::Levels::SYSTEM) do |user|
-          user.email = "system@femboy.fan"
-          user.can_approve_posts = true
-          user.unrestricted_uploads = true
-        end
+    def system_user
+      User.find_or_create_by!(name: system_user_name, level: User::Levels::SYSTEM) do |user|
+        user.email                = "system@femboy.fan"
+        user.can_approve_posts    = true
+        user.unrestricted_uploads = true
       end
+    end
 
-      def default_user_timezone
-        "Central Time (US & Canada)"
-      end
+    def default_user_timezone
+      "Central Time (US & Canada)"
+    end
 
-      # The default name to use for anyone who isn't logged in.
-      def default_guest_name
-        "Anonymous"
-      end
+    # The default name to use for anyone who isn't logged in.
+    def default_guest_name
+      "Anonymous"
+    end
 
-      # Set the default level, permissions, and other settings for new users here.
-      def customize_new_user(user)
-        user.blacklisted_tags = default_blacklist.join("\n")
-        user.comment_threshold = -10
-        user.enable_autocomplete = true
-        user.enable_keyboard_navigation = true
-        user.per_page = records_per_page
-        user.style_usernames = true
-        user.move_related_thumbnails = true
-        user.enable_hover_zoom = true
-        user.hover_zoom_shift = true
-        user.hover_zoom_sticky_shift = true
-        user.go_to_recent_forum_post = true
-      end
+    # Set the default level, permissions, and other settings for new users here.
+    def customize_new_user(user)
+      user.blacklisted_tags           = default_blacklist.join("\n")
+      user.comment_threshold          = -10
+      user.enable_autocomplete        = true
+      user.enable_keyboard_navigation = true
+      user.per_page                   = records_per_page
+      user.style_usernames            = true
+      user.move_related_thumbnails    = true
+      user.enable_hover_zoom          = true
+      user.hover_zoom_shift           = true
+      user.hover_zoom_sticky_shift    = true
+      user.go_to_recent_forum_post    = true
+    end
 
-      def default_blacklist
-        []
-      end
+    def default_blacklist
+      []
     end
 
     def safeblocked_tags
@@ -505,8 +503,8 @@ module FemboyFans
       [
         {
           name:   "uploading_guidelines",
-          reason: "Does not meet the \"uploading guidelines\":/help/uploading_guidelines.",
-          text:   "This post fails to meet the site's standards, be it for artistic worth, image quality, relevancy, or something else.\nKeep in mind that your personal preferences have no bearing on this. If you find the content of a post objectionable, simply \"blacklist\":/help/blacklist it.",
+          reason: "Does not meet the \"uploading guidelines\":/help/uploading_guidelines",
+          text:   "This post fails to meet the site's standards, be it for artistic worth, image quality, relevancy, or something else.\nKeep in mind that your personal preferences have no bearing on this. If you find the content of a post objectionable, simply \"blacklist\":/help/blacklisting it.",
         },
         {
           name:   "dnp_artist",
@@ -727,7 +725,7 @@ module FemboyFans
         { name: "Reply", text: "I believe that you tried to reply to a comment, but reported it instead.\nPlease, be more careful in the future." },
         { name: "Already", text: "User already received a record for that message." },
         { name: "Banned", text: "This user is already banned." },
-        { name: "Blacklist", text: "If you find the contents of that post objectionable, \"blacklist\":/help/blacklist it." },
+        { name: "Blacklist", text: "If you find the contents of that post objectionable, \"blacklist\":/help/blacklisting it." },
         { name: "Takedown", text: "Artists and character owners may request a takedown here: https://femboy.fan/static/takedown.\nWe do not accept third party takedowns." },
       ]
     end
