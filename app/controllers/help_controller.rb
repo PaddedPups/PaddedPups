@@ -16,6 +16,9 @@ class HelpController < ApplicationController
       @help = HelpPage.find_by!(name: params[:id])
     end
     authorize(@help)
+    if @help.wiki.parent.present?
+      @wiki_redirect = WikiPage.find_by(title: @help.wiki.parent_name)
+    end
     respond_with(@help)
   end
 

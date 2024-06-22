@@ -1,9 +1,10 @@
 <%= render "sidebar", help_pages: HelpPage.help_index %>
+<% wiki_content = @wiki_redirect.nil? ? @help.wiki : @wiki_redirect %>
 <section id="content">
   <div style="margin-bottom: 1em;">
     <h1><%= "Help: #{@help.pretty_title}" %></h1>
     <div class="dtext-container">
-      <%= format_text(WikiPage.find_by(title: @help.wiki_page).body, allow_color: true) %>
+      <%= format_text(wiki_content.body, allow_color: true) %>
     </div>
   </div>
 </section>
@@ -12,4 +13,10 @@
 
 <% content_for(:page_title) do %>
 Help: <%= @help.pretty_title %>
+<% end %>
+
+<% if @help.wiki.parent_anchor.present? %>
+  <%= javascript_tag nonce: true do -%>
+    $(() => { if(!window.location.hash) window.location.hash = "#<%= @help.wiki.parent_anchor %>" });
+  <% end %>
 <% end %>
