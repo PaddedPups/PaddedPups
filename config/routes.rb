@@ -404,7 +404,7 @@ Rails.application.routes.draw do
     end
   end
   resources :mascots, only: %i[index new create edit update destroy]
-  resource :api, controller: "api_documentation", as: "api_documentation", only: %i[index] do
+  resource :api, controller: "api_documentation", as: "api_documentation", only: %i[show] do
     get :spec
   end
 
