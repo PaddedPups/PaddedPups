@@ -45,7 +45,6 @@ class UserPromotion
     if options.key?(:no_aibur_voting)
       user.no_aibur_voting = options[:no_aibur_voting]
     end
-
     create_mod_actions
 
     user.save

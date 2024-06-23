@@ -30,34 +30,37 @@ module Admin
 
     # TODO: redo this, remove the UserPromotion middleman and move strong parameters to pundit
     def update
-      @user = authorize([:admin, User.find(params[:id])])
-      raise(User::PrivilegeError) unless @user.can_admin_edit?(CurrentUser.user)
-      @user.validate_email_format = true
-      @user.is_admin_edit = true
-      @user.update(user_params(CurrentUser.user))
+      User.transaction do
+        @user = authorize([:admin, User.find(params[:id])])
+        raise(User::PrivilegeError) unless @user.can_admin_edit?(CurrentUser.user)
+        @user.validate_email_format = true
+        @user.is_admin_edit = true
+        @user.update(user_params(CurrentUser.user))
 
-      if CurrentUser.is_owner?
-        @user.mark_verified! if params[:user][:verified].to_s.truthy?
-        @user.mark_unverified! if params[:user][:verified].to_s.falsy?
-      end
-      @user.promote_to!(params[:user][:level], params[:user]) if params[:user][:level]
-
-      old_username = @user.name
-      desired_username = params[:user][:name]
-      if old_username != desired_username && desired_username.present?
-        change_request = UserNameChangeRequest.create(
-          original_name:           @user.name,
-          user_id:                 @user.id,
-          desired_name:            desired_username,
-          change_reason:           "Administrative change",
-          skip_limited_validation: true,
-        )
-        if change_request.valid?
-          change_request.approve!
-          @user.log_name_change
-        else
-          @user.errors.add(:name, change_request.errors[:desired_name].join("; "))
+        if CurrentUser.is_owner?
+          @user.mark_verified! if params[:user][:verified].to_s.truthy?
+          @user.mark_unverified! if params[:user][:verified].to_s.falsy?
         end
+        @user.promote_to!(params[:user][:level] || @user.level, params[:user])
+
+        old_username = @user.name
+        desired_username = params[:user][:name]
+        if old_username != desired_username && desired_username.present?
+          change_request = UserNameChangeRequest.create(
+            original_name:           @user.name,
+            user_id:                 @user.id,
+            desired_name:            desired_username,
+            change_reason:           "Administrative change",
+            skip_limited_validation: true,
+            )
+          if change_request.valid?
+            change_request.approve!
+            @user.log_name_change
+          else
+            @user.errors.add(:name, change_request.errors[:desired_name].join("; "))
+          end
+        end
+        raise(ActiveRecord::Rollback) if @user.errors.any?
       end
       notice(@user.errors.any? ? "Update failed" : "User updated")
       respond_with(@user)
@@ -93,8 +96,10 @@ module Admin
 
     private
 
-    def user_params(_user)
-      pparams = policy([:admin, User]).permitted_attributes_for_update
+    def user_params(user)
+      # pparams = policy([:admin, User]).permitted_attributes_for_update
+      pparams = %i[profile_about profile_artinfo base_upload_limit enable_privacy_mode]
+      pparams << :email if user.is_owner?
       params.require(:user).slice(*pparams).permit(pparams)
     end
   end

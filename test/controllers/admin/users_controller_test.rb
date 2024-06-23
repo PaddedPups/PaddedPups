@@ -95,6 +95,32 @@ module Admin
             assert_not_predicate user.reload, :is_verified?
           end
         end
+
+        context "modactions" do
+          setup do
+            @user = create(:user)
+          end
+
+          should "be created when level is changed" do
+            assert_difference("ModAction.count", 1) do
+              put_auth admin_user_path(@user), @admin, params: { user: { level: User::Levels::TRUSTED } }
+            end
+            assert_equal("user_level_change", ModAction.last.action)
+          end
+
+          should "be created when flags are changed" do
+            assert_difference("ModAction.count", 1) do
+              put_auth admin_user_path(@user), @admin, params: { user: { can_approve_posts: true } }
+            end
+            assert_equal("user_flags_change", ModAction.last.action)
+          end
+
+          should "not be created when an error occurs" do
+            assert_no_difference("ModAction.count") do
+              put_auth admin_user_path(@user), @admin, params: { user: { manage_tag_change_requests: true, no_aibur_voting: true } }
+            end
+          end
+        end
       end
     end
   end
