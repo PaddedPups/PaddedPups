@@ -48,7 +48,7 @@ class TagFollower < ApplicationRecord
     transaction do
       followers = where(tag_id: post.tag_ids).and(where("last_post_id < ?", post.id)).unbanned
       followers.each do |follower|
-        follower.user.notifications.create!(category: :new_post, data: { post_id: post.id, tag_name: follower.tag_name })
+        follower.user.notifications.create!(category: :new_post, data: { post_id: post.id, tag_name: follower.tag_name }) unless follower.user_id == post.uploader_id
         follower.update!(last_post: post)
       end
     end

@@ -567,7 +567,7 @@ class User < ApplicationRecord
     create_user_throttle(:suggest_tag, -> { FemboyFans.config.tag_suggestion_limit - (TagAlias.for_creator(id).where("created_at > ?", 1.hour.ago).count + TagImplication.for_creator(id).where("created_at > ?", 1.hour.ago).count + BulkUpdateRequest.for_creator(id).where("created_at > ?", 1.hour.ago).count) },
                          :is_janitor?, 7.days)
     create_user_throttle(:forum_vote, -> { FemboyFans.config.forum_vote_limit - ForumPostVote.by(id).where("created_at > ?", 1.hour.ago).count },
-                         :is_janitor?, 3.days)
+                         :general_bypass_throttle?, 3.days)
 
     def can_remove_from_pools?
       is_member? && older_than(7.days)
