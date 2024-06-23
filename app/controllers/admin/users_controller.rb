@@ -30,7 +30,7 @@ module Admin
 
     # TODO: redo this, remove the UserPromotion middleman and move strong parameters to pundit
     def update
-      User.transaction do
+      User.transaction do # rubocop:disable Metrics/BlockLength
         @user = authorize([:admin, User.find(params[:id])])
         raise(User::PrivilegeError) unless @user.can_admin_edit?(CurrentUser.user)
         @user.validate_email_format = true
@@ -52,7 +52,7 @@ module Admin
             desired_name:            desired_username,
             change_reason:           "Administrative change",
             skip_limited_validation: true,
-            )
+          )
           if change_request.valid?
             change_request.approve!
             @user.log_name_change
