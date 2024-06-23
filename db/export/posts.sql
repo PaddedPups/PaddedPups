@@ -42,6 +42,7 @@ SELECT id,
        duration,
        original_tag_string,
        tag_count_voice_actor,
+       tag_count_gender,
        qtags,
        upload_url
 FROM public.posts
