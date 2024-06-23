@@ -71,4 +71,13 @@ class StaticController < ApplicationController
   def robots
     expires_in(1.hour, public: true)
   end
+
+  def recognize_route
+    method = params[:method]&.upcase || "GET"
+    route = Rails.application.routes.recognize_path(params[:url], method: method)
+    route[:api] = "#{route[:controller]}:#{route[:action]}"
+    render(json: route)
+  rescue ActionController::RoutingError
+    render_expected_error(400, "Invalid url: #{method} #{params[:url]}", format: :json)
+  end
 end

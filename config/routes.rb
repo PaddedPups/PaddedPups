@@ -404,7 +404,7 @@ Rails.application.routes.draw do
     end
   end
   resources :mascots, only: %i[index new create edit update destroy]
-  resource :api, controller: "api_documentation", as: "api_documentation" do
+  resource :api, controller: "api_documentation", as: "api_documentation", only: %i[index] do
     get :spec
   end
 
@@ -422,6 +422,7 @@ Rails.application.routes.draw do
   get "/static/theme", to: "static#theme", as: "theme"
   get "/static/staff", to: "static#staff", as: "staff"
   get "/robots", to: "static#robots", as: "robots"
+  get "/route", to: "static#recognize_route", as: "recognize_route"
   root to: "static#home"
 
   get "*other", to: "static#not_found"

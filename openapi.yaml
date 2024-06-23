@@ -2472,6 +2472,19 @@ components:
                   type: string
                 description:
                   type: string
+    RouteInfo:
+      type: object
+      required:
+        - controller
+        - action
+        - api
+      properties:
+        controller:
+          type: string
+        action:
+          type: string
+        api:
+          type: string
     Rule:
       type: object
       required:
@@ -12908,3 +12921,31 @@ paths:
           $ref: "#/components/responses/NotFound"
         422:
           $ref: "#/components/responses/ExpectedError"
+  # Routes
+  /route.json:
+    get:
+      summary: Get Route
+      tags:
+        - Routes
+      parameters:
+        - name: url
+          in: query
+          description: The url to get the route for.
+          schema:
+            type: string
+        - in: query
+          name: method
+          schema:
+            type: string
+            description: The method for the route. Defaults to `GET`.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RouteInfo"
+        400:
+          $ref: "#/components/responses/MessageError"

@@ -9,10 +9,10 @@ module Permissions
     admin/dashboards admin/exceptions admin/danger_zone
     moderator/dashboards moderator/ip_addrs moderator/user_text_versions
     users/email_notifications users/password_resets users/passwords users/login_reminders users/deletions users/email_changes
-    static application sessions emails
+    static application sessions emails api_documentation
   ].freeze
   IGNORED_ACTIONS = %w[new edit search diff show_or_new custom_style edit_user edit_blacklist confirm_move_favorites request_password_reset].freeze
-  IGNORED_ROUTES = %w[users:create users:destroy users:home posts:favorites popular:index].freeze
+  IGNORED_ROUTES = %w[users:create users:destroy users:home posts:favorites popular:index users:upload_limit].freeze
   PLURAL_ACTIONS = %w[index reorder].freeze
 
   def action(value)
@@ -48,7 +48,7 @@ module Permissions
   end
 
   def for_select
-    list.map { |perm| [Permissions.route(perm), perm] }
+    list.map { |perm| ["[#{perm}] #{Permissions.route(perm)}", perm] }
   end
 
   def group(permissions)
