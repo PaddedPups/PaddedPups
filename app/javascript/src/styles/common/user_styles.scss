@@ -21,6 +21,12 @@ $levels: (
   }
 }
 
-a.user-banned.with-style {
-  text-decoration: line-through;
+a.with-style {
+  &.user-banned {
+    text-decoration: line-through;
+  }
+
+  &.user-trusted, &.user-former-staff, &.user-janitor, &.user-moderator, &.user-system, &.user-admin, &.user-owner {
+    font-weight: bold;
+  }
 }

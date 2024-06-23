@@ -16,7 +16,7 @@ module CommentsHelper
   end
 
   def comment_level_string(user)
-    return "" if user.level <= 20 && user.title.blank?
+    return "" if user.level <= User::Levels::MEMBER && user.title.blank?
     tag.span(user.level_string_pretty, class: "comment-rank")
   end
 
