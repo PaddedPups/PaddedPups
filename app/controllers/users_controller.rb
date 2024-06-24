@@ -10,7 +10,7 @@ class UsersController < ApplicationController
       @user = User.find_by!(name: params[:name])
       redirect_to(user_path(@user, n: params[:n]))
     else
-      @users = User.search(search_params(User)).paginate(params[:page], limit: params[:limit], search_count: params[:search])
+      @users = User.search(search_params(User)).paginate(params[:page], limit: params[:limit])
       respond_with(@users) do |format|
         format.json do
           render(json: @users.to_json)

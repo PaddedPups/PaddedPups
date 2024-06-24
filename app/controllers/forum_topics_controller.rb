@@ -10,7 +10,7 @@ class ForumTopicsController < ApplicationController
     params[:search][:order] ||= "sticky" if request.format.html?
 
     @query = authorize(ForumTopic).visible(CurrentUser.user).search(search_params(ForumTopic))
-    @forum_topics = @query.paginate(params[:page], limit: params[:limit] || 50, search_count: params[:search])
+    @forum_topics = @query.paginate(params[:page], limit: params[:limit] || 50)
 
     respond_with(@forum_topics) do |format|
       format.html do

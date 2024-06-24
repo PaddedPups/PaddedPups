@@ -6,7 +6,7 @@ class AvoidPostingsController < ApplicationController
   before_action :load_avoid_posting, except: %i[index new create]
 
   def index
-    @avoid_postings = authorize(AvoidPosting).search(search_params(AvoidPosting)).paginate(params[:page], limit: params[:limit], search_count: params[:search])
+    @avoid_postings = authorize(AvoidPosting).search(search_params(AvoidPosting)).paginate(params[:page], limit: params[:limit])
     respond_with(@avoid_postings)
   end
 

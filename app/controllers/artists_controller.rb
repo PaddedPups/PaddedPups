@@ -13,7 +13,7 @@ class ArtistsController < ApplicationController
       end
       redirect_to(artist_path(@artist))
     end
-    @artists = authorize(Artist).includes(:urls).search(search_params(Artist)).paginate(params[:page], limit: params[:limit], search_count: params[:search])
+    @artists = authorize(Artist).includes(:urls).search(search_params(Artist)).paginate(params[:page], limit: params[:limit])
     respond_with(@artists) do |format|
       format.json do
         render(json: @artists.to_json(include: %i[urls]))

@@ -13,7 +13,7 @@ class WikiPagesController < ApplicationController
       end
       redirect_to(wiki_page_path(@wiki_page))
     end
-    @wiki_pages = WikiPage.search(search_params(WikiPage)).paginate(params[:page], limit: params[:limit], search_count: params[:search])
+    @wiki_pages = WikiPage.search(search_params(WikiPage)).paginate(params[:page], limit: params[:limit])
     respond_with(@wiki_pages) do |format|
       format.html do
         if params[:page].nil? || params[:page].to_i == 1

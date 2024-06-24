@@ -112,7 +112,7 @@ class CommentsController < ApplicationController
 
   def index_by_post
     tags = params[:tags] || ""
-    @posts = Post.tag_match("#{tags} order:comment_bumped").paginate(params[:page], limit: 5, search_count: params[:search])
+    @posts = Post.tag_match("#{tags} order:comment_bumped").paginate(params[:page], limit: 5)
     comment_ids = @posts.select { |post| post.comments_visible_to?(CurrentUser.user) }.flat_map { |post| post.comments.visible(CurrentUser.user).recent.reverse.map(&:id) } if CurrentUser.id
     @comment_votes = CommentVote.for_comments_and_user(comment_ids || [], CurrentUser.id)
     respond_with(@posts)
@@ -120,7 +120,7 @@ class CommentsController < ApplicationController
 
   def index_by_comment
     @comments = Comment.visible(CurrentUser.user)
-    @comments = @comments.search(search_params(Comment)).paginate(params[:page], limit: params[:limit], search_count: params[:search])
+    @comments = @comments.search(search_params(Comment)).paginate(params[:page], limit: params[:limit])
     respond_with(@comments) do |format|
       format.html do
         @comment_votes = CommentVote.for_comments_and_user(@comments.select { |comment| comment.visible_to?(CurrentUser) }.map(&:id), CurrentUser.id)

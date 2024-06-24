@@ -7,7 +7,7 @@ class ForumPostsController < ApplicationController
 
   def index
     @query = authorize(ForumPost).visible(CurrentUser.user).search(search_params(ForumPost))
-    @forum_posts = @query.includes(:topic).paginate(params[:page], limit: params[:limit], search_count: params[:search])
+    @forum_posts = @query.includes(:topic).paginate(params[:page], limit: params[:limit])
     respond_with(@forum_posts)
   end
 

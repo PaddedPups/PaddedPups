@@ -5,7 +5,7 @@ module WikiPages
     respond_to :html, :json
 
     def index
-      @wiki_page_versions = authorize(WikiPageVersion).search(search_params(WikiPageVersion)).paginate(params[:page], limit: params[:limit], search_count: params[:search])
+      @wiki_page_versions = authorize(WikiPageVersion).search(search_params(WikiPageVersion)).paginate(params[:page], limit: params[:limit])
       respond_with(@wiki_page_versions)
     end
 

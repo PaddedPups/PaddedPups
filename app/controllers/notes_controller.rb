@@ -7,7 +7,7 @@ class NotesController < ApplicationController
   end
 
   def index
-    @notes = authorize(Note).search(search_params(Note)).paginate(params[:page], limit: params[:limit], search_count: params[:search])
+    @notes = authorize(Note).search(search_params(Note)).paginate(params[:page], limit: params[:limit])
     respond_with(@notes) do |format|
       format.html { @notes = @notes.includes(:creator) }
     end

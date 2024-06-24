@@ -9,7 +9,7 @@ module Pools
         @pool = Pool.find_by(id: pool_id)
       end
 
-      @pool_versions = authorize(PoolVersion).search(search_params(PoolVersion)).paginate(params[:page], limit: params[:limit], search_count: params[:search])
+      @pool_versions = authorize(PoolVersion).search(search_params(PoolVersion)).paginate(params[:page], limit: params[:limit])
       respond_with(@pool_versions)
     end
 
