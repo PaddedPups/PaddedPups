@@ -552,11 +552,11 @@ module FemboyFans
     end
 
     def flag_notice_wiki_page
-      "help:flag_notice"
+      "internal:flag_notice"
     end
 
     def replacement_notice_wiki_page
-      "help:replacement_notice"
+      "internal:replacement_notice"
     end
 
     # The number of posts displayed per page.
@@ -721,7 +721,7 @@ module FemboyFans
         { name: "Reviewed", text: "Reviewed, thank you." },
         { name: "NAT", text: "Reviewed, no action taken." },
         { name: "Closed", text: "Ticket closed." },
-        { name: "Old", text: "That comment is from N years ago.\nWe do not punish people for comments older than 6 months." },
+        { name: "Old", text: "That comment is from N years ago.\nWe do not punish people for comments older than 3 months." },
         { name: "Reply", text: "I believe that you tried to reply to a comment, but reported it instead.\nPlease, be more careful in the future." },
         { name: "Already", text: "User already received a record for that message." },
         { name: "Banned", text: "This user is already banned." },

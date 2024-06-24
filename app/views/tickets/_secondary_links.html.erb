@@ -2,5 +2,6 @@
   <%= subnav_link_to("Listing", tickets_path) %>
   <%= subnav_link_to("Mine", tickets_path(search: { creator_id: CurrentUser.id })) %>
   <%= subnav_link_to_if(policy(Ticket).can_search_attribute?(:claimant_id), "Claimed", tickets_path(search: { claimant_id: CurrentUser.id })) %>
+  <%= subnav_link_to("Help", help_page_path(id: "reporting")) %>
 <% end %>
 <%= latest_link(@tickets) %>

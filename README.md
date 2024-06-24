@@ -59,71 +59,51 @@ If you are targeting more than a hundred thousand posts and reasonable user volu
 ### Help & Wiki Pages
 These wik/help pages are expected to exist, as they are linked to in various places.
 #### Wiki Pages
-* help:accounts
-* help:api
-* help:artists
-* help:avoid_posting
-* help:blacklist
-* help:cheatsheat
-* help:comments
 * help:contact
-* help:dmails
-* help:flag_notice
-* help:forums
-* help:global_blacklist
 * help:home
-* help:notes
-* help:pools
-* help:post_relationships
-* help:posts
 * help:privacy_policy
-* help:replacement_notice
-* help:sets
 * help:staff
-* help:tag_aliases
-* help:tag_implications
-* help:tagging_checklist
-* help:tags
 * help:takedown
 * help:takedown_verification
 * help:terms_of_service
-* help:upload
-* help:upload_whitelist
-* help:uploading_guidelines
-* help:user_name_change_requests
-* help:user_settings
-* help:wiki
 * internal:rules_body
+* internal:flag_notice
+* internal:replacement_notice
+* howto:sites_and_sources
 
 #### Help Pages
-* accounts (help:accounts)
-* api (help:api)
-* artists (help:artists)
-* avoid_posting (help:avoid_posting)
-* blacklist (help:blacklist)
-* cheatsheet (help:cheatsheet)
-* comments (help:comments)
-* dmails (help:dmails)
-* forums (help:forums)
-* global_blacklist (help:global_blacklist)
-* notes (help:notes)
-* pools (help:pools)
-* post_relationships (help:post_relationships)
-* posts (help:posts)
-* privacy_policy (help:privacy_policy)
-* sets (help:sets)
-* staff (help:staff)
-* tag_aliases (help:tag_aliases)
-* tag_implications (help:tag_implications)
-* tagging_checklist (help:tagging_checklist)
-* tags (help:tags)
-* terms_of_service (help:terms_of_service)
-* upload (help:upload)
-* upload_whitelist (help:upload_whitelist)
-* uploading_guidelines (help:uploading_guidelines)
-* user_name_change_requests (help:user_name_change_requests)
-* user_settings (help:user_settings)
-* wiki (help:wiki)
+* accounts
+* api
+* artists
+* avoid_posting
+* blacklisting
+* blocking
+* cheatsheet
+* commenting
+* dmails
+* flagging
+* forums
+* global_blacklist
+* notes
+* pools
+* post_relationships
+* posts
+* privacy_policy
+* replacements
+* reporting
+* sets
+* staff
+* tag_aliases
+* tag_implications
+* tagging_checklist
+* tags
+* terms_of_service
+* uploading
+* uploading_whitelist
+* uploading_guidelines
+* user_name_change_requests
+* user_settings
+* wiki
 
 ### Production Troubleshooting
 
