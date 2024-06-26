@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/FemboyFans/dtext_rb.git
-  revision: facbfa596d38305f55f3a9aa52060b2a97df157d
+  revision: 5ee89fa765e59299f815a0ed02bde7cce876e5b5
   branch: master
   specs:
-    dtext_rb (1.15.4)
+    dtext_rb (1.15.5)
 
 GEM
   remote: https://rubygems.org/
