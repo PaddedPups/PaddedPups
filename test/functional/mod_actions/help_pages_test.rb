@@ -18,11 +18,12 @@ module ModActions
         @help = create(:help_page)
 
         assert_matches(
-          actions:   %w[help_create],
-          text:      "Created help page \"#{@help.name}\":#{help_page_path(id: @help.name)} ([[#{@help.wiki_page}]])",
-          subject:   @help,
-          name:      @help.name,
-          wiki_page: @help.wiki_page,
+          actions:         %w[help_create],
+          text:            "Created help page \"#{@help.name}\":#{help_page_path(id: @help.name)} (\"#{@help.wiki_page_title}\":#{wiki_page_path(id: @help.wiki_page_id)})",
+          subject:         @help,
+          name:            @help.name,
+          wiki_page_title: @help.wiki_page_title,
+          wiki_page_id:    @help.wiki_page_id,
         )
       end
 
@@ -30,11 +31,12 @@ module ModActions
         @help.destroy
 
         assert_matches(
-          actions:   %w[help_delete],
-          text:      "Deleted help page \"#{@help.name}\":#{help_page_path(id: @help.name)} ([[#{@help.wiki_page}]])",
-          subject:   @help,
-          name:      @help.name,
-          wiki_page: @help.wiki_page,
+          actions:         %w[help_delete],
+          text:            "Deleted help page \"#{@help.name}\":#{help_page_path(id: @help.name)} (\"#{@help.wiki_page_title}\":#{wiki_page_path(id: @help.wiki_page_id)})",
+          subject:         @help,
+          name:            @help.name,
+          wiki_page_title: @help.wiki_page_title,
+          wiki_page_id:    @help.wiki_page_id,
         )
       end
 
@@ -43,11 +45,12 @@ module ModActions
         @help.update!(title: "xxx")
 
         assert_matches(
-          actions:   %w[help_update],
-          text:      "Updated help page \"#{@help.name}\":#{help_page_path(id: @help.name)} ([[#{@help.wiki_page}]])",
-          subject:   @help,
-          name:      @help.name,
-          wiki_page: @help.wiki_page,
+          actions:         %w[help_update],
+          text:            "Updated help page \"#{@help.name}\":#{help_page_path(id: @help.name)} (\"#{@help.wiki_page_title}\":#{wiki_page_path(id: @help.wiki_page_id)})",
+          subject:         @help,
+          name:            @help.name,
+          wiki_page_title: @help.wiki_page_title,
+          wiki_page_id:    @help.wiki_page_id,
         )
       end
     end

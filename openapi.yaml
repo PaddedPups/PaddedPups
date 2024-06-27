@@ -1040,7 +1040,7 @@ components:
         - created_at
         - updated_at
         - name
-        - wiki_page
+        - wiki_page_id
         - related
         - title
       properties:
@@ -1054,8 +1054,8 @@ components:
           format: date-time
         name:
           type: string
-        wiki_page:
-          type: string
+        wiki_page_id:
+          type: number
         related:
           type: string
         title:
@@ -1378,7 +1378,11 @@ components:
         wiki_page_title:
           type: string
           description: |
-            Valid for: `wiki_page_delete`, `wiki_page_lock`, `wiki_page_rename`, `wiki_page_unlock`
+            Valid for: `wiki_page_delete`, `wiki_page_lock`, `wiki_page_rename`, `wiki_page_unlock`, `help_create`, `help_delete`, `help_update`
+        wiki_page_id:
+          type: integer
+          description: |
+            Valid for: `help_create`, `help_delete`, `help_update`
         old_title:
           type: string
           description: |

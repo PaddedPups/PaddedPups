@@ -195,7 +195,8 @@ class DtextTest < ActiveSupport::TestCase
       end
 
       should "parse anchor" do
-        assert_parse_dtext(%(<p><a rel="nofollow" class="dtext-link dtext-wiki-link" href="/wiki_pages/show_or_new?title=test#dtext-anchor">test</a></p>), "[[test#Anchor]]")
+        assert_parse_dtext(%(<p><a rel="nofollow" class="dtext-link dtext-wiki-link" href="/wiki_pages/show_or_new?title=test#anchor">test</a></p>), "[[test#Anchor]]")
+        assert_parse_dtext(%(<p><a rel="nofollow" class="dtext-link dtext-wiki-link" href="/wiki_pages/show_or_new?title=test#anchor">test</a></p>), "[[test#anchor]]")
       end
 
       should "include spaces" do
@@ -220,7 +221,8 @@ class DtextTest < ActiveSupport::TestCase
         end
 
         should "parse anchor" do
-          assert_parse_dtext(%(<p><a rel="nofollow" class="dtext-link dtext-wiki-link" href="/wiki_pages/show_or_new?title=test#dtext-anchor">Test</a></p>), "[[test#Anchor|Test]]")
+          assert_parse_dtext(%(<p><a rel="nofollow" class="dtext-link dtext-wiki-link" href="/wiki_pages/show_or_new?title=test#anchor">Test</a></p>), "[[test#Anchor|Test]]")
+          assert_parse_dtext(%(<p><a rel="nofollow" class="dtext-link dtext-wiki-link" href="/wiki_pages/show_or_new?title=test#anchor">Test</a></p>), "[[test#anchor|Test]]")
         end
 
         should "include spaces" do

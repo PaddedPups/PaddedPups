@@ -102,7 +102,6 @@ These wik/help pages are expected to exist, as they are linked to in various pla
 * uploading_whitelist
 * uploading_guidelines
 * user_name_change_requests
-* user_settings
 * wiki
 
 ### Production Troubleshooting

@@ -1,5 +1,5 @@
 <%= render "sidebar", help_pages: HelpPage.help_index %>
-<% wiki_content = @wiki_redirect.nil? ? @help.wiki : @wiki_redirect %>
+<% wiki_content = @wiki_redirect.nil? ? @help.wiki_page : @wiki_redirect %>
 <section id="content">
   <div style="margin-bottom: 1em;">
     <h1><%= "Help: #{@help.pretty_title}" %></h1>
@@ -15,8 +15,8 @@
 Help: <%= @help.pretty_title %>
 <% end %>
 
-<% if @help.wiki.parent_anchor.present? %>
+<% if @help.wiki_page.parent_anchor.present? %>
   <%= javascript_tag nonce: true do -%>
-    $(() => { if(!window.location.hash) window.location.hash = "#<%= @help.wiki.parent_anchor %>" });
+    $(() => { if(!window.location.hash) window.location.hash = "#<%= @help.wiki_page.parent_anchor %>" });
   <% end %>
 <% end %>

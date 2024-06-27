@@ -769,9 +769,9 @@ CREATE TABLE public.forum_posts (
     warning_type integer,
     warning_user_id integer,
     tag_change_request_id bigint,
-    tag_change_request_type character varying,
     notified_mentions integer[] DEFAULT '{}'::integer[] NOT NULL,
-    is_spam boolean DEFAULT false NOT NULL
+    is_spam boolean DEFAULT false NOT NULL,
+    tag_change_request_type character varying
 );
 
 
@@ -914,9 +914,9 @@ CREATE TABLE public.help_pages (
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
     name character varying NOT NULL,
-    wiki_page character varying NOT NULL,
     related character varying DEFAULT ''::character varying NOT NULL,
-    title character varying DEFAULT ''::character varying NOT NULL
+    title character varying DEFAULT ''::character varying NOT NULL,
+    wiki_page_id bigint NOT NULL
 );
 
 
@@ -1986,14 +1986,14 @@ CREATE TABLE public.tag_aliases (
     consequent_name character varying NOT NULL,
     creator_id integer NOT NULL,
     creator_ip_addr inet NOT NULL,
-    forum_topic_id integer,
     status text DEFAULT 'pending'::text NOT NULL,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     post_count integer DEFAULT 0 NOT NULL,
     approver_id integer,
     forum_post_id integer,
-    reason text DEFAULT ''::text NOT NULL
+    forum_topic_id integer,
+    reason character varying
 );
 
 
@@ -2060,14 +2060,14 @@ CREATE TABLE public.tag_implications (
     consequent_name character varying NOT NULL,
     creator_id integer NOT NULL,
     creator_ip_addr inet NOT NULL,
-    forum_topic_id integer,
     status text DEFAULT 'pending'::text NOT NULL,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
     approver_id integer,
-    forum_post_id integer,
     descendant_names text[] DEFAULT '{}'::text[],
-    reason text DEFAULT ''::text NOT NULL
+    forum_post_id integer,
+    forum_topic_id integer,
+    reason character varying
 );
 
 
@@ -4173,6 +4173,13 @@ CREATE INDEX index_forum_topics_on_updated_at ON public.forum_topics USING btree
 
 
 --
+-- Name: index_help_pages_on_wiki_page_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_help_pages_on_wiki_page_id ON public.help_pages USING btree (wiki_page_id);
+
+
+--
 -- Name: index_ip_bans_on_ip_addr; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4650,13 +4657,6 @@ CREATE INDEX index_tag_aliases_on_consequent_name ON public.tag_aliases USING bt
 
 
 --
--- Name: index_tag_aliases_on_forum_post_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_tag_aliases_on_forum_post_id ON public.tag_aliases USING btree (forum_post_id);
-
-
---
 -- Name: index_tag_aliases_on_post_count; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4696,13 +4696,6 @@ CREATE INDEX index_tag_implications_on_antecedent_name ON public.tag_implication
 --
 
 CREATE INDEX index_tag_implications_on_consequent_name ON public.tag_implications USING btree (consequent_name);
-
-
---
--- Name: index_tag_implications_on_forum_post_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_tag_implications_on_forum_post_id ON public.tag_implications USING btree (forum_post_id);
 
 
 --
@@ -4994,6 +4987,14 @@ ALTER TABLE ONLY public.staff_audit_logs
 
 
 --
+-- Name: help_pages fk_rails_0a25bf2cb5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.help_pages
+    ADD CONSTRAINT fk_rails_0a25bf2cb5 FOREIGN KEY (wiki_page_id) REFERENCES public.wiki_pages(id);
+
+
+--
 -- Name: tag_followers fk_rails_0a453c2219; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5192,6 +5193,8 @@ ALTER TABLE ONLY public.staff_notes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20240627052741'),
+('20240627045124'),
 ('20240622005608'),
 ('20240617181703'),
 ('20240614223206'),

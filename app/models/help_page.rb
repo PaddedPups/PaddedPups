@@ -1,23 +1,22 @@
 # frozen_string_literal: true
 
 class HelpPage < ApplicationRecord
-  validates :wiki_page, :name, uniqueness: true, presence: true, length: { minimum: 1, maximum: 100 }
   normalizes :name, with: ->(name) { name.downcase.strip.tr(" ", "_") }
-  validate :wiki_page_exists
   after_create :log_create
   after_update :log_update
   after_destroy :invalidate_cache
   after_destroy :log_delete
   after_save :invalidate_cache
-  belongs_to :wiki, class_name: "WikiPage", foreign_key: "wiki_page", primary_key: "title"
+  belongs_to :wiki_page
+  delegate :title, to: :wiki_page, prefix: true
+
+  def wiki_page_name=(name)
+    self.wiki_page = WikiPage.titled(name)
+  end
 
   def invalidate_cache
     Cache.delete("help_index")
     true
-  end
-
-  def wiki_page_exists
-    errors.add(:wiki_page, "must exist") if WikiPage.find_by(title: wiki_page).blank?
   end
 
   def pretty_title
@@ -42,15 +41,15 @@ class HelpPage < ApplicationRecord
 
   module LogMethods
     def log_create
-      ModAction.log!(:help_create, self, name: name, wiki_page: wiki_page)
+      ModAction.log!(:help_create, self, name: name, wiki_page_title: wiki_page_title, wiki_page_id: wiki_page_id)
     end
 
     def log_update
-      ModAction.log!(:help_update, self, name: name, wiki_page: wiki_page)
+      ModAction.log!(:help_update, self, name: name, wiki_page_title: wiki_page_title, wiki_page_id: wiki_page_id)
     end
 
     def log_delete
-      ModAction.log!(:help_delete, self, name: name, wiki_page: wiki_page)
+      ModAction.log!(:help_delete, self, name: name, wiki_page_title: wiki_page_title, wiki_page_id: wiki_page_id)
     end
   end
 

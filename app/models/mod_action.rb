@@ -32,7 +32,7 @@ class ModAction < ApplicationRecord
     pool_name
     pattern old_pattern note hidden
     type old_type
-    wiki_page wiki_page_title old_title
+    wiki_page wiki_page_title old_title wiki_page_id
     category_name old_category_name
     prompt old_prompt title
     artist_name
@@ -270,16 +270,16 @@ class ModAction < ApplicationRecord
 
     ### Help ###
     help_create:                                {
-      text: ->(mod, _user) { "Created help page \"#{mod.name}\":/help/#{mod.name} ([[#{mod.wiki_page}]])" },
-      json: %i[name wiki_page],
+      text: ->(mod, _user) { "Created help page \"#{mod.name}\":/help/#{mod.name} (\"#{mod.wiki_page_title}\":#{url.wiki_page_path(id: mod.wiki_page_id)})" },
+      json: %i[name wiki_page_title wiki_page_id],
     },
     help_delete:                                {
-      text: ->(mod, _user) { "Deleted help page \"#{mod.name}\":/help/#{mod.name} ([[#{mod.wiki_page}]])" },
-      json: %i[name wiki_page],
+      text: ->(mod, _user) { "Deleted help page \"#{mod.name}\":/help/#{mod.name} (\"#{mod.wiki_page_title}\":#{url.wiki_page_path(id: mod.wiki_page_id)})" },
+      json: %i[name wiki_page_title wiki_page_id],
     },
     help_update:                                {
-      text: ->(mod, _user) { "Updated help page \"#{mod.name}\":/help/#{mod.name} ([[#{mod.wiki_page}]])" },
-      json: %i[name wiki_page],
+      text: ->(mod, _user) { "Updated help page \"#{mod.name}\":/help/#{mod.name} (\"#{mod.wiki_page_title}\":#{url.wiki_page_path(id: mod.wiki_page_id)})" },
+      json: %i[name wiki_page_title wiki_page_id],
     },
 
     ### Mascot ###
