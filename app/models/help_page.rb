@@ -8,7 +8,7 @@ class HelpPage < ApplicationRecord
   after_destroy :log_delete
   after_save :invalidate_cache
   belongs_to :wiki_page
-  delegate :title, to: :wiki_page, prefix: true
+  delegate :title, to: :wiki_page, prefix: true, allow_nil: true
 
   def wiki_page_title=(name)
     self.wiki_page = WikiPage.titled(name)
