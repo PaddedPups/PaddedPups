@@ -8,8 +8,8 @@
     <%= li_link_to("Most Viewed", views_popular_index_path) %>
     <%= li_link_to("Similar Images Search", posts_iqdb_path) %>
     <%= li_link_to_if(policy(PostDisapproval).index?, "Disapprovals", post_disapprovals_path) %>
-    <%= li_link_to("Deletion Reasons", post_deletion_reasons_path) %>
-    <%= li_link_to("Replacement Rejection Reasons", post_replacement_rejection_reasons_path) %>
+    <%= li_link_to_if(policy(PostDeletionReason).index?, "Post Deletion Reasons", post_deletion_reasons_path) %>
+    <%= li_link_to_if(policy(PostReplacementRejectionReason).index?, "Post Replacement Rejection Reasons", post_replacement_rejection_reasons_path) %>
     <%= li_link_to("Deleted Index", deleted_posts_path) %>
     <%= li_link_to("Help", help_page_path(id: "posts")) %>
   </ul>
@@ -34,7 +34,7 @@
   <ul>
     <li><h1>Artists</h1></li>
     <%= li_link_to("Listing", artists_path) %>
-    <%= li_link_to("Avoid Posting", avoid_postings_path) %>
+    <%= li_link_to("Avoid Posting", help_page_path(id: "avoid_posting")) %>
     <%= li_link_to("Changes", artist_versions_path) %>
     <%= li_link_to("Help", help_page_path(id: "artists")) %>
   </ul>
