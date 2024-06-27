@@ -182,11 +182,11 @@ module FemboyFans
     end
 
     def comment_vote_limit
-      10
+      25
     end
 
     def post_vote_limit
-      3_000
+      1_000
     end
 
     def dmail_minute_limit
@@ -206,7 +206,7 @@ module FemboyFans
     end
 
     def forum_vote_limit
-      50
+      25
     end
 
     # Artists creator or edited in the last hour
