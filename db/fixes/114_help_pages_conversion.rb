@@ -5,7 +5,7 @@ require File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "config",
 
 ModAction.without_logging do
   HelpPage.find_each do |help|
-    help.update!(wiki_page_name: help.wiki_page_in_database)
+    help.update!(wiki_page_title: help.wiki_page_in_database)
   end
 
   ModAction.where(action: %i[help_create help_update help_delete]).find_each do |mod|

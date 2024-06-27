@@ -14,6 +14,6 @@ class HelpPagePolicy < ApplicationPolicy
   end
 
   def permitted_attributes
-    %i[name wiki_page_id wiki_page_name related title]
+    %i[name wiki_page_id wiki_page_title related title]
   end
 end

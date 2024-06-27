@@ -10,7 +10,7 @@ class HelpPage < ApplicationRecord
   belongs_to :wiki_page
   delegate :title, to: :wiki_page, prefix: true
 
-  def wiki_page_name=(name)
+  def wiki_page_title=(name)
     self.wiki_page = WikiPage.titled(name)
   end
 

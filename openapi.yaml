@@ -6472,12 +6472,13 @@ paths:
               type: object
               required:
                 - name
-                - wiki_page
               properties:
                 name:
                   type: string
-                wiki_page:
+                wiki_page_title:
                   type: string
+                wiki_page_id:
+                  type: integer
                 related:
                   type: string
                   description: Separate with a comma followed by a space.
@@ -6539,8 +6540,10 @@ paths:
               properties:
                 name:
                   type: string
-                wiki_page:
+                wiki_page_title:
                   type: string
+                wiki_page_id:
+                  type: integer
                 related:
                   type: string
                   description: Separate with a comma followed by a space.

@@ -23,7 +23,7 @@
             </td>
 
             <td><%= link_to help.pretty_title, help_page_path(id: help.name) %></td>
-            <td><%= link_to help.wiki_page, wiki_pages_path(title: help.wiki_page) %></td>
+            <td><%= link_to help.wiki_page_title, wiki_pages_path(title: help.wiki_page) %></td>
             <td>
               <% (related_array = help.related_array).each.with_index do |related| %>
                 <%= link_to HelpPage.pretty_related_title(related, @help_pages), help_page_path(id: related) %>
