@@ -1,12 +1,19 @@
 # frozen_string_literal: true
 
 class ForumCategoriesController < ApplicationController
-  before_action :load_forum_category, only: %i[edit update destroy]
+  before_action :load_forum_category, only: %i[show edit update destroy]
   respond_to :html, :json
 
   def index
     @forum_categories = authorize(ForumCategory).visible.ordered_categories.paginate(params[:page], limit: params[:limit] || 50)
     respond_with(@forum_categories)
+  end
+  
+  def show
+    authorize(@forum_category)
+    respond_with(@forum_category) do |format|
+      format.html { redirect_to(forum_topics_path(search: { category_id: @forum_category.id })) }
+    end
   end
 
   def new

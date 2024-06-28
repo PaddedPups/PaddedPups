@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class ForumCategoryPolicy < ApplicationPolicy
+  def show?
+    !record.is_a?(ForumCategory) || user.level >= record.can_view
+  end
+
   def create?
     user.is_admin?
   end

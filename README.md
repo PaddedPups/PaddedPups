@@ -99,7 +99,7 @@ These wik/help pages are expected to exist, as they are linked to in various pla
 * tags
 * terms_of_service
 * uploading
-* uploading_whitelist
+* upload_whitelist
 * uploading_guidelines
 * user_name_change_requests
 * wiki

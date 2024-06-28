@@ -14,7 +14,7 @@
   <tbody>
   <% @forum_categories.each do |cat| %>
     <tr id="forum-category-<%= cat.id %>" data-id="<%= cat.id %>">
-      <td><%= link_to cat.name, forum_topics_path(search: { category_id: cat.id }) %></td>
+      <td><%= link_to cat.name, forum_category_path(cat) %></td>
       <td>
         <ul>
           <li>View: <b><%= User.level_string(cat.can_view) %></b></li>
