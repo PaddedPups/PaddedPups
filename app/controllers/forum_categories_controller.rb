@@ -8,7 +8,7 @@ class ForumCategoriesController < ApplicationController
     @forum_categories = authorize(ForumCategory).visible.ordered_categories.paginate(params[:page], limit: params[:limit] || 50)
     respond_with(@forum_categories)
   end
-  
+
   def show
     authorize(@forum_category)
     respond_with(@forum_category) do |format|

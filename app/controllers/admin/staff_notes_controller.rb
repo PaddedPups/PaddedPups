@@ -7,7 +7,7 @@ module Admin
 
     def index
       @user = User.find_by(id: params[:user_id])
-      @notes = authorize(StaffNote).search(search_params(StaffNote).merge({ user_id: params[:user_id] })).includes(:user, :creator).paginate(params[:page])
+      @notes = authorize(StaffNote).search(search_params(StaffNote).merge({ user_id: params[:user_id] })).includes(:user, :creator).paginate(params[:page], limit: params[:limit])
       respond_with(@notes)
     end
 

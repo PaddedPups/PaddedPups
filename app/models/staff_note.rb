@@ -35,6 +35,7 @@ class StaffNote < ApplicationRecord
     def search(params)
       q = super
 
+      q = q.attribute_matches(:body, params[:body_matches])
       q = q.where_user(:user_id, :user, params)
       q = q.where_user(:creator_id, :creator, params)
       q = q.where_user(:updater_id, :updater, params)

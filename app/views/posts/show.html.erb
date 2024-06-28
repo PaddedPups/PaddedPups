@@ -32,8 +32,7 @@
   </section>
 
 
-  <% if @post.visible? %>
-    <section id="post-related-images">
+  <section id="post-related-images">
       <h1>Related</h1>
       <ul>
         <li><%= link_to "Sets with this post", post_sets_path(search: { post_id: @post.id }), rel: "nofollow" %></li>
@@ -41,7 +40,7 @@
           <li><%= link_to "Visually similar", posts_iqdb_path(search: { post_id: @post.id }), rel: "nofollow" %></li>
           <li><%= link_to "Recommendations", post_recommendations_path(search: { post_id: @post.id }), rel: "nofollow" %></li>
         <% end %>
-        <% if @post.is_image? %>
+        <% if @post.visible? && @post.is_image? %>
           <li><a rel="nofollow" href="https://www.google.com/searchbyimage?image_url=<%= @post.reverse_image_url %>&client=<%= FemboyFans.config.app_name %>">Reverse Google Search</a></li>
           <li><a rel="nofollow" href="https://saucenao.com/search.php?url=<%= @post.reverse_image_url %>">Reverse SauceNAO Search</a></li>
           <li><a rel="nofollow" href="https://derpibooru.org/search/reverse?url=<%= @post.reverse_image_url %>">Reverse Derpibooru Search</a></li>
@@ -50,7 +49,7 @@
         <li><a rel="nofollow" href="https://inkbunny.net/search_process.php?text=<%= @post.md5 %>&md5=yes">Inkbunny MD5 Search</a></li>
       </ul>
     </section>
-  <% end %>
+
 
 </aside>
 
