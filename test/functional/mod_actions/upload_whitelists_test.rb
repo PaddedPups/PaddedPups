@@ -19,7 +19,7 @@ module ModActions
             as(@user) do
               assert_matches(
                 actions: %w[upload_whitelist_create],
-                text:    "Created whitelist entry '#{@whitelist.note}'",
+                text:    "Created whitelist entry '[nodtext]#{@whitelist.note}[/nodtext]'",
                 subject: @whitelist,
                 creator: @admin,
                 hidden:  false,
@@ -33,7 +33,7 @@ module ModActions
             as(@admin) do
               assert_matches(
                 actions: %w[upload_whitelist_create],
-                text:    "Created whitelist entry '#{@whitelist.pattern}'",
+                text:    "Created whitelist entry '[nodtext]#{@whitelist.pattern}[/nodtext]'",
                 subject: @whitelist,
                 creator: @admin,
                 hidden:  false,
@@ -65,7 +65,7 @@ module ModActions
             as(@admin) do
               assert_matches(
                 actions: %w[upload_whitelist_create],
-                text:    "Created whitelist entry '#{@whitelist.pattern}'",
+                text:    "Created whitelist entry '[nodtext]#{@whitelist.pattern}[/nodtext]'",
                 subject: @whitelist,
                 creator: @admin,
                 hidden:  true,
@@ -90,7 +90,7 @@ module ModActions
             as(@user) do
               assert_matches(
                 actions:     %w[upload_whitelist_update],
-                text:        "Updated whitelist entry '#{@whitelist.note}'",
+                text:        "Updated whitelist entry '[nodtext]#{@whitelist.note}[/nodtext]'",
                 subject:     @whitelist,
                 creator:     @admin,
                 hidden:      false,
@@ -105,7 +105,7 @@ module ModActions
             as(@admin) do
               assert_matches(
                 actions:     %w[upload_whitelist_update],
-                text:        "Updated whitelist entry '#{@original.pattern}' -> '#{@whitelist.pattern}'",
+                text:        "Updated whitelist entry '[nodtext]#{@original.pattern}[/nodtext]' -> '[nodtext]#{@whitelist.pattern}[/nodtext]'",
                 subject:     @whitelist,
                 creator:     @admin,
                 hidden:      false,
@@ -141,7 +141,7 @@ module ModActions
             as(@admin) do
               assert_matches(
                 actions:     %w[upload_whitelist_update],
-                text:        "Updated whitelist entry '#{@original.pattern}' -> '#{@whitelist.pattern}'",
+                text:        "Updated whitelist entry '[nodtext]#{@original.pattern}[/nodtext]' -> '[nodtext]#{@whitelist.pattern}[/nodtext]'",
                 subject:     @whitelist,
                 creator:     @admin,
                 hidden:      true,
@@ -166,7 +166,7 @@ module ModActions
             as(@user) do
               assert_matches(
                 actions: %w[upload_whitelist_delete],
-                text:    "Deleted whitelist entry '#{@whitelist.note}'",
+                text:    "Deleted whitelist entry '[nodtext]#{@whitelist.note}[/nodtext]'",
                 subject: @whitelist,
                 creator: @admin,
                 hidden:  false,
@@ -180,7 +180,7 @@ module ModActions
             as(@admin) do
               assert_matches(
                 actions: %w[upload_whitelist_delete],
-                text:    "Deleted whitelist entry '#{@whitelist.pattern}'",
+                text:    "Deleted whitelist entry '[nodtext]#{@whitelist.pattern}[/nodtext]'",
                 subject: @whitelist,
                 creator: @admin,
                 hidden:  false,
@@ -214,7 +214,7 @@ module ModActions
             as(@admin) do
               assert_matches(
                 actions: %w[upload_whitelist_delete],
-                text:    "Deleted whitelist entry '#{@whitelist.pattern}'",
+                text:    "Deleted whitelist entry '[nodtext]#{@whitelist.pattern}[/nodtext]'",
                 subject: @whitelist,
                 creator: @admin,
                 hidden:  true,

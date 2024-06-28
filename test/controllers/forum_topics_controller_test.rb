@@ -98,7 +98,7 @@ class ForumTopicsControllerTest < ActionDispatch::IntegrationTest
 
     context "create action" do
       should "create a new forum topic and post" do
-        assert_difference(["ForumPost.count", "ForumTopic.count"], 1) do
+        assert_difference({ "ForumPost.count" => 1, "ForumTopic.count" => 1, "ModAction.count" => 0 }) do
           post_auth forum_topics_path, @user, params: { forum_topic: { title: "bababa", category_id: FemboyFans.config.alias_implication_forum_category, original_post_attributes: { body: "xaxaxa" } } }
         end
 

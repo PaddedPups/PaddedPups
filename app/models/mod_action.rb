@@ -374,7 +374,7 @@ class ModAction < ApplicationRecord
     upload_whitelist_create:                    {
       text: ->(mod, _user) do
         return "Created whitelist entry" if mod.hidden && !CurrentUser.is_admin?
-        "Created whitelist entry '#{CurrentUser.is_admin? ? mod.pattern : mod.note}'"
+        "Created whitelist entry '[nodtext]#{CurrentUser.is_admin? ? mod.pattern : mod.note}[/nodtext]'"
       end,
       json: ->(mod, _user) {
         values = %i[hidden]
@@ -385,7 +385,7 @@ class ModAction < ApplicationRecord
     upload_whitelist_delete:                    {
       text: ->(mod, _user) do
         return "Deleted whitelist entry" if mod.hidden && !CurrentUser.is_admin?
-        "Deleted whitelist entry '#{CurrentUser.is_admin? ? mod.pattern : mod.note}'"
+        "Deleted whitelist entry '[nodtext]#{CurrentUser.is_admin? ? mod.pattern : mod.note}[/nodtext]'"
       end,
       json: ->(mod, _user) {
         values = %i[hidden]
@@ -396,8 +396,8 @@ class ModAction < ApplicationRecord
     upload_whitelist_update:                    {
       text: ->(mod, _user) do
         return "Updated whitelist entry" if mod.hidden && !CurrentUser.is_admin?
-        return "Updated whitelist entry '#{mod.old_pattern}' -> '#{mod.pattern}'" if mod.old_pattern && mod.old_pattern != mod.pattern && CurrentUser.is_admin?
-        "Updated whitelist entry '#{CurrentUser.is_admin? ? mod.pattern : mod.note}'"
+        return "Updated whitelist entry '[nodtext]#{mod.old_pattern}[/nodtext]' -> '[nodtext]#{mod.pattern}[/nodtext]'" if mod.old_pattern && mod.old_pattern != mod.pattern && CurrentUser.is_admin?
+        "Updated whitelist entry '[nodtext]#{CurrentUser.is_admin? ? mod.pattern : mod.note}[/nodtext]'"
       end,
       json: ->(mod, _user) {
         values = %i[hidden]

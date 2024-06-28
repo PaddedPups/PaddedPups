@@ -18,7 +18,7 @@ class ForumTopic < ApplicationRecord
   accepts_nested_attributes_for :original_post
   after_update :update_original_post
   after_destroy :log_delete
-  after_save :log_save
+  after_commit :log_save, on: %i[create update]
 
   attribute :category_id, :integer, default: -> { FemboyFans.config.default_forum_category }
 
@@ -77,12 +77,12 @@ class ForumTopic < ApplicationRecord
         ModAction.log!(is_sticky ? :forum_topic_stick : :forum_topic_unstick, self, forum_topic_title: title, user_id: creator_id)
       end
 
-      if saved_change_to_category_id? && !new_record?
+      if saved_change_to_category_id? && !previously_new_record?
         specific = true
         ModAction.log!(:forum_topic_move, self, forum_topic_title: title, user_id: creator_id, forum_category_id: category_id, forum_category_name: category.name, old_forum_category_id: category_id_before_last_save, old_forum_category_name: ForumCategory.find_by(id: category_id_before_last_save)&.name || "")
       end
 
-      unless specific || new_record?
+      unless specific || previously_new_record?
         ModAction.log!(:forum_topic_update, self, forum_topic_title: title, user_id: creator_id)
       end
     end
