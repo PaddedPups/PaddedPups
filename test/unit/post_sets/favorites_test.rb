@@ -29,7 +29,8 @@ module PostSets
           end
 
           # FIXME: PaginatedArray does not preserve mode and mode_seq
-          should_eventually "know what page it's on" do
+          should "know what page it's on" do
+            skip("PaginatedArray does not preserve mode and mode_seq")
             assert_not(@set.posts.is_first_page?)
             assert_not(@set.posts.is_last_page?)
           end

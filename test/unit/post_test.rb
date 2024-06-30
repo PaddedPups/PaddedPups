@@ -2010,7 +2010,8 @@ class PostTest < ActiveSupport::TestCase
     end
 
     # FIXME: This test fails randomly at different assertions
-    should_eventually "return posts ordered by a particular attribute" do
+    should "return posts ordered by a particular attribute" do
+      skip("fails randomly at different assertions")
       posts = (1..2).map do |n|
         tags = ["tagme", "gentag1 gentag2 artist:arttag char:chartag copy:copytag"]
 

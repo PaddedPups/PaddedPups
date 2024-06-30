@@ -118,7 +118,8 @@ class BulkUpdateRequestTest < ActiveSupport::TestCase
         end
       end
 
-      should_eventually "not validate" do
+      should "not validate" do
+        skip("doesn't work")
         assert_equal(["Error: a already implies c through another implication (create implication a -> c)"], @bur.errors.full_messages)
       end
     end

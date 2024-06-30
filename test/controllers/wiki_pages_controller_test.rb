@@ -165,7 +165,8 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
         assert_raises(ActiveRecord::RecordNotFound) { @wiki_page.reload }
       end
 
-      should_eventually "restrict access" do
+      should "restrict access" do
+        skip("Doesn't work due to properties attempting to be set after the record is destroyed")
         as(@user) { @wiki_pages = create_list(:wiki_page, User::Levels.constants.length) }
         assert_access(User::Levels::ADMIN) { |user| delete_auth wiki_page_path(@wiki_pages.shift), user }
       end
