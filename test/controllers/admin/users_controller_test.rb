@@ -10,14 +10,18 @@ module Admin
         @admin = create(:owner_user)
       end
 
-      context "#edit" do
+      context "edit action" do
         should "render" do
           get_auth edit_admin_user_path(@user), @admin
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ADMIN) { |user| get_auth edit_admin_user_path(@user), user }
+        end
       end
 
-      context "#update" do
+      context "update action" do
         context "on a basic user" do
           should "fail for moderators" do
             put_auth admin_user_path(@user), create(:moderator_user), params: { user: { level: User::Levels::TRUSTED } }
@@ -120,6 +124,10 @@ module Admin
               put_auth admin_user_path(@user), @admin, params: { user: { manage_tag_change_requests: true, no_aibur_voting: true } }
             end
           end
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| put_auth admin_user_path(@user), user, params: { user: { level: User::Levels::TRUSTED } }}
         end
       end
     end

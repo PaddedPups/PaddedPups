@@ -19,7 +19,7 @@ module ForumPosts
         CurrentUser.user = @user2
       end
 
-      context "show action" do
+      context "index action" do
         should "render" do
           get_auth url_for(controller: "forum_posts/votes", action: "index", only_path: true), @admin
           assert_response :success
@@ -41,6 +41,10 @@ module ForumPosts
             assert_equal(@user2.id, response.parsed_body[0]["user_id"])
           end
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER, anonymous_response: :forbidden) { |user| get_auth url_for(controller: "forum_posts/votes", action: "index", format: "json", only_path: true), user }
+        end
       end
 
       context "create action" do
@@ -58,6 +62,10 @@ module ForumPosts
           assert_equal("Access Denied: You are not allowed to vote on tag change requests.", @response.parsed_body["reason"])
 
           assert_nil(@forum_post.votes.find_by(user: @user2))
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER, anonymous_response: :forbidden) { |user| post_auth forum_post_votes_path(@forum_post), user, params: { score: 1, format: :json } }
         end
       end
 
@@ -90,6 +98,14 @@ module ForumPosts
           assert_equal @forum_post.id, log.forum_post_id
           assert_equal(-1, log.vote)
           assert_equal @user2.id, log.voter_id
+        end
+
+        should "restrict access" do
+          @votes = []
+          User::Levels.constants.length.times do
+            @votes << create(:forum_post_vote, forum_post: @forum_post, user: create(:user), score: 1)
+          end
+          assert_access(User::Levels::ADMIN) { |user| post_auth delete_forum_post_votes_path, user, params: { ids: @votes.shift.id } }
         end
       end
     end

@@ -17,6 +17,11 @@ module Users
           end
         end
 
+        should "work" do
+          put_auth users_dmail_filter_path, @user1, params: { dmail_filter: { words: "owned" } }
+          assert_equal("owned", @user1.reload.dmail_filter.try(&:words))
+        end
+
         should "not allow a user to create a filter belonging to another user" do
           params = {
             dmail_id:     @dmail.id,
@@ -26,8 +31,12 @@ module Users
             },
           }
 
-          put_auth(users_dmail_filter_path, @user1, params: params)
+          put_auth users_dmail_filter_path, @user1, params: params
           assert_not_equal("owned", @user2.reload.dmail_filter.try(&:words))
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::RESTRICTED, success_response: :redirect) { |user| put_auth users_dmail_filter_path, user, params: { dmail_filter: { words: "owned" } } }
         end
       end
     end

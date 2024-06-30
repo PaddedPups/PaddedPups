@@ -10,14 +10,14 @@ module Users
         @user = create(:user, email: "bob@ogres.net")
       end
 
-      context "#new" do
+      context "new action" do
         should "render" do
           get_auth new_users_email_change_path, @user
           assert_response :success
         end
       end
 
-      context "#create" do
+      context "create action" do
         context "with the correct password" do
           should "work" do
             post_auth users_email_change_path, @user, params: { email_change: { password: "password", email: "abc@ogres.net" } }
@@ -47,6 +47,10 @@ module Users
           post_auth users_email_change_path, @user, params: { email_change: { password: "password", email: "abc@ogres.net" } }
           @user.reload
           assert_equal("abc@ogres.net", @user.email)
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::RESTRICTED, success_response: :redirect) { |user| post_auth users_email_change_path, user, params: { email_change: { password: "password", email: "abc@ogres.net" } } }
         end
       end
     end

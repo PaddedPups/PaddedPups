@@ -5,7 +5,7 @@ require "test_helper"
 class TagSetPresenterTest < ActiveSupport::TestCase
   context "TagSetPresenter" do
     setup do
-      CurrentUser.user = create(:mod_user)
+      CurrentUser.user = create(:moderator_user)
       create(:tag, name: "bkub", category: TagCategory.artist)
       create(:tag, name: "chen", category: TagCategory.character)
       create(:tag, name: "cirno", category: TagCategory.character)

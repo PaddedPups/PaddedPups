@@ -9,6 +9,10 @@ class NewsUpdatePolicy < ApplicationPolicy
     user.is_admin?
   end
 
+  def destroy?
+    user.is_admin?
+  end
+
   def permitted_attributes
     %i[message]
   end

@@ -16,12 +16,20 @@ class NewsUpdatesControllerTest < ActionDispatch::IntegrationTest
         get_auth news_updates_path, @admin
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth news_updates_path, user }
+      end
     end
 
     context "new action" do
       should "render" do
         get_auth new_news_update_path, @admin
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN) { |user| get_auth new_news_update_path, user }
       end
     end
 
@@ -30,12 +38,20 @@ class NewsUpdatesControllerTest < ActionDispatch::IntegrationTest
         get_auth edit_news_update_path(@news_update), @admin
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN) { |user| get_auth edit_news_update_path(@news_update), user }
+      end
     end
 
     context "update action" do
       should "work" do
         put_auth news_update_path(@news_update), @admin, params: { news_update: { message: "zzz" } }
         assert_redirected_to(news_updates_path)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| put_auth news_update_path(@news_update), user, params: { news_update: { message: "zzz" } } }
       end
     end
 
@@ -46,6 +62,10 @@ class NewsUpdatesControllerTest < ActionDispatch::IntegrationTest
         end
         assert_redirected_to(news_updates_path)
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| post_auth news_updates_path, user, params: { news_update: { message: "zzz" } } }
+      end
     end
 
     context "destroy action" do
@@ -54,6 +74,10 @@ class NewsUpdatesControllerTest < ActionDispatch::IntegrationTest
           delete_auth news_update_path(@news_update), @admin
         end
         assert_redirected_to(news_updates_path)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| delete_auth news_update_path(create(:news_update)), user }
       end
     end
   end

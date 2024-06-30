@@ -15,39 +15,69 @@ class AvoidPostingsControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    should "get the index page" do
-      get_auth avoid_postings_path, @user
-      assert_response :success
-    end
-
-    should "get the show page" do
-      get_auth avoid_posting_path(@avoid_posting), @user
-      assert_response :success
-    end
-
-    should "get the edit page" do
-      get_auth edit_avoid_posting_path(@avoid_posting), @owner_user
-      assert_response :success
-    end
-
-    should "create an avoid posting entry" do
-      assert_difference("AvoidPosting.count", 1) do
-        post_auth avoid_postings_path, @owner_user, params: { avoid_posting: { artist_name: "another_artist" } }
+    context "index action" do
+      should "render" do
+        get_auth avoid_postings_path, @user
+        assert_response :success
       end
 
-      avoid_posting = AvoidPosting.find_by(artist_name: "another_artist")
-      assert_not_nil(avoid_posting)
-      assert_redirected_to(avoid_posting_path(avoid_posting))
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth avoid_postings_path, user }
+      end
     end
 
-    should "update an avoid posting entry" do
-      assert_difference("ModAction.count", 1) do
-        put_auth avoid_posting_path(@avoid_posting), @owner_user, params: { avoid_posting: { details: "test" } }
+    context "show action" do
+      should "render" do
+        get_auth avoid_posting_path(@avoid_posting), @user
+        assert_response :success
       end
 
-      assert_redirected_to(avoid_posting_path(@avoid_posting))
-      assert_equal("avoid_posting_update", ModAction.last.action)
-      assert_equal("test", @avoid_posting.reload.details)
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth avoid_posting_path(@avoid_posting), user }
+      end
+    end
+
+    context "edit action" do
+      should "render" do
+        get_auth edit_avoid_posting_path(@avoid_posting), @owner_user
+        assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::OWNER) { |user| get_auth edit_avoid_posting_path(@avoid_posting), user }
+      end
+    end
+
+    context "create action" do
+      should "work" do
+        assert_difference("AvoidPosting.count", 1) do
+          post_auth avoid_postings_path, @owner_user, params: { avoid_posting: { artist_name: "another_artist" } }
+        end
+
+        avoid_posting = AvoidPosting.find_by(artist_name: "another_artist")
+        assert_not_nil(avoid_posting)
+        assert_redirected_to(avoid_posting_path(avoid_posting))
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::OWNER, success_response: :redirect) { |user| post_auth avoid_postings_path, user, params: { avoid_posting: { artist_name: SecureRandom.hex(6) } } }
+      end
+    end
+
+    context "update action" do
+      should "work" do
+        assert_difference("ModAction.count", 1) do
+          put_auth avoid_posting_path(@avoid_posting), @owner_user, params: { avoid_posting: { details: "test" } }
+        end
+
+        assert_redirected_to(avoid_posting_path(@avoid_posting))
+        assert_equal("avoid_posting_update", ModAction.last.action)
+        assert_equal("test", @avoid_posting.reload.details)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::OWNER, success_response: :redirect) { |user| put_auth avoid_posting_path(@avoid_posting), user, params: { avoid_posting: { details: "test"} } }
+      end
     end
 
     context "when renaming" do
@@ -84,33 +114,51 @@ class AvoidPostingsControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    should "deactivate an avoid posting entry" do
-      assert_difference("ModAction.count", 1) do
-        put_auth deactivate_avoid_posting_path(@avoid_posting), @owner_user
+    context "deactivate action" do
+      should "work" do
+        assert_difference("ModAction.count", 1) do
+          put_auth deactivate_avoid_posting_path(@avoid_posting), @owner_user
+        end
+  
+        assert_equal(false, @avoid_posting.reload.is_active?)
+        assert_equal("avoid_posting_deactivate", ModAction.last.action)
       end
 
-      assert_equal(false, @avoid_posting.reload.is_active?)
-      assert_equal("avoid_posting_deactivate", ModAction.last.action)
+      should "restrict access" do
+        assert_access(User::Levels::OWNER, success_response: :redirect) { |user| put_auth deactivate_avoid_posting_path(@avoid_posting), user }
+      end
     end
 
-    should "reactivate an avoid posting entry" do
-      @avoid_posting.update_column(:is_active, false)
-
-      assert_difference("ModAction.count", 1) do
-        put_auth reactivate_avoid_posting_path(@avoid_posting), @owner_user
+    context "reactivate action" do
+      should "work" do
+        @avoid_posting.update_column(:is_active, false)
+  
+        assert_difference("ModAction.count", 1) do
+          put_auth reactivate_avoid_posting_path(@avoid_posting), @owner_user
+        end
+  
+        assert_equal(true, @avoid_posting.reload.is_active?)
+        assert_equal("avoid_posting_reactivate", ModAction.last.action)
       end
-
-      assert_equal(true, @avoid_posting.reload.is_active?)
-      assert_equal("avoid_posting_reactivate", ModAction.last.action)
+  
+      should "restrict access" do
+        assert_access(User::Levels::OWNER, success_response: :redirect) { |user| put_auth reactivate_avoid_posting_path(@avoid_posting), user }
+      end
     end
 
-    should "destroy an avoid posting entry" do
-      assert_difference("ModAction.count", 1) do
-        delete_auth avoid_posting_path(@avoid_posting), @owner_user
+    context "destroy action" do
+      should "work" do
+        assert_difference("ModAction.count", 1) do
+          delete_auth avoid_posting_path(@avoid_posting), @owner_user
+        end
+  
+        assert_nil(AvoidPosting.find_by(id: @avoid_posting.id))
+        assert_equal("avoid_posting_delete", ModAction.last.action)
       end
 
-      assert_nil(AvoidPosting.find_by(id: @avoid_posting.id))
-      assert_equal("avoid_posting_delete", ModAction.last.action)
+      should "restrict access" do
+        assert_access(User::Levels::OWNER, success_response: :redirect) { |user| delete_auth avoid_posting_path(@avoid_posting), user }
+      end
     end
   end
 end

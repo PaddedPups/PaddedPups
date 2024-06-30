@@ -14,6 +14,10 @@ module Admin
           get_auth admin_dashboard_path, @admin
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ADMIN) { |user| get_auth admin_dashboard_path, user }
+        end
       end
     end
   end

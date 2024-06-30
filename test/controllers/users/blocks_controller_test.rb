@@ -27,6 +27,10 @@ module Users
           get_auth user_blocks_path(@user), @admin
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER) { |user| get_auth user_blocks_path(user), user }
+        end
       end
 
       context "create action" do
@@ -98,6 +102,10 @@ module Users
 
             assert_not @user.is_blocking_comments_from?(@admin)
           end
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| post_auth user_blocks_path(user), user, params: { user_block: { target_id: @user.id, hide_comments: true } } }
         end
       end
 
@@ -177,6 +185,10 @@ module Users
             assert_not @user.is_blocking_comments_from?(@user2)
           end
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth user_block_path(user, create(:user_block, user: user, target: @user)), user, params: { user_block: { hide_comments: true } } }
+        end
       end
 
       context "delete action" do
@@ -227,6 +239,10 @@ module Users
               @block.reload
             end
           end
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| delete_auth user_block_path(user, create(:user_block, user: user, target: @user)), user }
         end
       end
     end

@@ -5,7 +5,7 @@ require "test_helper"
 class EmailBlacklistTest < ActiveSupport::TestCase
   setup do
     @user = create(:user)
-    CurrentUser.user = create(:mod_user)
+    CurrentUser.user = create(:moderator_user)
   end
 
   should "detect email by suffix" do

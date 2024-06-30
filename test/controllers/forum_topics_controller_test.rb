@@ -32,6 +32,10 @@ class ForumTopicsControllerTest < ActionDispatch::IntegrationTest
         @user.reload
         assert_nil(@user.last_forum_read_at)
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth forum_topic_path(@forum_topic), user }
+      end
     end
 
     context "index action" do
@@ -109,8 +113,7 @@ class ForumTopicsControllerTest < ActionDispatch::IntegrationTest
       should "fail with expected error if invalid category_id is provided" do
         post_auth forum_topics_path, @user, params: { forum_topic: { title: "bababa", category_id: 0, original_post_attributes: { body: "xaxaxa" } }, format: :json }
 
-        assert_response :unprocessable_entity
-        assert_includes(@response.parsed_body.dig("errors", "category"), "is invalid")
+        assert_response :forbidden
       end
 
       should "cause the unread indicator to show" do

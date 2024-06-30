@@ -4,22 +4,22 @@
 class UserBlockPolicy < ApplicationPolicy
   def index?
     return unbanned? if record.blank?
-    record == user || user.is_admin?
+    (unbanned? && record == user) || user.is_admin?
   end
 
   def create?
     return unbanned? if record.blank?
-    record == user
+    unbanned? && record == user
   end
 
   def update?
     return unbanned? if record.blank?
-    record == user
+    unbanned? && record == user
   end
 
   def destroy?
     return unbanned? if record.blank?
-    record == user
+    unbanned? && record == user
   end
 
   def permitted_attributes

@@ -34,6 +34,10 @@ module Notes
           get note_versions_path, params: { search: { updater_id: @user2.id } }
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ANONYMOUS) { |user| get_auth note_versions_path, user }
+        end
       end
     end
   end

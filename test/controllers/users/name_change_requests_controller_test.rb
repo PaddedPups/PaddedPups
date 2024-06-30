@@ -23,12 +23,20 @@ module Users
           get_auth new_user_name_change_request_path, @user
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER) { |user| get_auth new_user_name_change_request_path, user }
+        end
       end
 
       context "create action" do
         should "work" do
           post_auth user_name_change_requests_path, @user, params: { user_name_change_request: { desired_name: "zun" } }
           assert_response :success
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| post_auth user_name_change_requests_path, user, params: { user_name_change_request: { desired_name: SecureRandom.hex(6) } } }
         end
       end
 
@@ -45,6 +53,18 @@ module Users
             assert_response :forbidden
           end
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER) do |user|
+            request = UserNameChangeRequest.create!(
+              user_id:       user.id,
+              original_name: user.name,
+              desired_name:  SecureRandom.hex(6),
+              change_reason: "hello",
+            )
+            get_auth user_name_change_request_path(request), user
+          end
+        end
       end
 
       context "for actions restricted to admins" do
@@ -52,6 +72,10 @@ module Users
           should "render" do
             get_auth user_name_change_requests_path, @admin
             assert_response :success
+          end
+
+          should "restrict access" do
+            assert_access(User::Levels::MODERATOR) { |user| get_auth user_name_change_requests_path, user }
           end
         end
       end

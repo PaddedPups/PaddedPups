@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class ForumTopicPolicy < ApplicationPolicy
+  def create?
+    min_level? && (!record.is_a?(ForumTopic) || record.category.can_create_within?(user))
+  end
+
   def show?
     min_level?
   end

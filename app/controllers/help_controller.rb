@@ -13,9 +13,16 @@ class HelpController < ApplicationController
     if params[:id] =~ /\A\d+\Z/
       @help = HelpPage.find(params[:id])
     else
-      @help = HelpPage.find_by!(name: params[:id])
+      @help = HelpPage.find_by(name: params[:id])
     end
-    authorize(@help)
+    authorize(@help, policy_class: HelpPagePolicy)
+    if @help.blank?
+      respond_to do |format|
+        format.html { redirect_to(help_pages_path, notice: "The help page \"#{params[:id]}\" was not found") }
+        format.json { raise(ActiveRecord::RecordNotFound) }
+      end
+      return
+    end
     if @help.wiki_page.parent.present?
       @wiki_redirect = WikiPage.find_by(title: @help.wiki_page.parent_name)
     end

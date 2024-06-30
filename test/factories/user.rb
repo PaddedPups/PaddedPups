@@ -14,9 +14,17 @@ FactoryBot.define do
     created_at { Time.now }
     last_logged_in_at { Time.now }
 
+    factory(:anonymous_user) do
+      level { User::Levels::ANONYMOUS }
+    end
+
     factory(:banned_user) do
       transient { ban_duration { 3 } }
       level { User::Levels::BANNED }
+    end
+
+    factory(:restricted_user) do
+      level { User::Levels::RESTRICTED }
     end
 
     factory(:member_user) do
@@ -27,6 +35,10 @@ FactoryBot.define do
       level { User::Levels::TRUSTED }
     end
 
+    factory(:former_staff_user) do
+      level { User::Levels::FORMER_STAFF }
+    end
+
     factory(:janitor_user) do
       level { User::Levels::JANITOR }
       unrestricted_uploads { true }
@@ -35,12 +47,10 @@ FactoryBot.define do
 
     factory(:moderator_user) do
       level { User::Levels::MODERATOR }
-      can_approve_posts { true }
     end
 
-    factory(:mod_user) do
-      level { User::Levels::MODERATOR }
-      can_approve_posts { true }
+    factory(:system_user) do
+      level { User::Levels::SYSTEM }
     end
 
     factory(:admin_user) do

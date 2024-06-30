@@ -24,6 +24,10 @@ module WikiPages
           get wiki_page_versions_path, params: { search: { wiki_page_id: @wiki_page.id } }
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ANONYMOUS) { |user| get_auth wiki_page_versions_path, user }
+        end
       end
 
       context "show action" do
@@ -31,12 +35,20 @@ module WikiPages
           get wiki_page_version_path(@wiki_page.versions.first)
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ANONYMOUS) { |user| get_auth wiki_page_version_path(@wiki_page.versions.first), user }
+        end
       end
 
       context "diff action" do
         should "render" do
           get diff_wiki_page_versions_path, params: { thispage: @wiki_page.versions.first.id, otherpage: @wiki_page.versions.last.id }
           assert_response :success
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::ANONYMOUS) { |user| get_auth diff_wiki_page_versions_path, user, params: { thispage: @wiki_page.versions.first.id, otherpage: @wiki_page.versions.last.id } }
         end
       end
     end

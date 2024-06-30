@@ -14,7 +14,7 @@ class DmailsControllerTest < ActionDispatch::IntegrationTest
     end
 
     context "new action" do
-      should "get the page" do
+      should "render" do
         get_auth new_dmail_path, @user
         assert_response :success
       end
@@ -37,6 +37,10 @@ class DmailsControllerTest < ActionDispatch::IntegrationTest
           end
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth new_dmail_path, user }
+      end
     end
 
     context "index action" do
@@ -58,6 +62,10 @@ class DmailsControllerTest < ActionDispatch::IntegrationTest
       should "work for json" do
         get_auth dmails_path, @user, params: { format: :json }
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth dmails_path, user }
       end
     end
 
@@ -97,6 +105,10 @@ class DmailsControllerTest < ActionDispatch::IntegrationTest
         get_auth dmail_path(@dmail, key: @dmail.key), @user2
         assert_response :forbidden
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth dmail_path(create(:dmail, owner: user, to: user, from: create(:user))), user }
+      end
     end
 
     context "mark as read action" do
@@ -105,6 +117,10 @@ class DmailsControllerTest < ActionDispatch::IntegrationTest
         assert_response :success
         assert_predicate @dmail.reload, :is_read?
         assert_predicate @dmail.owner.notifications.last, :is_read?
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| put_auth mark_as_read_dmail_path(create(:dmail, owner: user, to: user, from: create(:user))), user }
       end
     end
 
@@ -126,6 +142,10 @@ class DmailsControllerTest < ActionDispatch::IntegrationTest
         assert_equal 1, @dmail.owner.reload.unread_notification_count
         assert_predicate @dmail.owner, :has_unread_notifications?
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth mark_as_unread_dmail_path(create(:dmail, owner: user, to: user, from: create(:user))), user }
+      end
     end
 
     context "create action" do
@@ -139,6 +159,10 @@ class DmailsControllerTest < ActionDispatch::IntegrationTest
           post_auth dmails_path, @user, params: { dmail: dmail_attribs }
           assert_redirected_to dmail_path(Dmail.last)
         end
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| post_auth dmails_path, user, params: { dmail: { to_id: @user2.id, title: "abc", body: "abc" } } }
       end
     end
 
@@ -155,6 +179,10 @@ class DmailsControllerTest < ActionDispatch::IntegrationTest
         @dmail.reload
         assert_not @dmail.is_deleted
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| delete_auth dmail_path(create(:dmail, owner: user, to: user, from: create(:user))), user }
+      end
     end
 
     context "spam" do
@@ -165,6 +193,7 @@ class DmailsControllerTest < ActionDispatch::IntegrationTest
         SpamDetector.stubs(:enabled?).returns(true)
         stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/comment-check}).to_return(status: 200, body: "true")
         stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/submit-spam}).to_return(status: 200, body: nil)
+        stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/submit-ham}).to_return(status: 200, body: nil)
       end
 
       should "mark spam dmails as spam" do
@@ -229,6 +258,10 @@ class DmailsControllerTest < ActionDispatch::IntegrationTest
           assert_redirected_to(dmail_path(@mod_dmail))
           assert_equal(true, @mod_dmail.reload.is_spam?)
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| put_auth mark_spam_dmail_path(create(:dmail, owner: user, to: user, from: create(:user))), user }
+        end
       end
 
       context "mark not spam action" do
@@ -249,6 +282,10 @@ class DmailsControllerTest < ActionDispatch::IntegrationTest
           put_auth mark_not_spam_dmail_path(@mod_dmail), @mod
           assert_redirected_to(dmail_path(@mod_dmail))
           assert_equal(false, @mod_dmail.reload.is_spam?)
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| put_auth mark_not_spam_dmail_path(create(:dmail, owner: user, to: user, from: create(:user))), user }
         end
       end
     end

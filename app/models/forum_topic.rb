@@ -214,7 +214,7 @@ class ForumTopic < ApplicationRecord
   end
 
   def visible?(user)
-    return false unless user.level >= category.can_view
+    return false unless category && user.level >= category.can_view
     return true if CurrentUser.is_moderator?
     return false if is_hidden && user.id != creator_id
     true

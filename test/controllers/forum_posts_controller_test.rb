@@ -82,6 +82,10 @@ class ForumPostsControllerTest < ActionDispatch::IntegrationTest
           assert_select "#forum-post-#{@forum_post.id}"
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth forum_posts_path, user }
+      end
     end
 
     context "edit action" do
@@ -97,7 +101,11 @@ class ForumPostsControllerTest < ActionDispatch::IntegrationTest
 
       should "fail if the editor is not the creator of the topic and is not an admin" do
         get_auth edit_forum_post_path(@forum_post), @other_user
-        assert_response(403)
+        assert_response :forbidden
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN) { |user| get_auth edit_forum_post_path(@forum_post), user }
       end
     end
 
@@ -105,6 +113,10 @@ class ForumPostsControllerTest < ActionDispatch::IntegrationTest
       should "render" do
         get_auth new_forum_post_path, @user, params: { forum_post: { topic_id: @forum_topic.id } }
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth new_forum_post_path, user, params: { forum_post: { topic_id: @forum_topic.id } } }
       end
     end
 
@@ -134,6 +146,10 @@ class ForumPostsControllerTest < ActionDispatch::IntegrationTest
           end
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, anonymous_response: :forbidden) { |user| post_auth forum_posts_path, user, params: { forum_post: { body: "xaxaxa", topic_id: @forum_topic.id }, format: :json } }
+      end
     end
 
     context "destroy action" do
@@ -142,6 +158,24 @@ class ForumPostsControllerTest < ActionDispatch::IntegrationTest
         delete_auth forum_post_path(@forum_post), @admin
         get_auth forum_post_path(@forum_post), @admin
         assert_response :not_found
+      end
+
+      should "restrict access" do
+        as(create(:admin_user)) { @posts = create_list(:forum_post, User::Levels.constants.length, topic: @forum_topic) }
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| delete_auth forum_post_path(@posts.shift), user }
+      end
+    end
+
+    context "hide action" do
+      should "restore the post" do
+        put_auth hide_forum_post_path(@forum_post), @mod
+        assert_redirected_to(forum_post_path(@forum_post))
+        @forum_post.reload
+        assert_equal(true, @forum_post.is_hidden?)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| put_auth hide_forum_post_path(@forum_post), user }
       end
     end
 
@@ -158,6 +192,10 @@ class ForumPostsControllerTest < ActionDispatch::IntegrationTest
         @forum_post.reload
         assert_equal(false, @forum_post.is_hidden?)
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| put_auth unhide_forum_post_path(@forum_post), user }
+      end
     end
 
     context "spam" do
@@ -165,6 +203,7 @@ class ForumPostsControllerTest < ActionDispatch::IntegrationTest
         SpamDetector.stubs(:enabled?).returns(true)
         stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/comment-check}).to_return(status: 200, body: "true")
         stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/submit-spam}).to_return(status: 200, body: nil)
+        stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/submit-ham}).to_return(status: 200, body: nil)
       end
 
       should "mark spam forum posts as spam" do
@@ -226,6 +265,10 @@ class ForumPostsControllerTest < ActionDispatch::IntegrationTest
           assert_response(:success)
           assert_equal(true, @forum_post.reload.is_spam?)
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR) { |user| put_auth mark_spam_forum_post_path(@forum_post), user }
+        end
       end
 
       context "mark not spam action" do
@@ -247,6 +290,45 @@ class ForumPostsControllerTest < ActionDispatch::IntegrationTest
           assert_response(:success)
           assert_equal(false, @forum_post.reload.is_spam?)
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR) { |user| put_auth mark_not_spam_forum_post_path(@forum_post), user }
+        end
+      end
+    end
+
+    context "warning action" do
+      should "mark warning" do
+        put_auth warning_forum_post_path(@forum_post), @mod, params: { record_type: "warning" }
+        assert_response :success
+        assert_equal("warning", @forum_post.reload.warning_type)
+        assert_equal(@mod.id, @forum_post.reload.warning_user_id)
+      end
+
+      should "mark record" do
+        put_auth warning_forum_post_path(@forum_post), @mod, params: { record_type: "record" }
+        assert_response :success
+        assert_equal("record", @forum_post.reload.warning_type)
+        assert_equal(@mod.id, @forum_post.reload.warning_user_id)
+      end
+
+      should "mark ban" do
+        put_auth warning_forum_post_path(@forum_post), @mod, params: { record_type: "ban" }
+        assert_response :success
+        assert_equal("ban", @forum_post.reload.warning_type)
+        assert_equal(@mod.id, @forum_post.reload.warning_user_id)
+      end
+
+      should "unmark" do
+        as(@mod) { @forum_post.user_warned!("warning", @mod) }
+        put_auth warning_forum_post_path(@forum_post), @mod, params: { record_type: "unmark" }
+        assert_response :success
+        assert_nil(@forum_post.reload.warning_type)
+        assert_nil(@forum_post.reload.warning_user_id)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MODERATOR) { |user| put_auth warning_forum_post_path(@forum_post), user, params: { record_type: "warning" } }
       end
     end
   end

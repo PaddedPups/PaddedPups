@@ -75,6 +75,15 @@ module Posts
           assert_equal @response.parsed_body["location"], post_path(@post)
           assert_equal "pending", @post.replacements.last.status
         end
+
+        should "restrict access" do
+          FemboyFans.config.stubs(:disable_age_checks?).returns(true)
+          file = fixture_file_upload("alpha.png")
+          assert_access(User::Levels::MEMBER, anonymous_response: :forbidden) do |user|
+            PostReplacement.delete_all
+            post_auth post_replacements_path, user, params: { post_replacement: { replacement_file: file, reason: "test replacement" }, post_id: @post.id, format: :json }
+          end
+        end
       end
 
       context "reject action" do
@@ -98,12 +107,24 @@ module Posts
           assert_equal(@replacement.rejection_reason, "test")
           assert_not_equal(@post.md5, @replacement.md5)
         end
+
+        should "restrict access" do
+          assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER], success_response: :redirect) do |user|
+            PostReplacement.delete_all
+            replacement = create(:png_replacement, creator: @user, post: @post)
+            put_auth reject_post_replacement_path(replacement), user
+          end
+        end
       end
 
       context "reject_with_reason action" do
         should "render" do
           get_auth reject_with_reason_post_replacement_path(@replacement), @user
           assert_response(:success)
+        end
+
+        should "restrict access" do
+          assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER]) { |user| get_auth reject_with_reason_post_replacement_path(@replacement), user }
         end
       end
 
@@ -115,6 +136,13 @@ module Posts
           @post.reload
           assert_equal @replacement.md5, @post.md5
           assert_equal @replacement.status, "approved"
+        end
+
+        should "restrict access" do
+          assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER], success_response: :redirect) do |user|
+            @replacement.update_column(:status, "pending")
+            put_auth approve_post_replacement_path(@replacement), user
+          end
         end
       end
 
@@ -128,6 +156,14 @@ module Posts
           assert_equal @replacement.md5, last_post.md5
           assert_equal @replacement.status, "promoted"
         end
+
+        should "restrict access" do
+          assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER], success_response: :redirect) do |user|
+            Post.where.not(id: @post.id).delete_all
+            @replacement.update_column(:status, "pending")
+            post_auth promote_post_replacement_path(@replacement), user
+          end
+        end
       end
 
       context "toggle action" do
@@ -140,6 +176,11 @@ module Posts
           @replacement.reload
           assert_not @replacement.penalize_uploader_on_approve
         end
+
+        should "restrict access" do
+          as(create(:admin_user)) { @replacement.approve!(penalize_current_uploader: true) }
+          assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER], anonymous_response: :forbidden) { |user| put_auth toggle_penalize_post_replacement_path(@replacement), user, params: { format: :json } }
+        end
       end
 
       context "index action" do
@@ -147,12 +188,20 @@ module Posts
           get post_replacements_path
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ANONYMOUS) { |user| get_auth post_replacements_path, user }
+        end
       end
 
       context "new action" do
         should "render" do
           get_auth new_post_replacement_path, @user, params: { post_id: @post.id }
           assert_response :success
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER) { |user| get_auth new_post_replacement_path, user, params: { post_id: @post.id } }
         end
       end
     end

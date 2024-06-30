@@ -145,8 +145,8 @@ class ApplicationController < ActionController::Base
     @message = "Access Denied: #{exception}" if exception.is_a?(String)
     @message ||= exception&.message || "Access Denied"
 
-    respond_to do |fmt|
-      fmt.html do
+    respond_to do |format|
+      format.html do
         if CurrentUser.is_anonymous?
           if request.get?
             redirect_to(new_session_path(url: previous_url), notice: @message)
@@ -157,10 +157,12 @@ class ApplicationController < ActionController::Base
           render(template: "static/access_denied", status: 403)
         end
       end
-      fmt.json do
+      format.json do
         render(json: { success: false, reason: @message }.to_json, status: 403)
       end
     end
+  rescue ActionController::UnknownFormat
+    render(plain: @message, status: 403)
   end
 
   def set_current_user

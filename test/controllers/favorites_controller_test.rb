@@ -25,6 +25,10 @@ class FavoritesControllerTest < ActionDispatch::IntegrationTest
         get_auth favorites_path, @user
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth favorites_path, user }
+      end
     end
 
     context "create action" do
@@ -37,6 +41,10 @@ class FavoritesControllerTest < ActionDispatch::IntegrationTest
           post_auth favorites_path, @user, params: { format: "js", post_id: @post.id }
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| post_auth favorites_path, user, params: { post_id: @post.id } }
+      end
     end
 
     context "destroy action" do
@@ -47,8 +55,12 @@ class FavoritesControllerTest < ActionDispatch::IntegrationTest
 
       should "remove the favorite from the current user" do
         assert_difference("Favorite.count", -1) do
-          delete_auth favorite_path(@post.id), @user, params: { format: "js" }
+          delete_auth favorite_path(@post), @user, params: { format: "js" }
         end
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| delete_auth favorite_path(@post), user }
       end
     end
   end

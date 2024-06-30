@@ -14,6 +14,10 @@ module Posts
           get post_approvals_path
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ANONYMOUS) { |user| get_auth post_approvals_path, user }
+        end
       end
 
       context "create action" do
@@ -24,11 +28,45 @@ module Posts
           end
         end
 
-        should "render" do
+        should "work" do
           post_auth post_approvals_path, @admin, params: { post_id: @post.id, format: :json }
           assert_response :success
           @post.reload
-          assert_not(@post.is_pending?)
+          assert_not(@post.reload.is_pending?)
+        end
+
+        should "restrict access" do
+          assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER], anonymous_response: :forbidden) { |user| post_auth post_approvals_path, user, params: { post_id: create(:post, is_pending: true).id, format: :json } }
+        end
+      end
+
+      context "destroy action" do
+        setup do
+          @admin = create(:admin_user)
+          as(@admin) do
+            @post = create(:post, is_pending: true)
+            @post.approve!
+          end
+        end
+
+        should "work" do
+          delete_auth post_approval_path(@post), @admin, params: { format: :json }
+          assert_response :success
+          assert(@post.reload.is_pending?)
+        end
+
+        should "not work if user is not approver" do
+          delete_auth post_approval_path(@post), create(:admin_user), params: { format: :json }
+          assert_response :bad_request
+          assert_not(@post.reload.is_pending?)
+        end
+
+        should "restrict access" do
+          assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER], anonymous_response: :forbidden) do |user|
+            post = create(:post, is_pending: true)
+            post.approve!
+            delete_auth post_approval_path(post), user, params: { format: :json }
+          end
         end
       end
     end

@@ -16,7 +16,7 @@ module Posts
         @admin = create(:admin_user)
       end
 
-      context "show action" do
+      context "index action" do
         should "render" do
           get_auth url_for(controller: "posts/votes", action: "index", only_path: true), @admin
           assert_response :success
@@ -38,6 +38,10 @@ module Posts
             assert_equal(1, response.parsed_body.length)
             assert_equal(@user2.id, response.parsed_body[0]["user_id"])
           end
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER) { |user| get_auth url_for(controller: "posts/votes", action: "index", only_path: true), user }
         end
       end
 
@@ -75,6 +79,10 @@ module Posts
             end
           end
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER) { |user| post_auth post_votes_path(@post), user, params: { score: 1 } }
+        end
       end
 
       context "lock action" do
@@ -102,6 +110,14 @@ module Posts
           assert_equal @post.id, log.post_id
           assert_equal 1, log.vote
           assert_equal @user2.id, log.voter_id
+        end
+
+        should "restrict access" do
+          @votes = []
+          User::Levels.constants.length.times do
+            @votes << create(:post_vote, post: @post, user: create(:user), score: 1)
+          end
+          assert_access(User::Levels::MODERATOR) { |user| post_auth lock_post_votes_path, user, params: { ids: @votes.shift.id } }
         end
       end
 
@@ -135,6 +151,14 @@ module Posts
           assert_equal 1, log.vote
           assert_equal @user2.id, log.voter_id
         end
+      end
+
+      should "restrict access" do
+        @votes = []
+        User::Levels.constants.length.times do
+          @votes << create(:post_vote, post: @post, user: create(:user), score: 1)
+        end
+        assert_access(User::Levels::ADMIN) { |user| post_auth delete_post_votes_path, user, params: { ids: @votes.shift.id } }
       end
     end
   end

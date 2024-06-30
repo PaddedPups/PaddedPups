@@ -43,6 +43,10 @@ module Pools
           assert_select "#pool-version-#{@versions[1].id}"
           assert_select "#pool-version-#{@versions[2].id}", false
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ANONYMOUS) { |user| get_auth pool_versions_path, user }
+        end
       end
     end
   end

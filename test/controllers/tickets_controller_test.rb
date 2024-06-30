@@ -56,6 +56,10 @@ class TicketsControllerTest < ActionDispatch::IntegrationTest
           put_auth ticket_path(@ticket), @admin, params: { ticket: { status: "approved", response: "" } }
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| put_auth ticket_path(@ticket), user, params: { ticket: { response: SecureRandom.hex(6) } } }
+      end
     end
 
     context "for an artist ticket" do
@@ -242,7 +246,7 @@ class TicketsControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    context "for user tickets" do
+    context "for a user ticket" do
       setup do
         @content = create(:user)
       end

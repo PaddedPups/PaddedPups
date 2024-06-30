@@ -22,6 +22,10 @@ module Posts
           end
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER], anonymous_response: :forbidden) { |user| post_auth post_disapprovals_path, user, params: { post_disapproval: { post_id: @post.id, reason: "borderline_quality" }, format: :json } }
+        end
       end
 
       context "index action" do
@@ -30,6 +34,10 @@ module Posts
           get_auth post_disapprovals_path, @admin
 
           assert_response :success
+        end
+
+        should "restrict access" do
+          assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER]) { |user| get_auth post_disapprovals_path, user }
         end
       end
     end

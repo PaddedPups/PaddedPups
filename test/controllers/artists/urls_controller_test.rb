@@ -26,6 +26,10 @@ module Artists
 
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ANONYMOUS) { |user| get_auth artist_urls_path, user }
+        end
       end
     end
   end

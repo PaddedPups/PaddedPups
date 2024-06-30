@@ -16,6 +16,10 @@ module Users
           get_auth new_user_feedback_path, @critic, params: { user_feedback: { user_id: @user.id } }
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR) { |user| get_auth new_user_feedback_path, user }
+        end
       end
 
       context "edit action" do
@@ -28,6 +32,10 @@ module Users
         should "render" do
           get_auth edit_user_feedback_path(@user_feedback), @critic
           assert_response :success
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR) { |user| get_auth edit_user_feedback_path(@user_feedback), user }
         end
       end
 
@@ -49,6 +57,10 @@ module Users
             assert_response :success
           end
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ANONYMOUS) { |user| get_auth user_feedbacks_path, user }
+        end
       end
 
       context "create action" do
@@ -56,6 +68,10 @@ module Users
           assert_difference(%w[UserFeedback.count Notification.count], 1) do
             post_auth user_feedbacks_path, @critic, params: { user_feedback: { category: "positive", user_name: @user.name, body: "xxx" } }
           end
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| post_auth user_feedbacks_path, user, params: { user_feedback: { category: "positive", user_name: @user.name, body: "xxx" } } }
         end
       end
 
@@ -82,6 +98,10 @@ module Users
             put_auth user_feedback_path(@feedback), @critic, params: { id: @feedback.id, user_feedback: { body: "changed", send_update_notification: true } }
           end
           assert_equal("feedback_update", Notification.last.category)
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| put_auth user_feedback_path(as(@mod) { create(:user_feedback) }), user, params: { user_feedback: { category: "positive" } } }
         end
       end
 
@@ -120,6 +140,10 @@ module Users
               delete_auth user_feedback_path(@user_feedback), @mod
             end
           end
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| delete_auth user_feedback_path(as(@mod) { create(:user_feedback) }), user }
         end
       end
     end

@@ -44,6 +44,10 @@ module Tags
           assert_select "#tag-version-#{@versions[1].id}"
           assert_select "#tag-version-#{@versions[2].id}", false
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ANONYMOUS) { |user| get_auth tag_versions_path, user }
+        end
       end
     end
   end

@@ -17,12 +17,20 @@ module Rules
           get_auth new_rule_category_path, @admin
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ADMIN) { |user| get_auth new_rule_category_path, user }
+        end
       end
 
       context "edit action" do
         should "render" do
           get_auth edit_rule_category_path(@category), @admin
           assert_response :success
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::ADMIN) { |user| get_auth edit_rule_category_path(@category), user }
         end
       end
 
@@ -43,6 +51,10 @@ module Rules
           assert_equal(RuleCategory.last, mod_action.subject)
           assert_equal("blah", mod_action.name)
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| post_auth rule_categories_path, user, params: { rule_category: { name: SecureRandom.hex(6) } } }
+        end
       end
 
       context "update action" do
@@ -62,6 +74,10 @@ module Rules
           assert_equal(@category, mod_action.subject)
           assert_equal("xxx", mod_action.name)
           assert_equal(old, mod_action.old_name)
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| put_auth rule_category_path(@category), user, params: { rule_category: { name: SecureRandom.hex(6) } } }
         end
       end
 
@@ -112,6 +128,10 @@ module Rules
             assert_equal("RuleCategory", category_action.subject_type)
             assert_equal(@category.name, category_action.name)
           end
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| delete_auth rule_category_path(create(:rule_category)), user }
         end
       end
     end

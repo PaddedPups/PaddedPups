@@ -60,6 +60,11 @@ class UploadsControllerTest < ActionDispatch::IntegrationTest
           assert_response :success
         end
       end
+
+      should "restrict access" do
+        FemboyFans.config.stubs(:disable_age_checks?).returns(true)
+        assert_access(User::Levels::MEMBER) { |user| get_auth new_upload_path, user }
+      end
     end
 
     context "index action" do
@@ -89,6 +94,10 @@ class UploadsControllerTest < ActionDispatch::IntegrationTest
           assert_response :success
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::JANITOR) { |user| get_auth uploads_path, user }
+      end
     end
 
     context "show action" do
@@ -102,6 +111,10 @@ class UploadsControllerTest < ActionDispatch::IntegrationTest
         get_auth upload_path(@upload), @user
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::JANITOR) { |user| get_auth upload_path(@upload), user }
+      end
     end
 
     context "create action" do
@@ -109,6 +122,15 @@ class UploadsControllerTest < ActionDispatch::IntegrationTest
         assert_difference("Upload.count", 1) do
           file = fixture_file_upload("test.jpg")
           post_auth uploads_path, @user, params: { upload: { file: file, tag_string: "aaa", rating: "q", source: "aaa" } }
+        end
+      end
+
+      should "restrict access" do
+        file = fixture_file_upload("test.jpg")
+        FemboyFans.config.stubs(:disable_age_checks?).returns(true)
+        assert_access(User::Levels::MEMBER, anonymous_response: :forbidden) do |user|
+          Post.delete_all
+          post_auth uploads_path, user, params: { upload: { file: file, tag_string: "aaa", rating: "q", source: "aaa" }, format: :json }
         end
       end
     end

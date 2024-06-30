@@ -7,7 +7,7 @@ module Moderator
     end
 
     def export?
-      user.is_admin?
+      index?
     end
 
     def permitted_search_params

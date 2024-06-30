@@ -13,12 +13,20 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
       should "render" do
         get_auth notifications_path, @user
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth notifications_path, user }
+      end
     end
 
     context "show action" do
       should "redirect" do
         get_auth notification_path(@notification), @user
         assert_redirected_to(@notification.view_link)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| get_auth notification_path(create(:notification, user: user)), user }
       end
     end
 
@@ -30,6 +38,10 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
         assert_equal(0, Notification.count)
         assert_equal(0, @user.reload.unread_notification_count)
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| delete_auth notification_path(create(:notification, user: user)), user }
+      end
     end
 
     context "mark as read action" do
@@ -39,6 +51,10 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
         assert_redirected_to(notifications_path)
         assert(@notification.reload.is_read)
         assert_equal(0, @user.reload.unread_notification_count)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth mark_as_read_notification_path(create(:notification, user: user)), user }
       end
     end
 
@@ -50,6 +66,10 @@ class NotificationsControllerTest < ActionDispatch::IntegrationTest
         assert_redirected_to(notifications_path)
         assert_equal(0, Notification.unread.count)
         assert_equal(0, @user.reload.unread_notification_count)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth mark_all_as_read_notifications_path, user }
       end
     end
   end

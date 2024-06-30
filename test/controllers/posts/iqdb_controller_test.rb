@@ -63,6 +63,10 @@ module Posts
             assert_response :success
           end
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ANONYMOUS) { |user| get_auth posts_iqdb_path, user }
+        end
       end
     end
   end

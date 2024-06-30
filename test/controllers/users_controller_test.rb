@@ -33,6 +33,10 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
         get users_path, params: { search: { level: "", name: "test" } }
         assert_redirected_to users_path(search: { name: "test" })
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth users_path, user }
+      end
     end
 
     context "show action" do
@@ -64,6 +68,10 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
         assert_response :success
         assert_nil(json["last_logged_in_at"])
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth user_path(@user), user }
       end
     end
 
@@ -149,6 +157,10 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
         get_auth edit_users_path, @user
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::RESTRICTED) { |user| get_auth edit_users_path, user }
+      end
     end
 
     context "update action" do
@@ -185,6 +197,10 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
           assert_match(/Email can't be blank/, flash[:notice])
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::RESTRICTED, success_response: :redirect) { |user| post_auth update_users_path, user, params: { user: { favorite_tags: "xyz" } } }
+      end
     end
 
     context "custom css" do
@@ -193,6 +209,10 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
         get_auth custom_style_users_path(format: :css), @user
         assert_response :success
         assert_equal("body { display:none !important; }", @response.body.strip)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, anonymous_response: :forbidden) { |user| get_auth custom_style_users_path(format: :css), user }
       end
     end
   end

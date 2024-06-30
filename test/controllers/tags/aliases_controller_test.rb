@@ -15,6 +15,10 @@ module Tags
           get_auth new_tag_alias_path, @user
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER) { |user| get_auth new_tag_alias_path, user }
+        end
       end
 
       context "create action" do
@@ -35,6 +39,10 @@ module Tags
           post = topic.posts.last
           assert_redirected_to(forum_topic_path(topic, page: post.forum_topic_page, anchor: "forum_post_#{post.id}"))
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| post_auth tag_aliases_path, user, params: { tag_alias: { antecedent_name: SecureRandom.hex(6), consequent_name: SecureRandom.hex(6) } } }
+        end
       end
 
       context "edit action" do
@@ -48,6 +56,10 @@ module Tags
           get_auth edit_tag_alias_path(@tag_alias), @admin
           assert_response :success
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ADMIN) { |user| get_auth edit_tag_alias_path(@tag_alias), user }
+        end
       end
 
       context "update action" do
@@ -59,9 +71,7 @@ module Tags
 
         context "for a pending alias" do
           setup do
-            as(@admin) do
-              @tag_alias.update(status: "pending")
-            end
+            @tag_alias.update_column(:status, "pending")
           end
 
           should "succeed" do
@@ -77,9 +87,9 @@ module Tags
           end
         end
 
-        context "for an approved alias" do
+        context "for an active alias" do
           setup do
-            @tag_alias.update_attribute(:status, "approved")
+            @tag_alias.update_column(:status, "active")
           end
 
           should "fail" do
@@ -87,6 +97,11 @@ module Tags
             @tag_alias.reload
             assert_equal("aaa", @tag_alias.antecedent_name)
           end
+        end
+
+        should "restrict access" do
+          @tag_alias.update_column(:status, "pending")
+          assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| put_auth tag_alias_path(@tag_alias), user, params: { tag_alias: { antecedent_name: SecureRandom.hex(6), consequent_name: SecureRandom.hex(6) } } }
         end
       end
 
@@ -105,6 +120,10 @@ module Tags
         should "list all tag_alias (with search)" do
           get_auth tag_aliases_path, @admin, params: { search: { antecedent_name: "aaa" } }
           assert_response :success
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::ANONYMOUS) { |user| get_auth tag_aliases_path, user }
         end
       end
 
@@ -130,6 +149,10 @@ module Tags
           assert_response :forbidden
           assert_equal("pending", @tag_alias.status)
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| put_auth approve_tag_alias_path(as(@admin) { create(:tag_alias, antecedent_name: SecureRandom.hex(6), consequent_name: SecureRandom.hex(6), status: "pending") }), user }
+        end
       end
 
       context "destroy action" do
@@ -144,6 +167,10 @@ module Tags
             delete_auth tag_alias_path(@tag_alias), @admin
             assert_equal("deleted", @tag_alias.reload.status)
           end
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| delete_auth tag_alias_path(as(@admin) { create(:tag_alias, antecedent_name: SecureRandom.hex(6), consequent_name: SecureRandom.hex(6), status: "pending") }), user }
         end
       end
     end

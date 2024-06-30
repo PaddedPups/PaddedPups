@@ -3,7 +3,7 @@
 require "test_helper"
 
 class CommentsControllerTest < ActionDispatch::IntegrationTest
-  context "A comments controller" do
+  context "The comments controller" do
     setup do
       @mod = create(:moderator_user)
       @user = create(:member_user)
@@ -36,6 +36,10 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
         get comments_path(group_by: "comment", search: { poster_id: 123 })
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth comments_path, user }
+      end
     end
 
     context "search action" do
@@ -43,20 +47,32 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
         get search_comments_path
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth search_comments_path, user }
+      end
     end
 
     context "show action" do
       should "render" do
-        get comment_path(@comment.id)
+        get comment_path(@comment)
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth comment_path(@comment), user }
       end
     end
 
     context "edit action" do
       should "render" do
-        get_auth edit_comment_path(@comment.id), @user
+        get_auth edit_comment_path(@comment), @user
 
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN) { |user| get_auth edit_comment_path(@comment), user }
       end
     end
 
@@ -108,12 +124,20 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
         assert_equal(false, @comment.reload.do_not_bump_post)
         assert_equal(@post.id, @comment.post_id)
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| put_auth comment_path(@comment), user, params: { comment: { body: "abc" } } }
+      end
     end
 
     context "new action" do
-      should "redirect" do
+      should "render" do
         get_auth new_comment_path, @user
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth new_comment_path, user }
       end
     end
 
@@ -132,13 +156,21 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
         end
         assert_redirected_to comments_path
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| post_auth comments_path, user, params: { comment: { body: "abc", post_id: @post.id } } }
+      end
     end
 
     context "hide action" do
       should "mark comment as hidden" do
-        put_auth hide_comment_path(@comment.id), @user
+        put_auth hide_comment_path(@comment), @user
         assert_equal(true, @comment.reload.is_hidden)
         assert_redirected_to @comment
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| put_auth hide_comment_path(@comment), user }
       end
     end
 
@@ -158,12 +190,20 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
         assert_equal(true, @comment.reload.is_hidden)
         assert_response :forbidden
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| put_auth unhide_comment_path(@comment), user }
+      end
     end
 
     context "destroy action" do
-      should "destroy the comment" do
-        delete_auth comment_path(@comment.id), create(:admin_user)
-        assert_equal(0, Comment.where(id: @comment.id).count)
+      should "work" do
+        delete_auth comment_path(@comment), create(:admin_user)
+        assert_raises(ActiveRecord::RecordNotFound) { @comment.reload }
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| delete_auth comment_path(create(:comment)), user }
       end
     end
 
@@ -172,6 +212,7 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
         SpamDetector.stubs(:enabled?).returns(true)
         stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/comment-check}).to_return(status: 200, body: "true")
         stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/submit-spam}).to_return(status: 200, body: nil)
+        stub_request(:post, %r{https://.*\.rest\.akismet\.com/(\d\.?)+/submit-ham}).to_return(status: 200, body: nil)
       end
 
       should "mark spam comments as spam" do
@@ -232,6 +273,10 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
           assert_response(:success)
           assert_equal(true, @comment.reload.is_spam?)
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR) { |user| put_auth mark_spam_comment_path(@comment), user }
+        end
       end
 
       context "mark not spam action" do
@@ -253,6 +298,45 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
           assert_response(:success)
           assert_equal(false, @comment.reload.is_spam?)
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR) { |user| put_auth mark_not_spam_comment_path(@comment), user }
+        end
+      end
+    end
+
+    context "warning action" do
+      should "mark warning" do
+        put_auth warning_comment_path(@comment), @mod, params: { record_type: "warning" }
+        assert_response :success
+        assert_equal("warning", @comment.reload.warning_type)
+        assert_equal(@mod.id, @comment.reload.warning_user_id)
+      end
+
+      should "mark record" do
+        put_auth warning_comment_path(@comment), @mod, params: { record_type: "record" }
+        assert_response :success
+        assert_equal("record", @comment.reload.warning_type)
+        assert_equal(@mod.id, @comment.reload.warning_user_id)
+      end
+
+      should "mark ban" do
+        put_auth warning_comment_path(@comment), @mod, params: { record_type: "ban" }
+        assert_response :success
+        assert_equal("ban", @comment.reload.warning_type)
+        assert_equal(@mod.id, @comment.reload.warning_user_id)
+      end
+
+      should "unmark" do
+        @comment.user_warned!("warning", @mod)
+        put_auth warning_comment_path(@comment), @mod, params: { record_type: "unmark" }
+        assert_response :success
+        assert_nil(@comment.reload.warning_type)
+        assert_nil(@comment.reload.warning_user_id)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MODERATOR) { |user| put_auth warning_comment_path(@comment), user, params: { record_type: "warning" } }
       end
     end
   end

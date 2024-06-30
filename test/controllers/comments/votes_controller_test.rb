@@ -17,7 +17,7 @@ module Comments
         CurrentUser.user = @user2
       end
 
-      context "show action" do
+      context "index action" do
         should "render" do
           get_auth url_for(controller: "comments/votes", action: "index", only_path: true), @admin
           assert_response :success
@@ -39,6 +39,10 @@ module Comments
             assert_equal(@user2.id, response.parsed_body[0]["user_id"])
           end
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER) { |user| get_auth url_for(controller: "comments/votes", action: "index", only_path: true), user }
+        end
       end
 
       context "create action" do
@@ -55,6 +59,10 @@ module Comments
             post_auth comment_votes_path(@comment), @user2, params: { score: -1, format: :json }
             assert_response :success
           end
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MEMBER) { |user| post_auth comment_votes_path(@comment), user, params: { score: 1 } }
         end
       end
 
@@ -83,6 +91,14 @@ module Comments
           assert_equal @comment.id, log.comment_id
           assert_equal(-1, log.vote)
           assert_equal @user2.id, log.voter_id
+        end
+
+        should "restrict access" do
+          @votes = []
+          User::Levels.constants.length.times do
+            @votes << create(:comment_vote, comment: @comment, user: create(:user), score: 1)
+          end
+          assert_access(User::Levels::MODERATOR) { |user| post_auth lock_comment_votes_path, user, params: { ids: @votes.shift.id } }
         end
       end
 
@@ -115,6 +131,14 @@ module Comments
           assert_equal @comment.id, log.comment_id
           assert_equal(-1, log.vote)
           assert_equal @user2.id, log.voter_id
+        end
+
+        should "restrict access" do
+          @votes = []
+          User::Levels.constants.length.times do
+            @votes << create(:comment_vote, comment: @comment, user: create(:user), score: 1)
+          end
+          assert_access(User::Levels::ADMIN) { |user| post_auth delete_comment_votes_path, user, params: { ids: @votes.shift.id } }
         end
       end
     end

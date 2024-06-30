@@ -124,6 +124,10 @@ module Moderator
             assert_response :success
           end
         end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR) { |user| get_auth moderator_dashboard_path, user }
+        end
       end
     end
   end

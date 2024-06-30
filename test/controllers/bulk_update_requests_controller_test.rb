@@ -9,36 +9,48 @@ class BulkUpdateRequestsControllerTest < ActionDispatch::IntegrationTest
       @admin = create(:admin_user)
     end
 
-    context "#new" do
+    context "new action" do
       should "render" do
-        get_auth bulk_update_requests_path, @user
+        get_auth new_bulk_update_request_path, @user
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth new_bulk_update_request_path, user }
       end
     end
 
-    context "#create" do
-      should "succeed" do
+    context "create action" do
+      should "work" do
         assert_difference("BulkUpdateRequest.count", 1) do
           post_auth bulk_update_requests_path, @user, params: { bulk_update_request: { script: "create alias aaa -> bbb", title: "xxx", reason: "xxxxx" } }
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| post_auth bulk_update_requests_path, user, params: { bulk_update_request: { script: "create alias aaa -> bbb", title: "xxx", reason: "xxxxx" } } }
+      end
     end
 
-    context "#update" do
+    context "update action" do
       setup do
         as(@user) do
           @bulk_update_request = create(:bulk_update_request)
         end
       end
 
-      should "still handle disabled secondary validations correctly" do
+      should "work" do
         put_auth bulk_update_request_path(@bulk_update_request.id), @user, params: { bulk_update_request: { script: "create alias zzz -> 222" } }
         @bulk_update_request.reload
         assert_equal("alias zzz -> 222", @bulk_update_request.script)
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| put_auth bulk_update_request_path(@bulk_update_request), user, params: { bulk_update_request: { script: "create alias xxx -> 333" } } }
+      end
     end
 
-    context "#index" do
+    context "index action" do
       setup do
         as(@user) do
           @bulk_update_request = create(:bulk_update_request)
@@ -49,9 +61,13 @@ class BulkUpdateRequestsControllerTest < ActionDispatch::IntegrationTest
         get bulk_update_requests_path
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth bulk_update_requests_path, user }
+      end
     end
 
-    context "#destroy" do
+    context "destroy action" do
       setup do
         as(@user) do
           @bulk_update_request = create(:bulk_update_request)
@@ -85,9 +101,13 @@ class BulkUpdateRequestsControllerTest < ActionDispatch::IntegrationTest
           assert_equal("rejected", @bulk_update_request.status)
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| delete_auth bulk_update_request_path(as(@user) { create(:bulk_update_request, skip_forum: true) }), user }
+      end
     end
 
-    context "#approve" do
+    context "approve action" do
       setup do
         as(@user) do
           @bulk_update_request = create(:bulk_update_request)
@@ -119,6 +139,10 @@ class BulkUpdateRequestsControllerTest < ActionDispatch::IntegrationTest
           @bulk_update_request.reload
           assert_equal("pending", @bulk_update_request.status)
         end
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| post_auth approve_bulk_update_request_path(as(@user) { create(:bulk_update_request, skip_forum: true) }), user }
       end
     end
   end

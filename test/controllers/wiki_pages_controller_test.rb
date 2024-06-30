@@ -7,6 +7,9 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
     setup do
       @user = create(:user)
       @mod = create(:moderator_user)
+      as(@user) do
+        @wiki_page = create(:wiki_page)
+      end
     end
 
     context "index action" do
@@ -31,15 +34,13 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
         get wiki_pages_path, params: { search: { title: "abc", order: "post_count" } }
         assert_redirected_to(wiki_page_path(@wiki_page_abc))
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth wiki_pages_path, user }
+      end
     end
 
     context "show action" do
-      setup do
-        as(@user) do
-          @wiki_page = create(:wiki_page)
-        end
-      end
-
       should "render" do
         get wiki_page_path(@wiki_page)
         assert_response :success
@@ -64,18 +65,16 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
         as(@user) do
           @wiki_page.update(title: "-aaa")
         end
-        get wiki_page_path(id: @wiki_page.id)
+        get wiki_page_path(@wiki_page)
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth wiki_page_path(@wiki_page), user }
       end
     end
 
     context "show_or_new action" do
-      setup do
-        as(@user) do
-          @wiki_page = create(:wiki_page)
-        end
-      end
-
       should "redirect when given a title" do
         get show_or_new_wiki_pages_path, params: { title: @wiki_page.title }
         assert_redirected_to(@wiki_page)
@@ -85,6 +84,10 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
         get show_or_new_wiki_pages_path, params: { title: "what" }
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth show_or_new_wiki_pages_path, user, params: { title: "gay" } }
+      end
     end
 
     context "new action" do
@@ -92,16 +95,20 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
         get_auth new_wiki_page_path, @mod, params: { wiki_page: { title: "test" } }
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth new_wiki_page_path, user }
+      end
     end
 
     context "edit action" do
       should "render" do
-        as(@user) do
-          @wiki_page = create(:wiki_page)
-        end
-
         get_auth wiki_page_path(@wiki_page), @mod
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth edit_wiki_page_path(@wiki_page), user }
       end
     end
 
@@ -111,13 +118,16 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
           post_auth wiki_pages_path, @user, params: { wiki_page: { title: "abc", body: "abc" } }
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| post_auth wiki_pages_path, user, params: { wiki_page: { title: SecureRandom.hex(6), body: SecureRandom.hex(6) } } }
+      end
     end
 
     context "update action" do
       setup do
         as(@user) do
-          @tag = create(:tag, name: "foo", post_count: 42)
-          @wiki_page = create(:wiki_page, title: "foo")
+          @tag = create(:tag, name: @wiki_page.title, post_count: 42)
         end
       end
 
@@ -128,13 +138,18 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
       end
 
       should "not rename a wiki page with a non-empty tag" do
+        ogtitle = @wiki_page.title
         put_auth wiki_page_path(@wiki_page), @user, params: { wiki_page: { title: "bar" } }
-        assert_equal("foo", @wiki_page.reload.title)
+        assert_equal(ogtitle, @wiki_page.reload.title)
       end
 
       should "rename a wiki page with a non-empty tag if the check is skipped" do
         put_auth wiki_page_path(@wiki_page), @mod, params: { wiki_page: { title: "bar", skip_post_count_rename_check: "1" } }
         assert_equal("bar", @wiki_page.reload.title)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth wiki_page_path(@wiki_page), user, params: { wiki_page: { body: SecureRandom.hex(6) } } }
       end
     end
 
@@ -147,7 +162,12 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
       should "destroy a wiki_page" do
         delete_auth wiki_page_path(@wiki_page), create(:admin_user)
-        assert_not(WikiPage.exists?(@wiki_page.id))
+        assert_raises(ActiveRecord::RecordNotFound) { @wiki_page.reload }
+      end
+
+      should_eventually "restrict access" do
+        as(@user) { @wiki_pages = create_list(:wiki_page, User::Levels.constants.length) }
+        assert_access(User::Levels::ADMIN) { |user| delete_auth wiki_page_path(@wiki_pages.shift), user }
       end
     end
 
@@ -182,6 +202,10 @@ class WikiPagesControllerTest < ActionDispatch::IntegrationTest
 
         assert_not_equal(@wiki_page.body, @wiki_page2.body)
         assert_response :missing
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth revert_wiki_page_path(@wiki_page), user, params: { version_id: @wiki_page.versions.first.id } }
       end
     end
   end

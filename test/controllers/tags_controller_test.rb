@@ -16,6 +16,10 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
         get_auth tag_path(@tag), @user, params: { id: @tag.id }
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth edit_tag_path(@tag), user }
+      end
     end
 
     context "index action" do
@@ -37,12 +41,20 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
           assert_redirected_to tags_path(search: { name: "touhou" })
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth tags_path, user }
+      end
     end
 
     context "show action" do
       should "render" do
         get tag_path(@tag)
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth tag_path(@tag), user }
       end
     end
 
@@ -101,6 +113,10 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
         assert_response :forbidden
         assert_equal(TagCategory.general, @tag.reload.category)
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth tag_path(@tag), user, params: { tag: { category: TagCategory.general } } }
+      end
     end
 
     context "follow action" do
@@ -133,6 +149,10 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
         assert_equal(false, @user.followed_tags.exists?(tag: @tag))
         assert_equal("cannot follow more than 0 tags", response.parsed_body.dig("errors", "user").first)
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth follow_tag_path(@tag), user }
+      end
     end
 
     context "unfollow action" do
@@ -144,6 +164,13 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
         assert_equal(0, @tag.reload.follower_count)
         assert_equal(false, @user.followed_tags.exists?(tag: @tag))
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) do |user|
+          as(user) { @tag.follow! }
+          put_auth unfollow_tag_path(@tag), user
+        end
+      end
     end
 
     context "followers action" do
@@ -151,6 +178,10 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
         create(:tag_follower, tag: @tag, user: @user)
         get_auth followers_tag_path(@tag), @user
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth followers_tag_path(@tag), user }
       end
     end
 
@@ -174,12 +205,20 @@ class TagsControllerTest < ActionDispatch::IntegrationTest
         get_auth followed_tags_path, @user, params: { user_id: @user2.id }
         assert_response :forbidden
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth followed_tags_path, user, params: { user_id: @user.id } }
+      end
     end
 
     context "meta_search action" do
       should "work" do
         get meta_search_tags_path, params: { name: "long_hair" }
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth meta_search_tags_path, user, params: { name: "long_hair" } }
       end
     end
   end

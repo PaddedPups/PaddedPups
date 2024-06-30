@@ -42,7 +42,7 @@ class PostPolicy < ApplicationPolicy
   end
 
   def destroy?
-    unbanned? && user.is_janitor?
+    unbanned? && user.is_approver?
   end
 
   def undelete?

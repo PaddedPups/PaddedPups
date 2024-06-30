@@ -2,7 +2,6 @@
 
 module Moderator
   class IpAddrsController < ApplicationController
-    before_action :admin_only
     respond_to :html, :json
 
     def index
@@ -16,7 +15,7 @@ module Moderator
       @results = search.execute
       respond_with(@results) do |format|
         format.json do
-          render(json: @results[:ip_addrs].uniq)
+          render(json: @results.is_a?(Array) ? @results : @results[:ip_addrs].uniq)
         end
       end
     end

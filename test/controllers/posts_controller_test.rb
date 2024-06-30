@@ -46,6 +46,10 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
           assert_response :success
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth posts_path, user }
+      end
     end
 
     context "show_seq action" do
@@ -58,12 +62,21 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
         get show_seq_post_path(posts[1].id), params: { seq: "next" }
         assert_response :success
       end
+
+      should "restrict access" do
+        @posts = create_list(:post, 2)
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth show_seq_post_path(@posts.first.id, params: { seq: "next" }), user }
+      end
     end
 
     context "show action" do
       should "render" do
-        get post_path(@post), params: { id: @post.id }
+        get post_path(@post)
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth post_path(@post), user }
       end
     end
 
@@ -79,6 +92,10 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
       should "ignore restricted params" do
         put_auth post_path(@post), @user, params: { post: { last_noted_at: 1.minute.ago } }
         assert_nil(@post.reload.last_noted_at)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth post_path(@post), user, params: { post: { tag_string: "bbb" } } }
       end
     end
 
@@ -108,12 +125,20 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
         assert_not_equal(@post.tag_string, @post2.tag_string)
         assert_response :missing
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth revert_post_path(@post), user, params: { version_id: @post.versions.first.id } }
+      end
     end
 
     context "delete action" do
       should "render" do
         get_auth delete_post_path(@post), @admin
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER]) { |user| get_auth delete_post_path(@post), user }
       end
     end
 
@@ -130,10 +155,14 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
         post_auth post_path(@post), @admin, params: { reason: "xxx", format: "js", _method: "delete" }
         assert(@post.reload.is_deleted?)
       end
+
+      should "restrict access" do
+        assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER], success_response: :redirect) { |user| delete_auth post_path(@post), user }
+      end
     end
 
     context "undelete action" do
-      should "render" do
+      should "work" do
         as(@user) do
           @post.delete!("test delete")
         end
@@ -144,13 +173,13 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
         assert_response :success
         assert_not(@post.reload.is_deleted?)
       end
+
+      should "restrict access" do
+        assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER], success_response: :redirect) { |user| put_auth undelete_post_path(create(:post, is_deleted: true)), user }
+      end
     end
 
-    context "move_favorites action" do
-      setup do
-        @admin = create(:admin_user)
-      end
-
+    context "confirm_move_favorites action" do
       should "render" do
         as(@user) do
           @parent = create(:post)
@@ -162,7 +191,27 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
           @child.reload
         end
 
-        put_auth move_favorites_post_path(@child.id), @admin, params: { commit: "Submit" }
+        get_auth confirm_move_favorites_post_path(@child.id), @admin
+      end
+
+      should "restrict access" do
+        assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER]) { |user| get_auth confirm_move_favorites_post_path(@post), user }
+      end
+    end
+
+    context "move_favorites action" do
+      should "work" do
+        as(@user) do
+          @parent = create(:post)
+          @child = create(:post, parent: @parent)
+        end
+        users = create_list(:user, 2)
+        users.each do |u|
+          FavoriteManager.add!(user: u, post: @child)
+          @child.reload
+        end
+
+        put_auth move_favorites_post_path(@child.id), @admin
         assert_redirected_to(@child)
         perform_enqueued_jobs(only: TransferFavoritesJob)
         @parent.reload
@@ -172,14 +221,22 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
           assert_equal([], @child.favorited_users.map(&:id))
         end
       end
+
+      should "restrict access" do
+        assert_access([User::Levels::JANITOR, User::Levels::ADMIN, User::Levels::OWNER], success_response: :redirect) { |user| put_auth move_favorites_post_path(@post), user }
+      end
     end
 
     context "expunge action" do
-      should "render" do
+      should "work" do
         put_auth expunge_post_path(@post), @admin, params: { format: :json }
 
         assert_response :success
         assert_equal(false, ::Post.exists?(@post.id))
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| put_auth expunge_post_path(create(:post)), user }
       end
     end
 
@@ -210,6 +267,10 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
         post_auth add_to_pool_post_path(@post), @user, params: { pool_id: @pool.id, format: :json }
         perform_enqueued_jobs(only: UpdatePoolArtistsJob)
         assert_same_elements(%w[foo], @pool.reload.artists)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| post_auth add_to_pool_post_path(@post), user, params: { pool_id: @pool.id } }
       end
     end
 
@@ -244,6 +305,32 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
         post_auth remove_from_pool_post_path(@post), @user, params: { pool_id: @pool.id, format: :json }
         perform_enqueued_jobs(only: UpdatePoolArtistsJob)
         assert_equal([], @pool.reload.artists)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| post_auth remove_from_pool_post_path(@post), user, params: { pool_id: @pool.id } }
+      end
+    end
+
+    context "uploaders action" do
+      should "render" do
+        get_auth uploaders_posts_path, @admin
+        assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::JANITOR) { |user| get_auth uploaders_posts_path, user }
+      end
+    end
+
+    context "deleted action" do
+      should "render" do
+        get deleted_posts_path
+        assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth deleted_posts_path, user }
       end
     end
   end

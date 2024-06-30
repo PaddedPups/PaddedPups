@@ -17,12 +17,20 @@ class RulesControllerTest < ActionDispatch::IntegrationTest
         get rules_path
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth rules_path, user }
+      end
     end
 
     context "new action" do
       should "render" do
         get_auth new_rule_path, @admin
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN) { |user| get_auth new_rule_path, user }
       end
     end
 
@@ -45,12 +53,20 @@ class RulesControllerTest < ActionDispatch::IntegrationTest
         assert_equal("yyy", mod_action.description)
         assert_equal(@category.name, mod_action.category_name)
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| post_auth rules_path, user, params: { rule: { name: SecureRandom.hex(6), description: SecureRandom.hex(6), category_id: @category.id } } }
+      end
     end
 
     context "edit action" do
       should "render" do
         get_auth edit_rule_path(@rule), @admin
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN) { |user| get_auth edit_rule_path(@rule), user }
       end
     end
 
@@ -73,6 +89,10 @@ class RulesControllerTest < ActionDispatch::IntegrationTest
         assert_equal("xxx", mod_action.name)
         assert_equal(old, mod_action.old_name)
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| put_auth rule_path(@rule), user, params: { rule: { name: SecureRandom.hex(6), description: SecureRandom.hex(6) } } }
+      end
     end
 
     context "destroy action" do
@@ -92,6 +112,10 @@ class RulesControllerTest < ActionDispatch::IntegrationTest
         assert_equal(@rule.name, mod_action.name)
         assert_equal(@rule.category.name, mod_action.category_name)
         assert_equal(@rule.description, mod_action.description)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| delete_auth rule_path(create(:rule)), user }
       end
     end
   end

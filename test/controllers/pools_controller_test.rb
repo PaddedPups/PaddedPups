@@ -25,12 +25,20 @@ class PoolsControllerTest < ActionDispatch::IntegrationTest
         get pools_path, params: { search: { name_matches: @pool.name } }
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth pools_path, user }
+      end
     end
 
     context "show action" do
       should "render" do
         get pool_path(@pool)
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth pool_path(@pool), user }
       end
     end
 
@@ -39,12 +47,20 @@ class PoolsControllerTest < ActionDispatch::IntegrationTest
         get gallery_pools_path
         assert_response :success
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth gallery_pools_path, user }
+      end
     end
 
     context "new action" do
       should "render" do
         get_auth new_pool_path, @user
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth new_pool_path, user }
       end
     end
 
@@ -54,12 +70,20 @@ class PoolsControllerTest < ActionDispatch::IntegrationTest
           post_auth pools_path, @user, params: { pool: { name: "xxx", description: "abc" } }
         end
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| post_auth pools_path, user, params: { pool: { name: SecureRandom.hex(6) } } }
+      end
     end
 
     context "edit action" do
       should "render" do
         get_auth edit_pool_path(@pool), @user
         assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth edit_pool_path(@pool), user }
       end
     end
 
@@ -74,6 +98,10 @@ class PoolsControllerTest < ActionDispatch::IntegrationTest
         put_auth pool_path(@pool), @user, params: { pool: { post_count: -42 } }
         assert_equal(0, @pool.post_count)
       end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth new_pool_path, user }
+      end
     end
 
     context "destroy action" do
@@ -82,6 +110,10 @@ class PoolsControllerTest < ActionDispatch::IntegrationTest
         assert_raises(ActiveRecord::RecordNotFound) do
           @pool.reload
         end
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::JANITOR, success_response: :redirect) { |user| delete_auth pool_path(create(:pool)), user }
       end
     end
 
@@ -114,11 +146,23 @@ class PoolsControllerTest < ActionDispatch::IntegrationTest
         assert_not_equal(@pool.name, @pool2.name)
         assert_response :missing
       end
+
+      should "restrict access" do
+        as(@user) { User::Levels.constants.length.times { |i| @pool.update(name: "pool_#{i}") } }
+        @versions = @pool.reload.versions.to_a
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth revert_pool_path(@pool), user, params: { version_id: @versions.pop.id } }
+      end
     end
 
-    should "render the order action" do
-      get_auth edit_pool_order_path(@pool), @user
-      assert_response :success
+    context "order action" do
+      should "render" do
+        get_auth edit_pool_order_path(@pool), @user
+        assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth edit_pool_order_path(@pool), user }
+      end
     end
   end
 end

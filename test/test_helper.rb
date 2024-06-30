@@ -114,6 +114,50 @@ class ActionDispatch::IntegrationTest # rubocop:disable Style/ClassAndModuleChil
     assert_not_nil(@response.parsed_body.dig("errors", key))
     assert_same_elements(messages, @response.parsed_body.dig("errors", key))
   end
+
+  def assert_access(minlevel, success_response: :success, fail_response: :forbidden, anonymous_response: nil, &)
+    all = User::Levels.constants.map { |c| User::Levels.const_get(c) }.select { |l| l > User::Levels::BANNED }
+    if minlevel.is_a?(Integer)
+      success = all.select { |l| l >= minlevel }
+      fail = all.select { |l| l < minlevel }
+    else
+      success = minlevel
+      fail = all.reject { |l| minlevel.include?(l) }
+    end
+    createuser = ->(level) { create(:"#{User::Levels.level_name(level).downcase.gsub(' ', '_')}_user") }
+
+    success.each do |level|
+      user = createuser.call(level)
+      as(user) { yield(user) }
+      assert_response(success_response, "Success: #{User::Levels.level_name(level)} (expected: #{success_response}, actual: #{@response.status})")
+    end
+
+    fail.each do |level|
+      user = createuser.call(level)
+      as(user) { yield(user) }
+      assert_response(fail_response, "Fail: #{User::Levels.level_name(level)} (expected: #{fail_response}, actual: #{@response.status})")
+    end
+
+    User::Levels::ANONYMOUS.tap do |level|
+      user = createuser.call(level)
+      as(user) { yield(user) }
+      anon = anonymous_response || (fail_response == :forbidden ? :redirect : fail_response)
+      anonmin = minlevel.is_a?(Integer) ? minlevel > User::Levels::ANONYMOUS : !minlevel.include?(User::Levels::ANONYMOUS)
+      if anonmin || anonymous_response.present?
+        assert_response(anon, "Fail: #{User::Levels.level_name(level)} (expected: #{anon}, actual: #{@response.status})")
+      else
+        assert_response(:success, "Fail: #{User::Levels.level_name(level)} (expected: success, actual: #{@response.status})")
+      end
+    end
+
+    User::Levels::BANNED.tap do |level|
+      user = createuser.call(level)
+      admin = create(:admin_user)
+      as(admin) { create(:ban, user: user, reason: "test") }
+      as(user) { yield(user) }
+      assert_response(:unauthorized, "Fail: #{User::Levels.level_name(level)} (expected: unauthorized, actual: #{@response.status})")
+    end
+  end
 end
 
 module ActionView

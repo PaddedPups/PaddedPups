@@ -6,7 +6,7 @@ class ForumPostPolicy < ApplicationPolicy
   end
 
   def create?
-    min_level?
+    min_level? && (!record.is_a?(ForumPost) || (record.topic.present? && record.topic.can_reply?(user)))
   end
 
   def update?
@@ -38,11 +38,11 @@ class ForumPostPolicy < ApplicationPolicy
   end
 
   def min_level?
-    return true unless record.is_a?(ForumPost) && record.topic.is_a?(ForumTopic)
+    return true unless record.is_a?(ForumPost) && record.topic.present?
     return false unless record.topic.visible?(user)
     return false if record.topic.is_hidden? && !record.topic.can_hide?(user)
     return false if record.is_hidden? && !record.can_hide?(user)
-    true
+    record.visible?(user)
   end
 
   def permitted_attributes

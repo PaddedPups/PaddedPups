@@ -14,37 +14,67 @@ class ArtistsControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    should "get the new page" do
-      get_auth new_artist_path, @user
-      assert_response :success
+    context "new action" do
+      should "render" do
+        get_auth new_artist_path, @user
+        assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth new_artist_path, user }
+      end
     end
 
-    should "get the show_or_new page for an existing artist" do
-      get_auth show_or_new_artists_path(name: "masao"), @user
-      assert_redirected_to(@masao)
+    context "show_or_new action" do
+      should "get the show_or_new page for an existing artist" do
+        get_auth show_or_new_artists_path(name: "masao"), @user
+        assert_redirected_to(@masao)
+      end
+
+      should "get the show_or_new page for a nonexisting artist" do
+        get_auth show_or_new_artists_path(name: "nobody"), @user
+        assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth show_or_new_artists_path, user }
+      end
     end
 
-    should "get the show_or_new page for a nonexisting artist" do
-      get_auth show_or_new_artists_path(name: "nobody"), @user
-      assert_response :success
+    context "edit action" do
+      should "render" do
+        get_auth edit_artist_path(@artist), @user
+        assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER) { |user| get_auth edit_artist_path(@artist), user }
+      end
     end
 
-    should "get the edit page" do
-      get_auth edit_artist_path(@artist.id), @user
-      assert_response :success
+    context "show action" do
+      should "render" do
+        get artist_path(@artist)
+        assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth artist_path(@artist), user }
+      end
     end
 
-    should "get the show page" do
-      get artist_path(@artist.id)
-      assert_response :success
+    context "index action" do
+      should "render" do
+        get artists_path
+        assert_response :success
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ANONYMOUS) { |user| get_auth artists_path, user }
+      end
     end
 
-    should "get the index page" do
-      get artists_path
-      assert_response :success
-    end
-
-    context "when creating an artist" do
+    context "create action" do
       should "work" do
         attributes = attributes_for(:artist)
         assert_difference("Artist.count", 1) do
@@ -84,6 +114,10 @@ class ArtistsControllerTest < ActionDispatch::IntegrationTest
 
         post_auth artists_path, @user, params: { artist: { name: "a" * 101 }, format: "json" }
         assert_error_response("name", "is too long (maximum is 100 characters)")
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| post_auth artists_path, user, params: { artist: { name: SecureRandom.hex(6) } } }
       end
     end
 
@@ -127,7 +161,7 @@ class ArtistsControllerTest < ActionDispatch::IntegrationTest
       context "when renaming an artist" do
         should "automatically rename the artist's wiki page" do
           assert_difference("WikiPage.count", 0) do
-            put_auth artist_path(@artist.id), @user, params: { artist: { name: "bbb", notes: "more testing" } }
+            put_auth artist_path(@artist), @user, params: { artist: { name: "bbb", notes: "more testing" } }
           end
           @wiki_page.reload
           assert_equal("bbb", @wiki_page.title)
@@ -136,30 +170,39 @@ class ArtistsControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    should "delete an artist" do
-      @admin = create(:admin_user)
-      delete_auth artist_path(@artist.id), @admin
-      assert_redirected_to(artists_path)
+    context "destroy action" do
+      should "delete an artist" do
+        @admin = create(:admin_user)
+        delete_auth artist_path(@artist), @admin
+        assert_redirected_to(artists_path)
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| delete_auth artist_path(create(:artist)), user }
+      end
     end
 
-    context "reverting an artist" do
+    context "revert action" do
       should "work" do
         as(@user) do
           @artist.update(name: "xyz")
           @artist.update(name: "abc")
         end
-        version = @artist.versions.first
-        put_auth revert_artist_path(@artist.id), @user, params: { version_id: version.id }
+        put_auth revert_artist_path(@artist), @user, params: { version_id: @artist.versions.first.id }
       end
 
       should "not allow reverting to a previous version of another artist" do
         as(@user) do
           @artist2 = create(:artist)
         end
-        put_auth artist_path(@artist.id), @user, params: { version_id: @artist2.versions.first.id }
+        put_auth artist_path(@artist), @user, params: { version_id: @artist2.versions.first.id }
         @artist.reload
         assert_not_equal(@artist.name, @artist2.name)
         assert_redirected_to(artist_path(@artist.id))
+      end
+
+      should "restrict access" do
+        assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth revert_artist_path(@artist), user, params: { version_id: @artist.versions.first.id } }
       end
     end
 

@@ -1997,7 +1997,7 @@ class PostTest < ActiveSupport::TestCase
     end
 
     should "return posts for a upvote:<user>, downvote:<user> metatag" do
-      old_user = create(:mod_user, created_at: 5.days.ago)
+      old_user = create(:moderator_user, created_at: 5.days.ago)
       as(old_user) do
         upvoted   = create(:post, tag_string: "abc")
         downvoted = create(:post, tag_string: "abc")

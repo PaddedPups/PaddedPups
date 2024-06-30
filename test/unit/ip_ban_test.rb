@@ -4,7 +4,7 @@ require "test_helper"
 
 class IpBanTest < ActiveSupport::TestCase
   setup do
-    CurrentUser.user = create(:mod_user)
+    CurrentUser.user = create(:moderator_user)
   end
 
   should "be able to ban a user" do
