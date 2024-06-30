@@ -99,7 +99,7 @@ class BansControllerTest < ActionDispatch::IntegrationTest
       end
 
       should "restrict access" do
-        assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| delete_auth ban_path(as(@mod){ create(:ban, user: @user)} ), user }
+        assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| delete_auth ban_path(as(@mod) { create(:ban, user: @user) }), user }
       end
     end
   end

@@ -127,7 +127,7 @@ module Admin
         end
 
         should "restrict access" do
-          assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| put_auth admin_user_path(@user), user, params: { user: { level: User::Levels::TRUSTED } }}
+          assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| put_auth admin_user_path(@user), user, params: { user: { level: User::Levels::TRUSTED } } }
         end
       end
     end

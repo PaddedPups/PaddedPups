@@ -142,7 +142,7 @@ class ActionDispatch::IntegrationTest # rubocop:disable Style/ClassAndModuleChil
       user = createuser.call(level)
       as(user) { yield(user) }
       anon = anonymous_response || (fail_response == :forbidden ? :redirect : fail_response)
-      anonmin = minlevel.is_a?(Integer) ? minlevel > User::Levels::ANONYMOUS : !minlevel.include?(User::Levels::ANONYMOUS)
+      anonmin = minlevel.is_a?(Integer) ? minlevel > User::Levels::ANONYMOUS : minlevel.exclude?(User::Levels::ANONYMOUS)
       if anonmin || anonymous_response.present?
         assert_response(anon, "Fail: #{User::Levels.level_name(level)} (expected: #{anon}, actual: #{@response.status})")
       else

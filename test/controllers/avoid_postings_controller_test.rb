@@ -76,7 +76,7 @@ class AvoidPostingsControllerTest < ActionDispatch::IntegrationTest
       end
 
       should "restrict access" do
-        assert_access(User::Levels::OWNER, success_response: :redirect) { |user| put_auth avoid_posting_path(@avoid_posting), user, params: { avoid_posting: { details: "test"} } }
+        assert_access(User::Levels::OWNER, success_response: :redirect) { |user| put_auth avoid_posting_path(@avoid_posting), user, params: { avoid_posting: { details: "test" } } }
       end
     end
 
@@ -119,7 +119,7 @@ class AvoidPostingsControllerTest < ActionDispatch::IntegrationTest
         assert_difference("ModAction.count", 1) do
           put_auth deactivate_avoid_posting_path(@avoid_posting), @owner_user
         end
-  
+
         assert_equal(false, @avoid_posting.reload.is_active?)
         assert_equal("avoid_posting_deactivate", ModAction.last.action)
       end
@@ -132,15 +132,15 @@ class AvoidPostingsControllerTest < ActionDispatch::IntegrationTest
     context "reactivate action" do
       should "work" do
         @avoid_posting.update_column(:is_active, false)
-  
+
         assert_difference("ModAction.count", 1) do
           put_auth reactivate_avoid_posting_path(@avoid_posting), @owner_user
         end
-  
+
         assert_equal(true, @avoid_posting.reload.is_active?)
         assert_equal("avoid_posting_reactivate", ModAction.last.action)
       end
-  
+
       should "restrict access" do
         assert_access(User::Levels::OWNER, success_response: :redirect) { |user| put_auth reactivate_avoid_posting_path(@avoid_posting), user }
       end
@@ -151,7 +151,7 @@ class AvoidPostingsControllerTest < ActionDispatch::IntegrationTest
         assert_difference("ModAction.count", 1) do
           delete_auth avoid_posting_path(@avoid_posting), @owner_user
         end
-  
+
         assert_nil(AvoidPosting.find_by(id: @avoid_posting.id))
         assert_equal("avoid_posting_delete", ModAction.last.action)
       end
