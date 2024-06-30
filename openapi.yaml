@@ -2056,7 +2056,7 @@ components:
         bg_color:
           type: string
           description: |
-            Valid for: `changed_background_color`
+            Valid for: `changed_bg_color`
 
     PostFlag:
       type: object

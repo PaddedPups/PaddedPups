@@ -11,19 +11,20 @@ module FemboyFans
     CROP_OPTIONS = { linear: false, no_rotate: true, export_profile: "srgb", import_profile: "srgb", crop: :attention }.freeze
 
     def resize(file, width, height, resize_quality = 90)
+      options = WEBP_OPTIONS.merge(Q: resize_quality)
       output_file = Tempfile.new
       resized_image = thumbnail(file, width, height, THUMBNAIL_OPTIONS)
-      resized_image.webpsave(output_file.path, Q: resize_quality, **WEBP_OPTIONS)
+      resized_image.webpsave(output_file.path, **options)
 
       output_file
     end
 
     def crop(file, width, height, resize_quality = 90)
       return nil unless FemboyFans.config.enable_image_cropping?
-
+      options = WEBP_OPTIONS.merge(Q: resize_quality)
       output_file = Tempfile.new
       resized_image = thumbnail(file, width, height, CROP_OPTIONS)
-      resized_image.webpsave(output_file.path, Q: resize_quality, **WEBP_OPTIONS)
+      resized_image.webpsave(output_file.path, **options)
 
       output_file
     end
