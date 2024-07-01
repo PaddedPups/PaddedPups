@@ -77,12 +77,12 @@ $green-color: #3e9e49;
 $dark-grey-color: hsl(0, 0%, 50%);
 
 // User Feedback page
-$neutral-record-background: #666;
-$positive-record-background: green;
-$negative-record-background: #822828;
-$positive-record-color: $green-color;
-$negative-record-color: $red-color;
-$neutral-record-color: $dark-grey-color;
+$neutral-record-background: #3f4058;
+$positive-record-background: #003708;
+$negative-record-background: #5c1313;
+$positive-record-color: #006e19;
+$negative-record-color: #861011;
+$neutral-record-color: #5b5c79;
 
 $comment-highlight-background: rgba(255,255,255,0.25);
 $comment-hidden-background: $section-red-background;
