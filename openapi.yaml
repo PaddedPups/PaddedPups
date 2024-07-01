@@ -162,12 +162,13 @@ x-constants:
     - comment_locked
     - comment_unlocked
     - changed_bg_color
+    - changed_thumbnail_frame
   - &ratings
     - s
     - q
     - e
   - &tag-categories
-    - 0 #general
+    - 0 # general
     - 1 # artist
     - 2 # voice actor
     - 3 # copyright
@@ -1704,7 +1705,9 @@ components:
         - own_vote
         - has_notes
         - duration
-        - upload_fur
+        - framecount
+        - thumbnail_frame
+        - upload_url
       properties:
         id:
           type: number
@@ -1775,6 +1778,22 @@ components:
                   $ref: "#/components/schemas/PostSampleAlternate"
                 original:
                   $ref: "#/components/schemas/PostSampleAlternate"
+        crop:
+          type: object
+          required:
+            - has
+            - width
+            - height
+            - url
+          properties:
+            has:
+              type: boolean
+            width:
+              type: number
+            height:
+              type: number
+            url:
+              type: ["string", "null"]
         score:
           type: object
           required:
@@ -1932,6 +1951,10 @@ components:
           type: boolean
         duration:
           type: ["number", "null"]
+        framecount:
+          type: ["number", "null"]
+        thumbnail_frame:
+          type: ["number", "null"]
         upload_url:
           type: string
     PostApproval:
@@ -2057,6 +2080,14 @@ components:
           type: string
           description: |
             Valid for: `changed_bg_color`
+        old_thumbnail_frame:
+          type: ["number", "null"]
+          description: |
+            Valid for: `changed_thumbnail_frame`
+        new_thumbnail_frame:
+          type: ["number", "null"]
+          description: |
+            Valid for: `changed_thumbnail_frame`
 
     PostFlag:
       type: object
@@ -8159,6 +8190,9 @@ paths:
                 hide_from_search_engines:
                   type: boolean
                   description: You must be Admin+.
+                thumbnail_frame:
+                  type: ["number", "null"]
+                  description: You must be Trusted+.
       responses:
         200:
           description: Success

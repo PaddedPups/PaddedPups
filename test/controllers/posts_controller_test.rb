@@ -94,6 +94,40 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
         assert_nil(@post.reload.last_noted_at)
       end
 
+      should "generate the correct thumbnail" do
+        post = UploadService.new(attributes_for(:upload).merge(file: fixture_file_upload("test-512x512.webm"), uploader: @admin, tag_string: "tst")).start!.post
+        assert_equal("77ecd5e8577a03090d3864d348d7020b", Digest::MD5.file(post.reload.preview_file_path).hexdigest)
+        assert_difference("PostEvent.count", 1) do
+          assert_enqueued_jobs(1, only: PostImageSampleJob) do
+            put_auth post_path(post), @admin, params: { post: { thumbnail_frame: 5 }, format: :json }
+          end
+        end
+        assert_response :success
+        perform_enqueued_jobs(only: PostImageSampleJob)
+        assert_equal("79bb226d5656a47979fdcb94a5feb16a", Digest::MD5.file(post.reload.preview_file_path).hexdigest)
+      end
+
+      should "not allow setting thumbnail_frame on posts where framecount=0" do
+        @post.update_column(:framecount, 0)
+        put_auth post_path(@post), @admin, params: { post: { thumbnail_frame: 1 }, format: :json }
+        assert_response :unprocessable_entity
+        assert_same_elements(["cannot be used on posts without a framecount"], @response.parsed_body.dig(:errors, :thumbnail_frame))
+      end
+
+      should "not allow setting thumbnail_frame greater than framecount" do
+        @post.update_column(:framecount, 10)
+        put_auth post_path(@post), @admin, params: { post: { thumbnail_frame: 11 }, format: :json }
+        assert_response :unprocessable_entity
+        assert_same_elements(["must be between 1 and 10"], @response.parsed_body.dig(:errors, :thumbnail_frame))
+      end
+
+      should "not allow setting thumbnail_frame further than 10% from the start if framecount is greater than 1000" do
+        @post.update_column(:framecount, 1500)
+        put_auth post_path(@post), @admin, params: { post: { thumbnail_frame: 2000 }, format: :json }
+        assert_response :unprocessable_entity
+        assert_same_elements(["must be between 1 and 150", "must be in first 10% of video"], @response.parsed_body.dig(:errors, :thumbnail_frame))
+      end
+
       should "restrict access" do
         assert_access(User::Levels::MEMBER, success_response: :redirect) { |user| put_auth post_path(@post), user, params: { post: { tag_string: "bbb" } } }
       end

@@ -56,6 +56,7 @@ module PostIndex
           mpixels:                  { type: "float" },
           aspect_ratio:             { type: "float" },
           duration:                 { type: "float" },
+          framecount:               { type: "integer" },
 
           tags:                     { type: "keyword" },
           md5:                      { type: "keyword" },
@@ -264,6 +265,7 @@ module PostIndex
       mpixels:                  image_width && image_height ? (image_width.to_f * image_height / 1_000_000).round(2) : 0.0,
       aspect_ratio:             image_width && image_height ? (image_width.to_f / [image_height, 1].max).round(10) : 1.0,
       duration:                 duration,
+      framecount:               framecount,
 
       tags:                     tag_string.split,
       md5:                      md5,

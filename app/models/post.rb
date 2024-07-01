@@ -46,9 +46,11 @@ class Post < ApplicationRecord
   validate :has_enough_tags, if: :should_process_tags?
   validate :post_is_not_its_own_parent
   validate :updater_can_change_rating
+  validate :validate_thumbnail_frame
   before_save :update_tag_post_counts, if: :should_process_tags?
   before_save :set_tag_counts, if: :should_process_tags?
   before_save :update_qtags, if: :will_save_change_to_description?
+  after_update :regenerate_image_samples, if: :saved_change_to_thumbnail_frame?
   after_save :create_post_events
   after_save :create_version
   after_save :update_parent_on_save
@@ -260,9 +262,17 @@ class Post < ApplicationRecord
       generate_video_samples(later: true)
     end
 
+    def regenerate_image_samples(later: false)
+      if later
+        PostImageSampleJob.set(wait: 1.minute).perform_later(id)
+      else
+        PostImageSampleJob.perform_later(id)
+      end
+    end
+
     def regenerate_image_samples!
       file = self.file
-      preview_file, crop_file, sample_file = ::PostThumbnailer.generate_resizes(file, image_height, image_width, is_video? ? :video : :image)
+      preview_file, crop_file, sample_file = ::PostThumbnailer.generate_resizes(file, image_height, image_width, is_video? ? :video : :image, frame: thumbnail_frame)
       storage_manager.store_file(sample_file, self, :large) if sample_file.present?
       storage_manager.store_file(preview_file, self, :preview) if preview_file.present?
       storage_manager.store_file(crop_file, self, :crop) if crop_file.present?
@@ -1622,10 +1632,10 @@ class Post < ApplicationRecord
     def serializable_hash(*)
       preview_height, preview_width = preview_dimensions
       {
-        id:            id,
-        created_at:    created_at,
-        updated_at:    updated_at,
-        file:          {
+        id:              id,
+        created_at:      created_at,
+        updated_at:      updated_at,
+        file:            {
           width:  image_width,
           height: image_height,
           ext:    file_ext,
@@ -1633,31 +1643,37 @@ class Post < ApplicationRecord
           md5:    md5,
           url:    visible? ? file_url : nil,
         },
-        preview:       {
+        preview:         {
           width:  preview_width,
           height: preview_height,
           url:    visible? ? preview_file_url : nil,
         },
-        sample:        {
+        sample:          {
           has:        has_large?,
           height:     large_image_height,
           width:      large_image_width,
           url:        visible? ? large_file_url : nil,
           alternates: alternate_samples,
         },
-        score:         {
+        crop:            {
+          has:    has_cropped?,
+          height: FemboyFans.config.small_image_width,
+          width:  FemboyFans.config.small_image_width,
+          url:    visible? ? crop_file_url : nil,
+        },
+        score:           {
           up:    up_score,
           down:  down_score,
           total: score,
         },
-        views:         {
+        views:           {
           daily: daily_views,
           total: total_views,
         },
-        tags:          TagCategory.category_names.index_with { |category| typed_tags(TagCategory.get(category).id) },
-        locked_tags:   locked_tags&.split || [],
-        change_seq:    change_seq,
-        flags:         {
+        tags:            TagCategory.category_names.index_with { |category| typed_tags(TagCategory.get(category).id) },
+        locked_tags:     locked_tags&.split || [],
+        change_seq:      change_seq,
+        flags:           {
           pending:       is_pending,
           flagged:       is_flagged,
           note_locked:   is_note_locked,
@@ -1665,26 +1681,28 @@ class Post < ApplicationRecord
           rating_locked: is_rating_locked,
           deleted:       is_deleted,
         },
-        rating:        rating,
-        fav_count:     fav_count,
-        sources:       source.split("\n"),
-        pools:         pool_ids,
-        relationships: {
+        rating:          rating,
+        fav_count:       fav_count,
+        sources:         source.split("\n"),
+        pools:           pool_ids,
+        relationships:   {
           parent_id:           parent_id,
           has_children:        has_children,
           has_active_children: has_active_children,
           children:            children_ids&.split&.map(&:to_i) || [],
         },
-        approver_id:   approver_id,
-        uploader_id:   uploader_id,
-        description:   description,
-        comment_count: visible_comment_count(CurrentUser.user),
-        is_favorited:  is_favorited?,
-        own_vote:      own_vote,
-        has_notes:     has_notes?,
-        duration:      duration&.to_f,
-        qtags:         qtags,
-        upload_url:    upload_url,
+        approver_id:     approver_id,
+        uploader_id:     uploader_id,
+        description:     description,
+        comment_count:   visible_comment_count(CurrentUser.user),
+        is_favorited:    is_favorited?,
+        own_vote:        own_vote,
+        has_notes:       has_notes?,
+        duration:        duration&.to_f,
+        framecount:      framecount,
+        thumbnail_frame: thumbnail_frame,
+        qtags:           qtags,
+        upload_url:      upload_url,
       }
     end
   end
@@ -1810,6 +1828,9 @@ class Post < ApplicationRecord
       end
       if saved_change_to_bg_color?
         PostEvent.add(id, CurrentUser.user, :changed_bg_color, { bg_color: bg_color })
+      end
+      if saved_change_to_thumbnail_frame?
+        PostEvent.add(id, CurrentUser.user, :changed_thumbnail_frame, { old_thumbnail_frame: thumbnail_frame_before_last_save, new_thumbnail_frame: thumbnail_frame })
       end
     end
   end
@@ -2031,6 +2052,25 @@ class Post < ApplicationRecord
     name += "-#{characters.join('-')}" if characters.present?
     name += "-#{species.join('-')}" if species.present?
     "#{name}.#{file_ext}"
+  end
+
+  def self.validate_thumbnail_frame(post, frame)
+    max = post.framecount > 1000 ? (post.framecount / 10).ceil : post.framecount
+    return [false, max] if post.framecount.blank? || frame < 1 || frame > max
+    [true, max]
+  end
+
+  def validate_thumbnail_frame
+    return if thumbnail_frame.blank?
+    valid, max = Post.validate_thumbnail_frame(self, thumbnail_frame)
+    unless valid
+      if framecount.blank? || framecount == 0
+        errors.add(:thumbnail_frame, "cannot be used on posts without a framecount")
+        return
+      end
+      errors.add(:thumbnail_frame, "must be in first 10% of video") if framecount > 1000 && thumbnail_frame > max
+      errors.add(:thumbnail_frame, "must be between 1 and #{max}") if thumbnail_frame < 1 || thumbnail_frame > max
+    end
   end
 
   def flaggable_for_guidelines?

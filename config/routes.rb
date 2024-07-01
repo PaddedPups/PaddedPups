@@ -285,6 +285,7 @@ Rails.application.routes.draw do
       put :regenerate_videos
       post :add_to_pool
       post :remove_from_pool
+      get "/frame/:frame", to: "posts#frame", as: "frame"
     end
   end
   resources(:qtags, path: "q", only: %i[show])

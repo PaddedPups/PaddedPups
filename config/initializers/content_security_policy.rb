@@ -17,7 +17,7 @@ Rails.application.configure do
     policy.frame_ancestors(:none)
     policy.frame_src("https://www.google.com/recaptcha/", "https://www.recaptcha.net/")
     policy.font_src(:self)
-    policy.img_src(:self, :data, "static.femboy.fan")
+    policy.img_src(:self, :data, :blob, "static.femboy.fan")
     policy.child_src(:none)
     policy.form_action(:self, "discord.femboy.fan", "discord.com")
     # Specify URI for violation reports

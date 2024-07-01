@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class PostVideoConversionJob < ApplicationJob
-  queue_as :video
+  queue_as :samples
   sidekiq_options lock: :until_executed, lock_args_method: :lock_args, retry: 3
 
   def self.lock_args(args)

@@ -95,7 +95,7 @@ class PostPolicy < ApplicationPolicy
       rating old_rating
       edit_reason
     ]
-    attr += %i[is_rating_locked] if user.is_trusted?
+    attr += %i[is_rating_locked thumbnail_frame] if user.is_trusted?
     attr += %i[is_note_locked bg_color] if user.is_janitor?
     attr += %i[is_comment_locked] if user.is_moderator?
     attr += %i[is_status_locked is_comment_disabled locked_tags hide_from_anonymous hide_from_search_engines] if user.is_admin?

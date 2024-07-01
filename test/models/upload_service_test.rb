@@ -31,6 +31,21 @@ class UploadServiceTest < ActiveSupport::TestCase
       end
     end
 
+    context ".video_framecount" do
+      context "for a video" do
+        setup do
+          @path = file_fixture("test-512x512.webm").to_s
+          @upload = Upload.new(file_ext: "webm")
+        end
+
+        should "return the frame count" do
+          count = @upload.video_framecount(@path)
+          # the webm had 25 frames when extracted, but upon doing the math of (frame_rate * duration).ceil myself, I also got 24
+          assert_operator(count, :==, 24)
+        end
+      end
+    end
+
     context ".calculate_dimensions" do
       context "for a video" do
         setup do

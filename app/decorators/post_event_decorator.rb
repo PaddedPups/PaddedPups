@@ -21,6 +21,8 @@ class PostEventDecorator < ApplicationDecorator
       "From: post ##{vals['source_post_id']}"
     when "changed_bg_color"
       "To: #{vals['bg_color'] || 'None'}"
+    when "changed_thumbnail_frame"
+      "#{vals['old_thumbnail_frame'] || 'Default'} -> #{vals['new_thumbnail_frame'] || 'Default'}"
     end
   end
 end

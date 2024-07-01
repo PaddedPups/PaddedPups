@@ -118,6 +118,13 @@ module FileMethods
     nil
   end
 
+  def video_framecount(file_path)
+    return nil unless is_video?
+    video = video(file_path)
+    return nil unless video.duration && video.frame_rate
+    (video.frame_rate * video.duration).ceil
+  end
+
   def is_corrupt?(file_path)
     image = Vips::Image.new_from_file(file_path, fail: true)
     image.stats

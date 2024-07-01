@@ -202,6 +202,12 @@ class ElasticPostQueryBuilder < ElasticQueryBuilder
     when "duration_asc"
       order.push({ duration: :asc }, { id: :asc })
 
+    when "framecount", "framecount_desc"
+      order.push({ framecount: :desc }, { id: :desc })
+
+    when "framecount_asc"
+      order.push({ framecount: :asc }, { id: :asc })
+
     when "favcount"
       order.push({ fav_count: :desc }, { id: :desc })
 

@@ -33,8 +33,8 @@ class UploadService
       end
     end
 
-    def generate_resizes(file, upload)
-      PostThumbnailer.generate_resizes(file, upload.image_height, upload.image_width, upload.is_video? ? :video : :image)
+    def generate_resizes(file, upload, frame: nil)
+      PostThumbnailer.generate_resizes(file, upload.image_height, upload.image_width, upload.is_video? ? :video : :image, frame: frame)
     end
 
     def process_file(upload, file, original_post_id: nil)

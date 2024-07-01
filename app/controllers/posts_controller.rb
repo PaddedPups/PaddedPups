@@ -242,6 +242,21 @@ class PostsController < ApplicationController
     @users = query.paginate(params[:page], limit: params[:limit])
   end
 
+  def frame
+    post = Post.find(params[:id])
+    frame = params[:frame].to_i
+    return render_expected_error(400, "Invalid frame", format: :json) if params[:frame].blank?
+    post.thumbnail_frame = frame
+    if post.invalid?
+      return render_expected_error(400, post.errors.full_messages.join("; "), format: :json)
+    end
+    path = PostThumbnailer.extract_frame_from_video(post.file_path, frame)
+    File.open(path, "r") do |file|
+      send_data(file.read, type: "image/webp", disposition: "inline")
+    end
+    File.delete(path)
+  end
+
   private
 
   def tag_query
@@ -280,10 +295,6 @@ class PostsController < ApplicationController
           response_params.compact_blank!
           redirect_to(post_path(post, response_params))
         end
-      end
-
-      format.json do
-        render(json: post)
       end
     end
   end

@@ -37,9 +37,10 @@ class TagQuery
     tagcount tagcount_asc
     change change_desc change_asc
     duration duration_desc duration_asc
+    framecount framecount_desc framecount_asc
     rank
     random
-  ] + COUNT_METATAGS + TagCategory.short_name_list.flat_map { |str| ["#{str}tags", "#{str}tags_asc"] }
+  ] + COUNT_METATAGS + TagCategory.short_name_list.flat_map { |str| %W[#{str}tags #{str}tags_asc] }
 
   delegate :[], :include?, to: :@q
   attr_reader :q, :resolve_aliases

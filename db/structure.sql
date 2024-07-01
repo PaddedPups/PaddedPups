@@ -1750,7 +1750,9 @@ CREATE TABLE public.posts (
     qtags character varying[] DEFAULT '{}'::character varying[] NOT NULL,
     upload_url character varying,
     vote_string character varying DEFAULT ''::character varying NOT NULL,
-    tag_count_gender integer DEFAULT 0 NOT NULL
+    tag_count_gender integer DEFAULT 0 NOT NULL,
+    framecount integer,
+    thumbnail_frame integer
 );
 
 
@@ -5193,6 +5195,7 @@ ALTER TABLE ONLY public.staff_notes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20240630084744'),
 ('20240627052741'),
 ('20240627045124'),
 ('20240622005608'),

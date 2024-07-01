@@ -12,6 +12,7 @@ let Post = {};
 
 Post.pending_update_count = 0;
 Post.resizeMode = "unknown";
+Post._blobFrameMap = {};
 
 Post.initialize_all = function() {
 
@@ -34,7 +35,8 @@ Post.initialize_all = function() {
     this.initialize_gestures();
     this.initialize_voting();
     this.initialize_moderation();
-    this.initialize_hide_notes()
+    this.initialize_hide_notes();
+    this.initialize_thumbnail_frame_preview();
   }
 
   if ($("#p-index-by-post").length)
@@ -1216,6 +1218,50 @@ Post.initialize_vote_buttons = function() {
       });
     }
   }
+}
+
+Post.initialize_thumbnail_frame_preview = function() {
+  const $input = $("#preview-thumbnail-frame-button");
+  $input.off("click.femboyfans");
+  $input.on("click.femboyfans", Post.preview_thumbnail_frame);
+}
+
+Post.preview_thumbnail_frame = async function (event) {
+  event.preventDefault();
+  const $input = $("#post_thumbnail_frame")
+  const $container = $("#preview-thumbnail-frame");
+  const value = Number($input.val());
+  $container.empty();
+  if ($input.val() === "") return;
+  $("<h4>").text("Preview").appendTo($container);
+  $("<p>").text("Loading...").appendTo($container);
+  try {
+    const url = await Post.get_blob_url_for_frame(value);
+    const $link = $("<a>").attr("href", url).attr("target", "_blank");
+    $("<img>").attr("src", url).attr("width", "60%").appendTo($link);
+    $link.appendTo($container)
+    $container.find("p").remove();
+  } catch(e) {
+    console.error("Failed to create blob url for frame:", e);
+    $container.find("p").text(`Error: ${e.message}`);
+  }
+}
+
+Post.get_blob_url_for_frame = async function(frame, post_id = Post.currentPost().id) {
+  Post._blobFrameMap[post_id] ??= {};
+  if(Post._blobFrameMap[post_id][frame]) {
+    return Post._blobFrameMap[post_id][frame];
+  }
+  const response = await fetch(`/posts/${post_id}/frame/${frame}`);
+  if (response.status !== 200) {
+    if (response.headers.get("content-type").startsWith("application/json")) {
+      throw new Error((await response.json()).message);
+    }
+    throw new Error(`Failed to fetch frame ${frame} for post ${post_id}: ${response.status} ${response.statusText}`);
+  }
+  const url = URL.createObjectURL(await response.blob());
+  Post._blobFrameMap[post_id][frame] = url;
+  return url;
 }
 
 $(document).ready(function() {

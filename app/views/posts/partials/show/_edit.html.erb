@@ -66,6 +66,15 @@
     </div>
   <% end %>
 
+  <% if can_use_attribute?(post, :thumbnail_frame) && @post.framecount.present? && @post.framecount > 0 %>
+    <div class="input integer optional post_thumbnail_frame field_with_hint">
+      <label class="integer optional" for="post_thumbnail_frame">Thumbnail Frame</label>
+      <input class="numeric integer optional" type="number" step="1" value="<%= post.thumbnail_frame %>" name="post[thumbnail_frame]" id="post_thumbnail_frame"> <%= button_tag("Preview", type: "button", id: "preview-thumbnail-frame-button") %>
+      <span class="hint">The frame number to use as thumbnail. Leave blank to use default.</span>
+    </div>
+    <div id="preview-thumbnail-frame">
+    </div>
+  <% end %>
   <% if can_use_attribute?(post, :bg_color) %>
     <%= f.input(:bg_color, label: "Background Color", input_html: { size: 6 }) %>
   <% end %>
