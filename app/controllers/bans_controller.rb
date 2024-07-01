@@ -2,7 +2,7 @@
 
 class BansController < ApplicationController
   respond_to :html
-  respond_to :json, except: %i[new create edit update destroy]
+  respond_to :json, only: %i[index show]
 
   def index
     @bans = authorize(Ban).search(search_params(Ban)).paginate(params[:page], limit: params[:limit])
