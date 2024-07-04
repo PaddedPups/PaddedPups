@@ -11,6 +11,7 @@ class ForumPost < ApplicationRecord
   belongs_to :warning_user, class_name: "User", optional: true
   has_many :votes, class_name: "ForumPostVote"
   has_many :tickets, as: :model
+  has_many :versions, class_name: "EditHistory", as: :versionable, dependent: :destroy
   has_one :tag_alias
   has_one :tag_implication
   has_one :bulk_update_request

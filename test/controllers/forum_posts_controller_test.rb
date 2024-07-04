@@ -154,10 +154,23 @@ class ForumPostsControllerTest < ActionDispatch::IntegrationTest
 
     context "destroy action" do
       should "destroy the posts" do
-        @admin = create(:admin_user)
-        delete_auth forum_post_path(@forum_post), @admin
-        get_auth forum_post_path(@forum_post), @admin
+        delete_auth forum_post_path(@forum_post), create(:admin_user)
+        assert_raises(ActiveRecord::RecordNotFound) { @forum_post.reload }
         assert_response :not_found
+      end
+
+      context "on a forum post with edit history" do
+        setup do
+          as(@user) do
+            @forum_post.update!(body: "hi hello")
+          end
+        end
+
+        should "also delete the edit history" do
+          assert_difference({ "ForumPost.count" => -1, "EditHistory.count" => -2 }) do
+            delete_auth forum_post_path(@forum_post), create(:admin_user)
+          end
+        end
       end
 
       should "restrict access" do

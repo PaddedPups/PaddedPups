@@ -32,6 +32,7 @@ class Comment < ApplicationRecord
   belongs_to :warning_user, class_name: "User", optional: true
   has_many :votes, class_name: "CommentVote", dependent: :destroy
   has_many :tickets, as: :model
+  has_many :versions, class_name: "EditHistory", as: :versionable, dependent: :destroy
 
   module ApiMethods
     def hidden_attributes

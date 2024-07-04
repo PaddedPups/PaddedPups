@@ -202,6 +202,20 @@ class CommentsControllerTest < ActionDispatch::IntegrationTest
         assert_raises(ActiveRecord::RecordNotFound) { @comment.reload }
       end
 
+      context "on a comment with edit history" do
+        setup do
+          as(@user) do
+            @comment.update!(body: "hi hello")
+          end
+        end
+
+        should "also delete the edit history" do
+          assert_difference({ "Comment.count" => -1, "EditHistory.count" => -2 }) do
+            delete_auth comment_path(@comment), create(:admin_user)
+          end
+        end
+      end
+
       should "restrict access" do
         assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| delete_auth comment_path(create(:comment)), user }
       end
