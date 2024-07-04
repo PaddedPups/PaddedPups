@@ -69,7 +69,19 @@ class ApplicationController < ActionController::Base
     when SessionLoader::AuthenticationFailure
       session.delete(:user_id)
       cookies.delete(:remember)
-      render_expected_error(401, exception.message)
+      status = 401
+      if exception.is_a?(SessionLoader::BannedError)
+        status = 403
+        if request.format.json?
+          return render(json: {
+            success: false,
+            message: exception.message,
+            code:    nil,
+            ban:     exception.try(:ban),
+          }, status: status)
+        end
+      end
+      render_expected_error(status, exception.message)
     when ActionController::InvalidAuthenticityToken
       render_expected_error(403, "ActionController::InvalidAuthenticityToken. Did you properly authorize your request?")
     when ActiveRecord::RecordNotFound

@@ -155,7 +155,7 @@ class ActionDispatch::IntegrationTest # rubocop:disable Style/ClassAndModuleChil
       admin = create(:admin_user)
       as(admin) { create(:ban, user: user, reason: "test") }
       as(user) { yield(user) }
-      assert_response(:unauthorized, "Fail: #{User::Levels.level_name(level)} (expected: unauthorized, actual: #{@response.status})")
+      assert_response(:forbidden, "Fail: #{User::Levels.level_name(level)} (expected: forbidden, actual: #{@response.status})")
     end
   end
 end

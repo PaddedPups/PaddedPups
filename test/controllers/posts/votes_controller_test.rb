@@ -55,7 +55,7 @@ module Posts
         should "not allow banned users to vote" do
           @banned = create(:banned_user)
           post_auth post_votes_path(post_id: @post.id), @banned, params: { score: 1, format: :json }
-          assert_response 401
+          assert_response 403
           assert_equal(0, @post.reload.score)
         end
 

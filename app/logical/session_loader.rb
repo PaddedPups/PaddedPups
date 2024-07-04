@@ -3,6 +3,19 @@
 class SessionLoader
   class AuthenticationFailure < StandardError; end
 
+  class BannedError < AuthenticationFailure
+    attr_reader :ban
+
+    def initialize(ban)
+      if ban.blank? || ban.expires_at.blank?
+        super("Account is permanently banned")
+      else
+        super("Account is banned for #{ban.expire_days}")
+      end
+      @ban = ban
+    end
+  end
+
   attr_reader :session, :cookies, :request, :params
 
   def initialize(request)
@@ -27,12 +40,7 @@ class SessionLoader
 
     CurrentUser.user.unban! if CurrentUser.user.ban_expired?
     if CurrentUser.user.is_banned?
-      recent_ban = CurrentUser.user.recent_ban
-      ban_message = "Account is banned: forever"
-      if recent_ban && recent_ban.expires_at.present?
-        ban_message = "Account is suspended for another #{recent_ban.expire_days}"
-      end
-      raise(AuthenticationFailure, ban_message)
+      raise(BannedError, CurrentUser.user.recent_ban)
     end
     set_statement_timeout
     update_last_logged_in_at

@@ -26,7 +26,7 @@ class Ticket < ApplicationRecord
 
   attr_accessor :record_type, :send_update_dmail
 
-  MODEL_TYPES = %w[Artist Comment Dmail ForumPost Pool Post PostSet User WikiPage].freeze
+  MODEL_TYPES = %w[Artist Comment Dmail ForumPost Pool Post PostSet Tag User WikiPage].freeze
 
   # Permissions Table
   #

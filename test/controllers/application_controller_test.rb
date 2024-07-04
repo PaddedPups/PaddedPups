@@ -160,5 +160,44 @@ class ApplicationControllerTest < ActionDispatch::IntegrationTest
         assert_response :success
       end
     end
+
+    context "when the user is banned" do
+      setup do
+        @user = create(:user)
+        @user2 = create(:user)
+        as(create(:admin_user)) do
+          @user.bans.create!(duration: -1, reason: "Test")
+          @user2.bans.create!(duration: 3, reason: "Test")
+        end
+      end
+
+      context "permanently" do
+        should "return a 403 for html" do
+          get_auth posts_path, @user
+          assert_response 403
+        end
+
+        should "return a 403 and the ban for json" do
+          get_auth posts_path, @user, params: { format: :json }
+          assert_response 403
+          assert_equal("Account is permanently banned", @response.parsed_body["message"])
+          assert_equal(@user.recent_ban.as_json, @response.parsed_body["ban"])
+        end
+      end
+
+      context "temporarily" do
+        should "return a 403 for html" do
+          get_auth posts_path, @user2
+          assert_response 403
+        end
+
+        should "return a 403 and the ban for json" do
+          get_auth posts_path, @user2, params: { format: :json }
+          assert_response 403
+          assert_equal("Account is banned for 3 days", @response.parsed_body["message"])
+          assert_equal(@user2.recent_ban.as_json, @response.parsed_body["ban"])
+        end
+      end
+    end
   end
 end

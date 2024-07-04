@@ -59,7 +59,7 @@ module Users
             request = UserNameChangeRequest.create!(
               user_id:       user.id,
               original_name: user.name,
-              desired_name:  SecureRandom.hex(6),
+              desired_name:  "user_#{SecureRandom.hex(6)}",
               change_reason: "hello",
             )
             get_auth user_name_change_request_path(request), user
