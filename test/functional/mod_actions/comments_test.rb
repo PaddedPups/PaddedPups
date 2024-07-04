@@ -21,9 +21,10 @@ module ModActions
 
         assert_matches(
           actions: %w[comment_delete],
-          text:    "Deleted comment ##{@comment.id} by #{user(@user)}",
+          text:    "Deleted comment ##{@comment.id} by #{user(@user)} on post ##{@comment.post_id}",
           subject: @comment,
           user_id: @user.id,
+          post_id: @comment.post_id,
         )
       end
 

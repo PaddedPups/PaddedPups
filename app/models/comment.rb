@@ -20,7 +20,7 @@ class Comment < ApplicationRecord
   end
   after_destroy :update_last_commented_at_on_destroy
   after_destroy do |rec|
-    ModAction.log!(:comment_delete, rec, user_id: rec.creator_id)
+    ModAction.log!(:comment_delete, rec, user_id: rec.creator_id, post_id: rec.post_id)
   end
   after_save :update_last_commented_at_on_destroy, if: ->(rec) { rec.is_hidden? && rec.saved_change_to_is_hidden? }
   after_save(if: ->(rec) { rec.saved_change_to_is_hidden? && CurrentUser.id != rec.creator_id }) do |rec|

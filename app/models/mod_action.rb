@@ -36,6 +36,7 @@ class ModAction < ApplicationRecord
     category_name old_category_name
     prompt old_prompt title
     artist_name
+    post_id
   ].freeze
 
   store_accessor :values, *VALUES
@@ -105,8 +106,8 @@ class ModAction < ApplicationRecord
 
     ### Comment ###
     comment_delete:                             {
-      text: ->(mod, user) { "Deleted comment ##{mod.subject_id} by #{user}" },
-      json: %i[user_id],
+      text: ->(mod, user) { "Deleted comment ##{mod.subject_id} by #{user} on post ##{mod.post_id}" },
+      json: %i[user_id post_id],
     },
     comment_hide:                               {
       text: ->(mod, user) { "Hid comment ##{mod.subject_id} by #{user}" },

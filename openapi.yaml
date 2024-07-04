@@ -1412,7 +1412,10 @@ components:
           type: string
           description: |
             Valid for: `avoid_posting_create`, `avoid_posting_deactivate`, `avoid_posting_delete`, `avoid_posting_reactivate`, `avoid_posting_update`
-
+        post_id:
+          type: number
+          description: |
+            Valid for: `comment_delete`
     NewsUpdate:
       type: object
       required:
