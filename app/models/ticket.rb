@@ -6,14 +6,14 @@ class Ticket < ApplicationRecord
   belongs_to :claimant, class_name: "User", optional: true
   belongs_to :handler, class_name: "User", optional: true
   belongs_to :accused, class_name: "User", optional: true
-  after_initialize :validate_type
   after_initialize :classify
   before_validation :initialize_fields, on: :create
   validates :reason, presence: true
   validates :reason, length: { minimum: 2, maximum: FemboyFans.config.ticket_max_size }
   validates :response, length: { minimum: 2, maximum: FemboyFans.config.ticket_max_size }, on: :update
   validates :report_type, presence: true
-  validate :validate_report_type_for_ticket
+  validate :validate_model_type
+  validate :validate_report_type
   enum :status, %i[pending partial approved rejected].index_with(&:to_s)
   after_create :autoban_accused_user
   after_update :log_update
@@ -193,11 +193,12 @@ class Ticket < ApplicationRecord
   end
 
   module ValidationMethods
-    def validate_type
+    def validate_model_type
+      return if MODEL_TYPES.include?(model_type)
       errors.add(:model_type, "is not valid")
     end
 
-    def validate_report_type_for_ticket
+    def validate_report_type
       return if report_type == "report"
       return if report_type == "commendation" && model_type == "User"
       errors.add(:report_type, "is not valid")
