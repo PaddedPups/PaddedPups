@@ -25,6 +25,7 @@ class Artist < ApplicationRecord
   after_save :update_dnp, if: :saved_change_to_name?
   after_save :propagate_locked, if: :should_propagate_locked
   after_save :clear_url_string_changed
+  after_save :update_posts_index, if: :saved_change_to_linked_user_id?
 
   has_many :urls, dependent: :destroy, class_name: "ArtistUrl", autosave: true
   has_many :versions, -> { order("artist_versions.id ASC") }, class_name: "ArtistVersion"
@@ -565,5 +566,9 @@ class Artist < ApplicationRecord
   def is_note_locked?
     return false if CurrentUser.is_janitor?
     wiki_page&.is_locked? || false
+  end
+
+  def update_posts_index
+    Post.tag_match_system(name).each(&:update_index)
   end
 end

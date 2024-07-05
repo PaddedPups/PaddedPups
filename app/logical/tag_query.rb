@@ -8,7 +8,7 @@ class TagQuery
   ].freeze
 
   BOOLEAN_METATAGS = %w[
-    hassource hasdescription isparent ischild inpool pending_replacements
+    hassource hasdescription isparent ischild inpool pending_replacements artverified
   ].freeze
 
   NEGATABLE_METATAGS = %w[
@@ -144,7 +144,6 @@ class TagQuery
           user_id = User.name_or_id_to_id(g2)
           id_or_invalid(user_id)
         end
-
 
       when "disapprover", "-disapprover", "~disapprover"
         if CurrentUser.user.can_approve_posts?

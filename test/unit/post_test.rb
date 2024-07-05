@@ -1832,7 +1832,7 @@ class PostTest < ActiveSupport::TestCase
 
       assert_tag_match([posts[0]], "commenter:any")
       assert_tag_match([posts[1]], "commenter:none")
-      end
+    end
 
     should "Return posts for the disapprover:<name> metatag" do
       posts = create_list(:post, 3, is_pending: true)
@@ -2214,6 +2214,24 @@ class PostTest < ActiveSupport::TestCase
       assert_nothing_raised do
         Post.tag_match("-aaa id:>0")
       end
+    end
+
+    should "return posts for verified artists" do
+      assert_tag_match([], "artverified:true")
+      assert_tag_match([], "artverified:false")
+      artist = create(:artist, linked_user: @user)
+      post = create(:post, tag_string: artist.name, uploader: @user)
+      assert_tag_match([], "artverified:false")
+      assert_tag_match([post], "artverified:true")
+    end
+
+    should "return posts for verified artists after update" do
+      assert_tag_match([], "artverified:true")
+      assert_tag_match([], "artverified:false")
+      post = create(:post, tag_string: "artist:test", uploader: @user)
+      with_inline_jobs { create(:artist, name: "test", linked_user: @user) }
+      assert_tag_match([], "artverified:false")
+      assert_tag_match([post], "artverified:true")
     end
 
     should "return posts for replacements" do

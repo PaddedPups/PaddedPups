@@ -171,6 +171,10 @@ class ElasticPostQueryBuilder < ElasticQueryBuilder
       must.push({ term: { has_pending_replacements: q[:pending_replacements] } })
     end
 
+    if q.include?(:artverified)
+      must.push({ term: { artverified: q[:artverified] } })
+    end
+
     add_tag_string_search_relation(q[:tags])
 
     case q[:order]
@@ -286,15 +290,15 @@ class ElasticPostQueryBuilder < ElasticQueryBuilder
 
     when /(#{TagCategory.short_name_regex})tags_asc/
       order.push({ "tag_count_#{TagCategory.short_name_mapping[$1]}" => :asc })
-      
+
     when "disapprovals", "disapprovals_desc"
       if CurrentUser.user.can_approve_posts?
-        order.push({ disapproval_count: { order: :desc, missing: :_last} })
+        order.push({ disapproval_count: { order: :desc, missing: :_last } })
       end
-      
+
     when "disapprovals_asc"
       if CurrentUser.user.can_approve_posts?
-        order.push({ disapproval_count: { order: :asc, missing: :_last} })
+        order.push({ disapproval_count: { order: :asc, missing: :_last } })
       end
 
     when "rank"

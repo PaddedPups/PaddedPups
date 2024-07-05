@@ -77,6 +77,7 @@ module PostIndex
           deleted:                  { type: "boolean" },
           has_children:             { type: "boolean" },
           has_pending_replacements: { type: "boolean" },
+          artverified:              { type: "boolean" },
         },
       },
     }
@@ -163,21 +164,25 @@ module PostIndex
           WHERE post_id IN (#{post_ids})
           GROUP BY post_id
         SQL
+        verified_artists_sql = <<-SQL.squish
+          SELECT name, linked_user_id FROM artists WHERE linked_user_id IS NOT NULL
+        SQL
 
         # Run queries
         conn = ApplicationRecord.connection
-        deletions      = conn.execute(deletion_sql)
-        deleter_ids    = deletions.values.to_h { |p, did, _dr| [p, did] }
-        del_reasons    = deletions.values.to_h { |p, _did, dr| [p, dr] }
-        comment_counts = conn.execute(comments_sql).values.to_h
-        pool_ids       = conn.execute(pools_sql).values.map(&array_parse).to_h
-        set_ids        = conn.execute(sets_sql).values.map(&array_parse).to_h
-        fave_ids       = conn.execute(faves_sql).values.map(&array_parse).to_h
-        commenter_ids  = conn.execute(commenter_sql).values.map(&array_parse).to_h
-        noter_ids      = conn.execute(noter_sql).values.map(&array_parse).to_h
-        child_ids      = conn.execute(child_sql).values.map(&array_parse).to_h
-        disapprovers   = conn.execute(disapprovals_sql).values.map(&array_parse).to_h
-        notes          = Hash.new { |h, k| h[k] = [] }
+        deletions        = conn.execute(deletion_sql)
+        deleter_ids      = deletions.values.to_h { |p, did, _dr| [p, did] }
+        del_reasons      = deletions.values.to_h { |p, _did, dr| [p, dr] }
+        comment_counts   = conn.execute(comments_sql).values.to_h
+        pool_ids         = conn.execute(pools_sql).values.map(&array_parse).to_h
+        set_ids          = conn.execute(sets_sql).values.map(&array_parse).to_h
+        fave_ids         = conn.execute(faves_sql).values.map(&array_parse).to_h
+        commenter_ids    = conn.execute(commenter_sql).values.map(&array_parse).to_h
+        noter_ids        = conn.execute(noter_sql).values.map(&array_parse).to_h
+        child_ids        = conn.execute(child_sql).values.map(&array_parse).to_h
+        disapprovers     = conn.execute(disapprovals_sql).values.map(&array_parse).to_h
+        verified_artists = conn.execute(verified_artists_sql).values.to_h
+        notes            = Hash.new { |h, k| h[k] = [] }
         conn.execute(note_sql).values.each { |p, b| notes[p] << b } # rubocop:disable Style/HashEachMethods
         pending_replacements = conn.execute(pending_replacements_sql).values.to_h
 
@@ -211,6 +216,7 @@ module PostIndex
             del_reason:               del_reasons[p.id] || empty,
             has_pending_replacements: pending_replacements[p.id],
             disapproval_count:        disapprovers[p.id]&.count || 0,
+            artverified:              p.tag_array.any? { |tag| verified_artists.key?(tag) && verified_artists[tag] == p.uploader_id },
           }
 
           {
@@ -255,6 +261,7 @@ module PostIndex
       tag_count_voice_actor:    tag_count_voice_actor,
       tag_count_gender:         tag_count_gender,
       comment_count:            options[:comment_count] || comment_count,
+      disapproval_count:        options[:disapproval_count] || ::PostDisapproval.where(post_id: id).pluck(:user_id).size,
 
       file_size:                file_size,
       parent:                   parent_id,
@@ -270,7 +277,6 @@ module PostIndex
       uploader:                 uploader_id,
       approver:                 approver_id,
       disapprovers:             options[:disapprovers] || ::PostDisapproval.where(post_id: id).pluck(:user_id),
-      disapproval_count:        options[:disapproval_count] || ::PostDisapproval.where(post_id: id).pluck(:user_id).size,
       deleter:                  options[:deleter] || ::PostFlag.where(post_id: id, is_resolved: false, is_deletion: true).order(id: :desc).first&.creator_id,
       del_reason:               options[:del_reason] || ::PostFlag.where(post_id: id, is_resolved: false, is_deletion: true).order(id: :desc).first&.reason&.downcase,
       width:                    image_width,
@@ -295,6 +301,7 @@ module PostIndex
       deleted:                  is_deleted,
       has_children:             has_children,
       has_pending_replacements: options.key?(:has_pending_replacements) ? options[:has_pending_replacements] : replacements.pending.any?,
+      artverified:              options.key?(:artverified) ? options[:artverified] : uploader_linked_artists.any?,
     }
   end
 end
