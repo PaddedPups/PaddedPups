@@ -174,8 +174,9 @@ class Pool < ApplicationRecord
     post_ids_before = post_ids_before_last_save || post_ids_was
     added = post_ids - post_ids_before
     return if added.empty?
-    if post_ids.size > FemboyFans.config.pool_post_limit
-      errors.add(:base, "Pools can only have up to #{ActiveSupport::NumberHelper.number_to_delimited(FemboyFans.config.pool_post_limit)} posts each")
+    max = FemboyFans.config.pool_post_limit(CurrentUser.user)
+    if post_ids.size > max
+      errors.add(:base, "Pools can only have up to #{ActiveSupport::NumberHelper.number_to_delimited(max)} posts each")
       false
     else
       true
@@ -191,6 +192,7 @@ class Pool < ApplicationRecord
       reload
       self.skip_sync = true
       update(post_ids: post_ids + [post.id])
+      raise(ActiveRecord::Rollback) unless valid?
       update_artists(post, :add)
       self.skip_sync = false
       post.add_pool!(self)
@@ -213,6 +215,7 @@ class Pool < ApplicationRecord
       reload
       self.skip_sync = true
       update(post_ids: post_ids - [post.id])
+      raise(ActiveRecord::Rollback) unless valid?
       update_artists(post, :remove)
       self.skip_sync = false
       post.remove_pool!(self)

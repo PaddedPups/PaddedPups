@@ -156,7 +156,7 @@ class ForumPostsControllerTest < ActionDispatch::IntegrationTest
       should "destroy the posts" do
         delete_auth forum_post_path(@forum_post), create(:admin_user)
         assert_raises(ActiveRecord::RecordNotFound) { @forum_post.reload }
-        assert_response :not_found
+        assert_redirected_to(forum_posts_path)
       end
 
       context "on a forum post with edit history" do

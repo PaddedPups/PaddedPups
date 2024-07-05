@@ -837,35 +837,75 @@ class Post < ApplicationRecord
         case tag
         when /^-pool:(\d+)$/i
           pool = Pool.find_by(id: $1.to_i)
-          pool&.remove!(self)
+          if pool
+            pool.remove!(self)
+            if pool.errors.any?
+              errors.add(:base, pool.errors.full_messages.join("; "))
+            end
+          end
 
         when /^-pool:(.+)$/i
           pool = Pool.find_by(name: $1)
-          pool&.remove!(self)
+          if pool
+            pool.remove!(self)
+            if pool.errors.any?
+              errors.add(:base, pool.errors.full_messages.join("; "))
+            end
+          end
 
         when /^pool:(\d+)$/i
           pool = Pool.find_by(id: $1.to_i)
-          pool&.add!(self)
+          if pool
+            pool.add!(self)
+            if pool.errors.any?
+              errors.add(:base, pool.errors.full_messages.join("; "))
+            end
+          end
 
         when /^(?:new)?pool:(.+)$/i
           pool = Pool.find_by(name: $1)
-          pool&.add!(self)
+          if pool
+            pool.add!(self)
+            if pool.errors.any?
+              errors.add(:base, pool.errors.full_messages.join("; "))
+            end
+          end
 
         when /^set:(\d+)$/i
           set = PostSet.find_by(id: $1.to_i)
-          set.add!(self) if set&.can_edit_posts?(CurrentUser.user)
+          if set&.can_edit_posts?(CurrentUser.user)
+            set.add!(self)
+            if set.errors.any?
+              errors.add(:base, set.errors.full_messages.join("; "))
+            end
+          end
 
         when /^-set:(\d+)$/i
           set = PostSet.find_by(id: $1.to_i)
-          set.remove!(self) if set&.can_edit_posts?(CurrentUser.user)
+          if set&.can_edit_posts?(CurrentUser.user)
+            set.remove!(self)
+            if set.errors.any?
+              errors.add(:base, set.errors.full_messages.join("; "))
+            end
+          end
 
         when /^set:(.+)$/i
           set = PostSet.find_by(shortname: $1)
-          set.add!(self) if set&.can_edit_posts?(CurrentUser.user)
+          if set&.can_edit_posts?(CurrentUser.user)
+            set.add!(self)
+            if set.errors.any?
+              errors.add(:base, set.errors.full_messages.join("; "))
+            end
+          end
 
         when /^-set:(.+)$/i
           set = PostSet.find_by(shortname: $1)
-          set.remove!(self) if set&.can_edit_posts?(CurrentUser.user)
+          if set&.can_edit_posts?(CurrentUser.user)
+            set.remove!(self)
+            if set.errors.any?
+              errors.add(:base, set.errors.full_messages.join("; "))
+            end
+          end
 
         when /^child:none$/i
           children.each do |post|

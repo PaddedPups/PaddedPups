@@ -377,8 +377,12 @@ module FemboyFans
       50_000
     end
 
-    def pool_post_limit
+    def pool_post_limit(_user)
       1_000
+    end
+
+    def set_post_limit(_user) # rubocop:disable Naming/AccessorMethodName
+      10_000
     end
 
     def disapproval_message_max_size

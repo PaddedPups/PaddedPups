@@ -143,8 +143,9 @@ class PostSet < ApplicationRecord
       post_ids_before = post_ids_before_last_save || post_ids_was
       added = post_ids - post_ids_before
       return if added.empty?
-      if post_ids.size > 10_000
-        errors.add(:base, "Sets can have up to 10,000 posts each")
+      max = FemboyFans.config.set_post_limit(CurrentUser.user)
+      if post_ids.size > max
+        errors.add(:base, "Sets can only have up to #{ActiveSupport::NumberHelper.number_to_delimited(max)} posts each")
         false
       else
         true
@@ -210,6 +211,7 @@ class PostSet < ApplicationRecord
         reload
         self.skip_sync = true
         update(post_ids: post_ids + [post.id])
+        raise(ActiveRecord::Rollback) unless valid?
         post.add_set!(self, force: true)
         post.save
       end
@@ -226,6 +228,7 @@ class PostSet < ApplicationRecord
         reload
         self.skip_sync = true
         update(post_ids: post_ids - [post.id])
+        raise(ActiveRecord::Rollback) unless valid?
         post.remove_set!(self)
         post.save
       end
