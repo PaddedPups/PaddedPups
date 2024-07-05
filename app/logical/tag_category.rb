@@ -80,7 +80,7 @@ module TagCategory
   end
 
   def short_name_mapping
-    @short_name_mapping ||= categories.flat_map { |c| c.aliases.map { |a| [a, c.name] } }.to_h
+    @short_name_mapping ||= categories.flat_map { |c| c.aliases.empty? ? [[c.name, c.name]] : c.aliases.map { |a| [a, c.name] } }.to_h
   end
 
   def short_name_list

@@ -4,7 +4,7 @@ require "test_helper"
 
 class PostTest < ActiveSupport::TestCase
   def assert_tag_match(posts, query)
-    assert_equal(posts.map(&:id), Post.tag_match(query).pluck(:id))
+    assert_equal(posts.map(&:id), Post.tag_match(query).pluck(:id), "Query: #{query}")
   end
 
   setup do
@@ -1919,14 +1919,20 @@ class PostTest < ActiveSupport::TestCase
     end
 
     should "return posts for the tagcount:<n> metatags" do
-      post = create(:post, tag_string: "artist:wokada copyright:vocaloid char:hatsune_miku twintails")
+      as(create(:admin_user)) do
+        @post = create(:post, tag_string: "artist:wokada copyright:vocaloid char:hatsune_miku twintails meta:hi lore:test_(lore) va:test_(va) gender:male")
+      end
 
-      assert_tag_match([post], "tagcount:4")
-      assert_tag_match([], "tagcount:3")
-      assert_tag_match([post], "arttags:1")
-      assert_tag_match([post], "copytags:1")
-      assert_tag_match([post], "chartags:1")
-      assert_tag_match([post], "gentags:1")
+      assert_tag_match([@post], "tagcount:8")
+      assert_tag_match([], "tagcount:9")
+      assert_tag_match([@post], "arttags:1")
+      assert_tag_match([@post], "copytags:1")
+      assert_tag_match([@post], "chartags:1")
+      assert_tag_match([@post], "gentags:1")
+      assert_tag_match([@post], "metatags:1")
+      assert_tag_match([@post], "lortags:1")
+      assert_tag_match([@post], "vatags:1")
+      assert_tag_match([@post], "gendertags:1")
       assert_tag_match([], "gentags:0")
     end
 

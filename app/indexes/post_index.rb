@@ -240,6 +240,7 @@ module PostIndex
       tag_count_copyright:      tag_count_copyright,
       tag_count_meta:           tag_count_meta,
       tag_count_species:        tag_count_species,
+      tag_count_lore:           tag_count_lore,
       tag_count_invalid:        tag_count_invalid,
       tag_count_voice_actor:    tag_count_voice_actor,
       tag_count_gender:         tag_count_gender,
