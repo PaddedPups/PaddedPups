@@ -1832,6 +1832,91 @@ class PostTest < ActiveSupport::TestCase
 
       assert_tag_match([posts[0]], "commenter:any")
       assert_tag_match([posts[1]], "commenter:none")
+      end
+
+    should "Return posts for the disapprover:<name> metatag" do
+      posts = create_list(:post, 3, is_pending: true)
+      @user = create(:janitor_user)
+      @user2 = create(:janitor_user)
+      @user3 = create(:user)
+      create(:post_disapproval, user: @user, post: posts[0], reason: "borderline_quality")
+      create(:post_disapproval, user: @user2, post: posts[1], reason: "borderline_quality")
+      create(:post_disapproval, user: @user2, post: posts[0], reason: "borderline_quality")
+
+      # refuse to filter for non-approvers
+      as(@user3) do
+        assert_tag_match(posts.reverse, "disapprover:#{@user.name}")
+        assert_tag_match(posts.reverse, "disapprover:!#{@user.id}")
+      end
+      as(@user) do
+        assert_tag_match([posts[0]], "disapprover:#{@user.name}")
+        assert_tag_match([posts[0]], "disapprover:!#{@user.id}")
+      end
+    end
+
+    should "Return posts for the disapprover:<any|none> metatag" do
+      posts = create_list(:post, 3, is_pending: true)
+      @user = create(:janitor_user)
+      @user2 = create(:janitor_user)
+      @user3 = create(:user)
+      create(:post_disapproval, user: @user, post: posts[0], reason: "borderline_quality")
+      create(:post_disapproval, user: @user2, post: posts[1], reason: "borderline_quality")
+      create(:post_disapproval, user: @user2, post: posts[0], reason: "borderline_quality")
+
+      as(@user3) do
+        assert_tag_match(posts.reverse, "disapprover:any")
+        assert_tag_match(posts.reverse, "disapprover:none")
+      end
+
+      as(@user) do
+        assert_tag_match([posts[2]], "disapprover:none") # TODO: !All
+        assert_tag_match([posts[1], posts[0]], "disapprover:any") # TODO: !none
+      end
+    end
+
+    should "Return posts for the disapprovals:<n> metatag" do
+      posts = create_list(:post, 3, is_pending: true)
+      @user = create(:janitor_user)
+      @user2 = create(:janitor_user)
+      @user3 = create(:user)
+      create(:post_disapproval, user: @user, post: posts[0], reason: "borderline_quality")
+      create(:post_disapproval, user: @user2, post: posts[1], reason: "borderline_quality")
+      create(:post_disapproval, user: @user2, post: posts[0], reason: "borderline_quality")
+
+      as(@user3) do
+        assert_tag_match(posts.reverse, "disapprovals:1")
+        assert_tag_match(posts.reverse, "disapprovals:2")
+        assert_tag_match(posts.reverse, "disapprovals:0")
+        assert_tag_match(posts.reverse, "disapprovals:>=1")
+      end
+      as(@user) do
+        assert_tag_match([posts[1]], "disapprovals:1")
+        assert_tag_match([posts[0]], "disapprovals:2")
+        assert_tag_match([posts[2]], "disapprovals:0")
+        assert_tag_match([posts[1], posts[0]], "disapprovals:>=1")
+      end
+    end
+
+    should "Return posts for the disapprovals:<any|none> metatag" do
+      posts = create_list(:post, 3, is_pending: true)
+      @user = create(:janitor_user)
+      @user2 = create(:janitor_user)
+      @user3 = create(:user)
+      create(:post_disapproval, user: @user, post: posts[0], reason: "borderline_quality")
+      create(:post_disapproval, user: @user2, post: posts[1], reason: "borderline_quality")
+      create(:post_disapproval, user: @user2, post: posts[0], reason: "borderline_quality")
+
+      CurrentUser.user = @user3
+      as(@user3) do
+        assert_tag_match(posts.reverse, "disapprovals:any")
+        assert_tag_match(posts.reverse, "disapprovals:none")
+      end
+
+      CurrentUser.user = @user
+      as(@user) do
+        assert_tag_match([posts[2]], "disapprovals:none")
+        assert_tag_match([posts[1], posts[0]], "disapprovals:any")
+      end
     end
 
     should "return posts for the noter:<name> metatag" do
@@ -2045,6 +2130,7 @@ class PostTest < ActiveSupport::TestCase
       assert_tag_match(posts.reverse, "order:change")
       assert_tag_match(posts.reverse, "order:comment")
       assert_tag_match(posts.reverse, "order:comment_bumped")
+      assert_tag_match(posts.reverse, "order:disapproval_desc")
       assert_tag_match(posts.reverse, "order:note")
       assert_tag_match(posts.reverse, "order:mpixels")
       assert_tag_match(posts.reverse, "order:portrait")
@@ -2066,6 +2152,7 @@ class PostTest < ActiveSupport::TestCase
       assert_tag_match(posts, "order:change_asc")
       assert_tag_match(posts, "order:comment_asc")
       assert_tag_match(posts, "order:comment_bumped_asc")
+      assert_tag_match(posts, "order:disapproval_asc")
       assert_tag_match(posts, "order:note_asc")
       assert_tag_match(posts, "order:mpixels_asc")
       assert_tag_match(posts, "order:landscape")

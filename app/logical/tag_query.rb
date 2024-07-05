@@ -12,10 +12,10 @@ class TagQuery
   ].freeze
 
   NEGATABLE_METATAGS = %w[
-    id filetype type rating description parent user user_id approver flagger deletedby delreason
+    id filetype type rating description parent user user_id approver disapprover flagger deletedby delreason
     source status pool set fav favoritedby note locked upvote votedup downvote voteddown voted
     width height mpixels ratio filesize duration score favcount date age change tagcount
-    commenter comm noter noteupdater
+    commenter comm noter noteupdater disapprovals
   ] + TagCategory.short_name_list.map { |tag_name| "#{tag_name}tags" }
 
   METATAGS = %w[
@@ -143,6 +143,15 @@ class TagQuery
         add_to_query(type, :approver_ids, any_none_key: :approver, value: g2) do
           user_id = User.name_or_id_to_id(g2)
           id_or_invalid(user_id)
+        end
+
+
+      when "disapprover", "-disapprover", "~disapprover"
+        if CurrentUser.user.can_approve_posts?
+          add_to_query(type, :disapprover_ids, any_none_key: :disapprover, value: g2) do
+            user_id = User.name_or_id_to_id(g2)
+            id_or_invalid(user_id)
+          end
         end
 
       when "commenter", "-commenter", "~commenter", "comm", "-comm", "~comm"
@@ -334,6 +343,11 @@ class TagQuery
             user_id = CurrentUser.id
           end
           id_or_invalid(user_id)
+        end
+
+      when "disapprovals", "-disapprovals", "~disapprovals"
+        if CurrentUser.user.can_approve_posts?
+          add_to_query(type, :disapproval_count, any_none_key: :disapprover, value: g2) { ParseValue.range(g2) }
         end
 
       when *COUNT_METATAGS

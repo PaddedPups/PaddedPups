@@ -37,6 +37,7 @@ module PostIndex
           tag_count_voice_actor:    { type: "integer" },
           tag_count_gender:         { type: "integer" },
           comment_count:            { type: "integer" },
+          disapproval_count:        { type: "integer" },
 
           file_size:                { type: "integer" },
           parent:                   { type: "integer" },
@@ -50,6 +51,7 @@ module PostIndex
           children:                 { type: "integer" },
           uploader:                 { type: "integer" },
           approver:                 { type: "integer" },
+          disapprovers:             { type: "integer" },
           deleter:                  { type: "integer" },
           width:                    { type: "integer" },
           height:                   { type: "integer" },
@@ -156,6 +158,11 @@ module PostIndex
             LEFT OUTER JOIN post_replacements pr ON p.id = pr.post_id AND pr.status = 'pending'
           WHERE p.id IN (#{post_ids})
         SQL
+        disapprovals_sql = <<-SQL.squish
+          SELECT post_id, array_agg(user_id) FROM post_disapprovals
+          WHERE post_id IN (#{post_ids})
+          GROUP BY post_id
+        SQL
 
         # Run queries
         conn = ApplicationRecord.connection
@@ -169,6 +176,7 @@ module PostIndex
         commenter_ids  = conn.execute(commenter_sql).values.map(&array_parse).to_h
         noter_ids      = conn.execute(noter_sql).values.map(&array_parse).to_h
         child_ids      = conn.execute(child_sql).values.map(&array_parse).to_h
+        disapprovers   = conn.execute(disapprovals_sql).values.map(&array_parse).to_h
         notes          = Hash.new { |h, k| h[k] = [] }
         conn.execute(note_sql).values.each { |p, b| notes[p] << b } # rubocop:disable Style/HashEachMethods
         pending_replacements = conn.execute(pending_replacements_sql).values.to_h
@@ -199,8 +207,10 @@ module PostIndex
             noters:                   noter_ids[p.id] || empty,
             notes:                    notes[p.id] || empty,
             deleter:                  deleter_ids[p.id] || empty,
+            disapprovers:             disapprovers[p.id] || empty,
             del_reason:               del_reasons[p.id] || empty,
             has_pending_replacements: pending_replacements[p.id],
+            disapproval_count:        disapprovers[p.id]&.count || 0,
           }
 
           {
@@ -259,6 +269,8 @@ module PostIndex
       notes:                    options[:notes] || ::Note.active.where(post_id: id).pluck(:body),
       uploader:                 uploader_id,
       approver:                 approver_id,
+      disapprovers:             options[:disapprovers] || ::PostDisapproval.where(post_id: id).pluck(:user_id),
+      disapproval_count:        options[:disapproval_count] || ::PostDisapproval.where(post_id: id).pluck(:user_id).size,
       deleter:                  options[:deleter] || ::PostFlag.where(post_id: id, is_resolved: false, is_deletion: true).order(id: :desc).first&.creator_id,
       del_reason:               options[:del_reason] || ::PostFlag.where(post_id: id, is_resolved: false, is_deletion: true).order(id: :desc).first&.reason&.downcase,
       width:                    image_width,

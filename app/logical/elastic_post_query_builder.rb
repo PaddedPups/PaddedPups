@@ -53,6 +53,7 @@ class ElasticPostQueryBuilder < ElasticQueryBuilder
     end
 
     add_array_range_relation(:post_tag_count, :tag_count)
+    add_array_range_relation(:disapproval_count, :disapproval_count)
 
     TagQuery::COUNT_METATAGS.map(&:to_sym).each do |column|
       if q[column]
@@ -98,6 +99,7 @@ class ElasticPostQueryBuilder < ElasticQueryBuilder
     add_array_relation(:uploader_ids, :uploader)
     add_array_relation(:approver_ids, :approver, any_none_key: :approver)
     add_array_relation(:commenter_ids, :commenters, any_none_key: :commenter)
+    add_array_relation(:disapprover_ids, :disapprovers, any_none_key: :disapprover)
     add_array_relation(:noter_ids, :noters, any_none_key: :noter)
     add_array_relation(:note_updater_ids, :noters) # Broken, index field missing
     add_array_relation(:pool_ids, :pools, any_none_key: :pool)
@@ -284,6 +286,16 @@ class ElasticPostQueryBuilder < ElasticQueryBuilder
 
     when /(#{TagCategory.short_name_regex})tags_asc/
       order.push({ "tag_count_#{TagCategory.short_name_mapping[$1]}" => :asc })
+      
+    when "disapprovals", "disapprovals_desc"
+      if CurrentUser.user.can_approve_posts?
+        order.push({ disapproval_count: { order: :desc, missing: :_last} })
+      end
+      
+    when "disapprovals_asc"
+      if CurrentUser.user.can_approve_posts?
+        order.push({ disapproval_count: { order: :asc, missing: :_last} })
+      end
 
     when "rank"
       @function_score = {
