@@ -57,7 +57,7 @@ Minimum RAM is 4GB. You will need to adjust values in config files to match how 
 If you are targeting more than a hundred thousand posts and reasonable user volumes, you probably want to procure yourself a database server. See tuning guides for postgresql and opensearch for help planning these requirements.
 
 ### Help & Wiki Pages
-These wik/help pages are expected to exist, as they are linked to in various places.
+These wik/help pages are expected to exist, as they are linked to or used in various places.
 #### Wiki Pages
 * help:contact
 * help:home
@@ -70,6 +70,8 @@ These wik/help pages are expected to exist, as they are linked to in various pla
 * internal:flag_notice
 * internal:replacement_notice
 * howto:sites_and_sources
+* howto:tag_genders
+* about:mod_queue
 
 #### Help Pages
 * accounts

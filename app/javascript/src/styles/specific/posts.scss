@@ -427,6 +427,14 @@ div#c-posts {
       }
     }
 
+    #pending-approval-notice {
+      .notice-pending-toolbar { display: none; }
+      &.enabled {
+        .notice-pending-status { display: none; }
+        .notice-pending-toolbar { display: block; }
+      }
+    }
+
     div.quick-mod {
 
       .quick-mod-group {

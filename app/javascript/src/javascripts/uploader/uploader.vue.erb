@@ -30,7 +30,7 @@
                     <div class="col">
                         <label class="section-label" for="names">Artists</label>
                         <div><a href="/help/tags">How do I tag an artist?</a></div>
-                        <div>Please don't use <a href="/wiki_pages/anonymous_artist">anonymous_artist</a> or <a href="/wiki_pages/unknown_artist">unknown_artist</a> tags unless they fall under those definitions on the wiki.</div>
+                        <div>Please don't use <a href="/wiki_pages/show_or_new?title=anonymous_artist">anonymous_artist</a> or <a href="/wiki_pages/show_or_new?title=unknown_artist">unknown_artist</a> tags unless they fall under those definitions on the wiki.</div>
                     </div>
                     <div class="col2">
                         <div>
@@ -43,12 +43,8 @@
                     <div class="col">
                         <label class="section-label" for="post_sex_tags">Characters</label>
                         <div>
-                            Select (and write in) all that apply. Character sex is based only on what is visible in the
-                            image.
+                          Select (and write in) all that apply. See our <a href="/wiki_pages/show_or_new?title=howto:tag_genders">Gender Tagging Guidelines</a> for more information.
                         </div>
-                        <div><a href="/wiki_pages/tag_what_you_see">
-                            Outside information or other images should not be used when deciding what tags are used.
-                        </a></div>
                     </div>
                     <div class="col2">
                         <div class="flex-wrap">
@@ -101,7 +97,7 @@
                     <div class="col2">
           <textarea class="tag-textarea" v-model="tagEntries.theme" id="post_themes" rows="2"
                     data-autocomplete="tag-edit"
-                    placeholder="Ex: young gore scat watersports diaper my_little_pony vore not_furry rape hyper etc."></textarea>
+                    placeholder="Ex: cub scatplay watersports diaper my_little_pony vore rape hyper etc."></textarea>
                     </div>
                 </div>
             </template>
@@ -137,7 +133,7 @@
                         Separate tags with spaces. (<a href="/help/tags" target="_blank">help</a>)
                     </div>
                     <div>
-                      <a href="/wiki_pages/tag_what_you_see">
+                      <a href="/wiki_pages/show_or_new?title=tag_what_you_see">
                         Outside information or other images should not be used when deciding what tags are used.
                       </a>
                     </div>
@@ -161,6 +157,7 @@
                         Related:
                         <a href="#" @click.prevent="findRelated()">Tags</a> |
                         <a href="#" @click.prevent="findRelated(1)">Artists</a> |
+                        <a href="#" @click.prevent="findRelated(2)">Voice Actors</a> |
                         <a href="#" @click.prevent="findRelated(3)">Copyrights</a> |
                         <a href="#" @click.prevent="findRelated(4)">Characters</a> |
                         <a href="#" @click.prevent="findRelated(5)">Species</a> |
@@ -257,6 +254,7 @@
     {name: "Gynomorph"},
     {name: "Hermaphrodite", tag: "herm"},
     {name: "Male-Herm", tag: "maleherm"},
+    {name: "Other"},
     {name: "Ambiguous", tag: "ambiguous_gender"}];
 
   const pairing_checks = [

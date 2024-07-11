@@ -34,15 +34,17 @@
 
 <% if post.is_pending? %>
   <div class="notice notice-pending" id="pending-approval-notice">
-    <% unless CurrentUser.can_approve_posts? %>
+    <div class="notice-pending-status">
       This post is pending approval. (<%= link_to "learn more", wiki_pages_path(title: "about:mod_queue") %>)
-    <% end %>
+    </div>
 
-    <%= render "posts/disapprovals/counts", disapprovals: post.disapprovals, post: post %>
+    <% if CurrentUser.user.can_approve_posts? %>
+      <div class="notice-pending-toolbar">
+        <%= render "posts/disapprovals/counts", disapprovals: post.disapprovals, post: post %>
 
-    <% if CurrentUser.can_approve_posts? %>
-      <%= render "posts/partials/show/quick_mod", post: post %>
-      <%= render "posts/disapprovals/detailed_rejection_dialog" %>
+        <%= render "posts/partials/show/quick_mod", post: post %>
+        <%= render "posts/disapprovals/detailed_rejection_dialog" %>
+      </div>
     <% end %>
   </div>
 <% end %>
