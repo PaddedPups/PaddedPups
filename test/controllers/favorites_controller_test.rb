@@ -37,8 +37,14 @@ class FavoritesControllerTest < ActionDispatch::IntegrationTest
       end
 
       should "create a favorite for the current user" do
-        assert_difference("Favorite.count", 1) do
-          post_auth favorites_path, @user, params: { format: "js", post_id: @post.id }
+        assert_difference({ "Favorite.count" => 1, "PostVote.count" => 0 }) do
+          post_auth favorites_path, @user, params: { format: "json", post_id: @post.id }
+        end
+      end
+
+      should "create a favorite and vote for the current user if upvote=true" do
+        assert_difference(%w[Favorite.count PostVote.count], 1) do
+          post_auth favorites_path, @user, params: { format: "json", post_id: @post.id, upvote: "true" }
         end
       end
 

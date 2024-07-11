@@ -5422,8 +5422,10 @@ paths:
               required:
                 - post_id
               properties:
-                post_ud:
+                post_id:
                   type: number
+                upvote:
+                  type: boolean
       responses:
         201:
           description: Success

@@ -34,7 +34,7 @@ Favorite.create = function (post_id) {
   SendQueue.add(function () {
     $.ajax({
       type: "POST",
-      url: "/favorites.json",
+      url: "/favorites.json?upvote=true",
       data: {
         post_id: post_id
       },
@@ -46,8 +46,8 @@ Favorite.create = function (post_id) {
         score: data.score.total,
         up: data.score.up,
         down: data.score.down,
-        our_score: data.our_score,
-        is_locked: data.our_score === 0
+        our_score: data.own_vote,
+        is_locked: data.own_vote === 0
       });
       Utility.notice("Favorite added");
     }).fail(function (data, status, xhr) {
@@ -64,15 +64,21 @@ Favorite.destroy = function (post_id) {
       type: "DELETE",
       url: `/favorites/${post_id}.json`,
       dataType: 'json'
-    }).done(function (data) {
+    }).done(function () {
       Post.notice_update("dec");
       Favorite.after_action(post_id, -1);
-      Post.after_vote(post_id, {
-        score: data.score.total,
-        up: data.score.up,
-        down: data.score.down,
-        our_score: data.our_score,
-        is_locked: data.our_score === 0
+      $.ajax({
+        type: "GET",
+        url: `/posts/${post_id}.json`,
+        dataType: 'json'
+      }).done(function (data) {
+        Post.after_vote(post_id, {
+          score: data.score.total,
+          up: data.score.up,
+          down: data.score.down,
+          our_score: data.own_vote,
+          is_locked: data.own_vote === 0
+        });
       });
       Utility.notice("Favorite removed");
     }).fail(function (data, status, xhr) {
