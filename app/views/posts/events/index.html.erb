@@ -22,7 +22,7 @@
           <% if event.action.nil? %>
             Unknown (<%= event.action_before_type_cast %>)
           <% else %>
-            <%= event.action.capitalize.tr("_"," ") %>
+            <%= event.action.capitalize.tr("_", " ") %>
             <%= link_to "»", post_events_path(search: params[:search].merge(action: event.action)) %>
           <% end %>
         </td>
