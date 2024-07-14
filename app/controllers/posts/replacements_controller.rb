@@ -27,6 +27,7 @@ module Posts
       @post = Post.find(params[:post_id])
       @post_replacement = authorize(@post.replacements.new(permitted_attributes(PostReplacement).merge(creator_id: CurrentUser.id, creator_ip_addr: CurrentUser.ip_addr)))
       @post_replacement.save
+      @post_replacement.notify_reupload
       if @post_replacement.errors.none?
         flash.now[:notice] = "Post replacement submitted"
       end

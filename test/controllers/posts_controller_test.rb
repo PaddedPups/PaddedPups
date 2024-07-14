@@ -269,6 +269,14 @@ class PostsControllerTest < ActionDispatch::IntegrationTest
         assert_equal(false, ::Post.exists?(@post.id))
       end
 
+      should "work with reason" do
+        put_auth expunge_post_path(@post), @admin, params: { reason: "test", format: :json }
+
+        assert_response :success
+        assert_equal(false, ::Post.exists?(@post.id))
+        assert_equal("test", DestroyedPost.last.reason)
+      end
+
       should "restrict access" do
         assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| put_auth expunge_post_path(create(:post)), user }
       end

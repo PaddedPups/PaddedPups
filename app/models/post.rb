@@ -521,6 +521,13 @@ class Post < ApplicationRecord
       TagFollower.update_from_post!(self)
     end
 
+    def reset_followers_on_destroy
+      TagFollower.where(last_post_id: id).find_each do |follower|
+        success = follower.set_latest_post(exclude: id)
+        follower.update(last_post_id: nil) unless success
+      end
+    end
+
     def set_tag_count(category, tagcount)
       send("tag_count_#{category}=", tagcount)
     end
@@ -1325,7 +1332,7 @@ class Post < ApplicationRecord
   end
 
   module DeletionMethods
-    def backup_post_data_destroy
+    def backup_post_data_destroy(reason: "")
       post_data = {
         id:            id,
         description:   description,
@@ -1349,32 +1356,33 @@ class Post < ApplicationRecord
       DestroyedPost.create!(post_id: id, post_data: post_data, md5: md5,
                             uploader_ip_addr: uploader_ip_addr, uploader_id: uploader_id,
                             destroyer_id: CurrentUser.id, destroyer_ip_addr: CurrentUser.ip_addr,
-                            upload_date: created_at)
+                            upload_date: created_at, reason: reason || "")
     end
 
-    def expunge!
+    def expunge!(reason: "")
       if is_status_locked?
         errors.add(:is_status_locked, "; cannot delete post")
         return false
       end
 
       transaction do
-        backup_post_data_destroy
+        backup_post_data_destroy(reason: reason)
       end
 
-      transaction do
-        Post.without_timeout do
-          PostEvent.add(id, CurrentUser.user, :expunged)
+      # transaction do
+      Post.without_timeout do
+        PostEvent.add(id, CurrentUser.user, :expunged)
 
-          update_children_on_destroy
-          decrement_tag_post_counts
-          remove_from_all_pools
-          remove_from_post_sets
-          remove_from_favorites
-          destroy
-          update_parent_on_destroy
-        end
+        reset_followers_on_destroy
+        update_children_on_destroy
+        decrement_tag_post_counts
+        remove_from_all_pools
+        remove_from_post_sets
+        remove_from_favorites
+        destroy
+        update_parent_on_destroy
       end
+      # end
     end
 
     def protect_file?

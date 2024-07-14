@@ -96,7 +96,8 @@ class ApplicationRecord < ActiveRecord::Base
         end
       end
 
-      def text_attribute_matches(attribute, value, convert_to_wildcard: false)
+      def
+        text_attribute_matches(attribute, value, convert_to_wildcard: false)
         column = column_for_attribute(attribute)
         qualified_column = "#{table_name}.#{column.name}"
         value = "*#{value}*" if convert_to_wildcard && value.exclude?("*")

@@ -438,9 +438,9 @@ Post.initialize_links = function() {
   });
   $("#destroy-post-link").on('click', e => {
     e.preventDefault();
-    if(!confirm("This will permanently delete this post (meaning the file will be deleted). Are you sure you want to delete this post?"))
-      return;
-    Post.destroy($(e.target).data('pid'));
+    const reason = prompt("This will permanently delete this post (meaning the file will be deleted). What is the reason for destroying the post?")
+    if(reason === null) return;
+    Post.destroy($(e.target).data('pid'), reason);
   });
   $("#regenerate-image-samples-link").on('click', e => {
     e.preventDefault();
@@ -922,16 +922,17 @@ Post.unapprove = function(post_id) {
   });
 }
 
-Post.destroy = function(post_id) {
+Post.destroy = function(post_id, reason) {
   $.ajax({
     method: "PUT",
-    url: `/posts/${post_id}/expunge.json`
+    url: `/posts/${post_id}/expunge.json`,
+    data: { reason }
   })
   .fail(data => {
     var message = $.map(data.responseJSON.errors, function(msg, attr) { return msg; }).join("; ");
     $(window).trigger("danbooru:error", "Error: " + message);
   }).done(data => {
-    location.reload();
+    location.href = `/admin/destroyed_posts/${post_id}`;
   });
 };
 

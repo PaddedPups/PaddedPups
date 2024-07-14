@@ -448,7 +448,9 @@ CREATE TABLE public.destroyed_posts (
     upload_date timestamp without time zone,
     post_data json NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    reason character varying DEFAULT ''::character varying NOT NULL,
+    notify boolean DEFAULT true NOT NULL
 );
 
 
@@ -5195,6 +5197,7 @@ ALTER TABLE ONLY public.staff_notes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20240709134926'),
 ('20240630084744'),
 ('20240627052741'),
 ('20240627045124'),

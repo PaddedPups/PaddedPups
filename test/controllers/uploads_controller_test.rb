@@ -112,6 +112,30 @@ class UploadsControllerTest < ActionDispatch::IntegrationTest
         assert_response :success
       end
 
+      context "with a previously destroyed post" do
+        setup do
+          @admin = create(:admin_user)
+          @upload = UploadService.new(attributes_for(:jpg_upload).merge({ uploader: @user })).start!
+          @post = @upload.post
+          as(@admin) { @post.expunge! }
+        end
+
+        should "fail and create ticket" do
+          assert_difference({ "Post.count" => 0, "Ticket.count" => 1 }) do
+            file = fixture_file_upload("test.jpg")
+            post_auth uploads_path, @user, params: { upload: { file: file, tag_string: "aaa", rating: "q", source: "aaa" } }
+          end
+        end
+
+        should "fail and not create ticket if notify=false" do
+          DestroyedPost.find_by!(post_id: @post.id).update_column(:notify, false)
+          assert_difference(%w[Post.count Ticket.count], 0) do
+            file = fixture_file_upload("test.jpg")
+            post_auth uploads_path, @user, params: { upload: { file: file, tag_string: "aaa", rating: "q", source: "aaa" } }
+          end
+        end
+      end
+
       should "restrict access" do
         assert_access(User::Levels::JANITOR) { |user| get_auth upload_path(@upload), user }
       end
@@ -122,6 +146,30 @@ class UploadsControllerTest < ActionDispatch::IntegrationTest
         assert_difference("Upload.count", 1) do
           file = fixture_file_upload("test.jpg")
           post_auth uploads_path, @user, params: { upload: { file: file, tag_string: "aaa", rating: "q", source: "aaa" } }
+        end
+      end
+
+      context "with a previously destroyed post" do
+        setup do
+          @admin = create(:admin_user)
+          @upload = UploadService.new(attributes_for(:jpg_upload).merge({ uploader: @user })).start!
+          @post = @upload.post
+          as(@admin) { @post.expunge! }
+        end
+
+        should "fail and create ticket" do
+          assert_difference({ "Post.count" => 0, "Ticket.count" => 1 }) do
+            file = fixture_file_upload("test.jpg")
+            post_auth uploads_path, @user, params: { upload: { file: file, tag_string: "aaa", rating: "q", source: "aaa" } }
+          end
+        end
+
+        should "fail and not create ticket if notify=false" do
+          DestroyedPost.find_by!(post_id: @post.id).update_column(:notify, false)
+          assert_difference(%w[Post.count Ticket.count], 0) do
+            file = fixture_file_upload("test.jpg")
+            post_auth uploads_path, @user, params: { upload: { file: file, tag_string: "aaa", rating: "q", source: "aaa" } }
+          end
         end
       end
 

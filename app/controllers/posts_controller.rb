@@ -149,7 +149,7 @@ class PostsController < ApplicationController
 
   def expunge
     @post = authorize(Post.find(params[:id]))
-    @post.expunge!
+    @post.expunge!(reason: params[:reason])
     respond_with(@post)
   end
 

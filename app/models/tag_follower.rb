@@ -12,9 +12,13 @@ class TagFollower < ApplicationRecord
   after_commit :update_tag_follower_count, on: %i[create destroy]
   delegate :name, to: :tag, prefix: true
 
-  def set_latest_post
-    post = Post.sql_raw_tag_match(tag_name).order(id: :asc).last
+  def set_latest_post(exclude: nil)
+    post = Post.sql_raw_tag_match(tag_name).order(id: :asc)
+    post = post.where.not(id: exclude) if exclude.present?
+    post = post.last
+    return false if post.nil?
     update(last_post: post) if post
+    true
   end
 
   def update_tag_follower_count

@@ -6,7 +6,7 @@ class PostReplacement < ApplicationRecord
   belongs_to :approver, class_name: "User", optional: true
   belongs_to :rejector, class_name: "User", optional: true
   belongs_to :uploader_on_approve, class_name: "User", foreign_key: :uploader_id_on_approve, optional: true
-  attr_accessor :replacement_file, :replacement_url, :tags, :is_backup, :as_pending
+  attr_accessor :replacement_file, :replacement_url, :tags, :is_backup, :as_pending, :is_destroyed_reupload
 
   validate :user_is_not_limited, on: :create
   validate :post_is_valid, on: :create
@@ -38,6 +38,13 @@ class PostReplacement < ApplicationRecord
     end
   end
 
+  def notify_reupload
+    return unless is_destroyed_reupload
+    if (destroyed_post = DestroyedPost.find_by(md5: md5))
+      destroyed_post.notify_reupload(creator, replacement_post_id: post_id)
+    end
+  end
+
   module PostMethods
     def post_is_valid
       if post.is_deleted?
@@ -50,9 +57,9 @@ class PostReplacement < ApplicationRecord
   def no_pending_duplicates
     return true if is_backup
 
-    if (destroyed_post = DestroyedPost.find_by(md5: md5))
-      errors.add(:base, "An unexpected errror occured")
-      DummyTicket.new(creator, destroyed_post.post_id).notify
+    if DestroyedPost.find_by(md5: md5)
+      errors.add(:base, "That image had been deleted from our site, and cannot be re-uploaded")
+      self.is_destroyed_reupload = true
       return
     end
 
