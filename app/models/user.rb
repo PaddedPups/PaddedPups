@@ -461,7 +461,7 @@ class User < ApplicationRecord
   module ForumMethods
     def has_forum_been_updated?
       return false unless is_member?
-      max_updated_at = ForumTopic.permitted.active.unmuted.order(updated_at: :desc).first&.updated_at
+      max_updated_at = ForumTopic.visible(self).unmuted.order(updated_at: :desc).first&.updated_at
       return false if max_updated_at.nil?
       return true if last_forum_read_at.nil?
       max_updated_at > last_forum_read_at
