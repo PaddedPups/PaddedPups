@@ -41,6 +41,11 @@ class ModAction < ApplicationRecord
 
   store_accessor :values, *VALUES
 
+  def self.log(...)
+    Rails.logger.warn("ModAction: use ModAction.log! instead of ModAction.log")
+    log!(...)
+  end
+
   def self.log!(action, subject, **details)
     if disable_logging
       Rails.logger.warn("ModAction: skipped logging for #{action} #{subject&.class&.name} #{details.inspect}")
