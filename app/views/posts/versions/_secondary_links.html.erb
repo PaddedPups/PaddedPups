@@ -3,7 +3,7 @@
   <%= subnav_link_to_if(policy(Upload).create?, "Upload", new_upload_path) %>
   <%= subnav_link_to "Changes", post_versions_path %>
   <%= subnav_link_to "Help", help_page_path(id: "posts") %>
-  <% if params[:action] == "index" && CurrentUser.user.is_member? %>
+  <% if params[:action] == "index" && CurrentUser.user.is_trusted? %>
     |
     <%= subnav_link_to_if(policy(PostVersion).undo?, "Undo selected", "") %>
     <%= subnav_link_to "Select All", "" %>
