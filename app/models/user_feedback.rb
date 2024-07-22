@@ -11,9 +11,12 @@ class UserFeedback < ApplicationRecord
   validate :user_is_not_creator
   after_create :log_create
   after_update :log_update
-  after_destroy :log_delete
+  after_destroy :log_destroy
 
   attr_accessor :send_update_notification
+
+  scope :active, -> { where(is_deleted: false) }
+  scope :deleted, -> { where(is_deleted: true) }
 
   module LogMethods
     def log_create
@@ -22,18 +25,25 @@ class UserFeedback < ApplicationRecord
     end
 
     def log_update
-      ModAction.log!(:user_feedback_update, self, user_id: user_id, reason: body, old_reason: body_before_last_save, type: category, old_type: category_before_last_save)
+      details = { user_id: user_id, reason: body, old_reason: body_before_last_save, type: category, old_type: category_before_last_save, record_id: id }
+      if saved_change_to_is_deleted?
+        action = is_deleted? ? :user_feedback_delete : :user_feedback_undelete
+        ModAction.log!(action, self, **details)
+        user.notifications.create!(category: action[5..], data: { user_id: CurrentUser.user.id, record_id: id, record_type: category })
+        return unless saved_change_to_category? || saved_change_to_body?
+      end
+      ModAction.log!(:user_feedback_update, self, **details)
       if send_update_notification.to_s.truthy? && saved_change_to_body?
         user.notifications.create!(category: "feedback_update", data: { user_id: CurrentUser.user.id, record_id: id, record_type: category })
       end
     end
 
-    def log_delete
-      ModAction.log!(:user_feedback_delete, self, user_id: user_id, reason: body, type: category)
+    def log_destroy
+      ModAction.log!(:user_feedback_destroy, self, user_id: user_id, reason: body, type: category)
       deletion_user = "\"#{CurrentUser.user.name}\":/users/#{CurrentUser.user.id}"
       creator_user = "\"#{creator.name}\":/users/#{creator.id}"
-      StaffNote.create(body: "#{deletion_user} deleted #{category} feedback, created #{created_at.to_date} by #{creator_user}: #{body}", user_id: user_id, creator: User.system)
-      user.notifications.create!(category: "feedback_delete", data: { user_id: CurrentUser.user.id, record_id: id, record_type: category })
+      StaffNote.create(body: "#{deletion_user} destroyed #{category} feedback, created #{created_at.to_date} by #{creator_user}: #{body}", user_id: user_id, creator: User.system)
+      user.notifications.create!(category: "feedback_destroy", data: { user_id: CurrentUser.user.id, record_id: id, record_type: category })
     end
   end
 
@@ -99,5 +109,9 @@ class UserFeedback < ApplicationRecord
 
   def deletable_by?(deleter)
     deleter.is_moderator? && deleter != user
+  end
+
+  def destroyable_by?(destroyer)
+    deletable_by?(destroyer) && (destroyer.is_admin? || destroyer == creator)
   end
 end

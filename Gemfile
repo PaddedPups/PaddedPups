@@ -49,6 +49,7 @@ group :development do
   gem "rubocop-rails", require: false
   gem "ruby-lsp"
   gem "ruby-lsp-rails"
+  gem "faker", require: false
 end
 
 group :test do
@@ -60,8 +61,6 @@ group :test do
   gem "simplecov", require: false
   gem "simplecov-cobertura", require: false
 end
-
-gem "faker", "~> 3.2"
 
 gem "pundit", "~> 2.3"
 

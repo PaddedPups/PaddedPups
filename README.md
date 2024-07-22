@@ -1,3 +1,24 @@
+<div align="center">
+  <img src="public/images/github-logo.png" width="150" height="150" align="left">
+  <div align="left">
+    <h3>Femboy Fans</h3>
+    <a href="https://github.com/FemboyFans/FemboyFans/releases">
+      <img src="https://img.shields.io/github/v/release/FemboyFans/FemboyFans?label=version&style=flat-square" alt="Releases" />
+    </a><br />
+    <a href="https://github.com/FemboyFans/FemboyFans/issues">
+      <img src="https://img.shields.io/github/issues/FemboyFans/FemboyFans?label=open issues&style=flat-square" alt="Issues" />
+    </a><br />
+    <a href="https://github.com/FemboyFans/FemboyFans/pulls">
+      <img src="https://img.shields.io/github/issues-pr/FemboyFans/FemboyFans?style=flat-square" alt="Pull Requests" />
+    </a><br />
+    <a href="https://github.com/FemboyFans/FemboyFans/commits/master/">
+      <img src="https://img.shields.io/github/check-runs/FemboyFans/FemboyFans/master?style=flat-square" alt="GitHub branch check runs" />
+    </a><br />
+  </div>
+</div>
+<br />
+
+
 ## Installation (Easy mode - For development environments)
 
 ### Prerequisites

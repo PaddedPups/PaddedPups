@@ -9,6 +9,7 @@ module Users
         @user = create(:user)
         @critic = create(:moderator_user)
         @mod = create(:moderator_user)
+        @admin = create(:admin_user)
       end
 
       context "new action" do
@@ -112,23 +113,26 @@ module Users
           end
         end
 
-        should "delete a feedback" do
-          assert_difference("UserFeedback.count", -1) do
-            assert_difference("Notification.count", 1) do
-              delete_auth user_feedback_path(@user_feedback), @critic
-            end
+        should "destroy a feedback" do
+          assert_difference({ "UserFeedback.count" => -1, "Notification.count" => 1, "ModAction.count" => 1 }) do
+            delete_auth user_feedback_path(@user_feedback), @critic
           end
-          assert_equal("feedback_delete", Notification.last.category)
+          assert_equal("feedback_destroy", Notification.last.category)
         end
 
         context "by a moderator" do
-          should "allow deleting feedbacks given to other users" do
-            assert_difference("UserFeedback.count", -1) do
-              assert_difference("Notification.count", 1) do
-                delete_auth user_feedback_path(@user_feedback), @mod
-              end
+          should "allow destroying feedbacks they created" do
+            as(@mod) { @user_feedback = create(:user_feedback, user: @user) }
+            assert_difference({ "UserFeedback.count" => -1, "Notification.count" => 1, "ModAction.count" => 1 }) do
+              delete_auth user_feedback_path(@user_feedback), @mod
             end
-            assert_equal("feedback_delete", Notification.last.category)
+            assert_equal("feedback_destroy", Notification.last.category)
+          end
+
+          should "now allow destroying feedbacks they did not create" do
+            assert_difference(%w[UserFeedback.count Notification.count ModAction.count], 0) do
+              delete_auth user_feedback_path(@user_feedback), @mod
+            end
           end
 
           should "not allow deleting feedbacks given to themselves" do
@@ -136,14 +140,111 @@ module Users
               @user_feedback = create(:user_feedback, user: @mod)
             end
 
-            assert_no_difference(%w[UserFeedback.count Notification.count]) do
+            assert_no_difference(%w[UserFeedback.count Notification.count ModAction.count]) do
               delete_auth user_feedback_path(@user_feedback), @mod
             end
           end
         end
 
+        context "by an admin" do
+          should "allow destroying feedbacks they created" do
+            as(@admin) { @user_feedback = create(:user_feedback, user: @user) }
+            assert_difference({ "UserFeedback.count" => -1, "Notification.count" => 1, "ModAction.count" => 1 }) do
+              delete_auth user_feedback_path(@user_feedback), @admin
+            end
+          end
+
+          should "allow destroying feedbacks they did not create" do
+            assert_difference({ "UserFeedback.count" => -1, "Notification.count" => 1, "ModAction.count" => 1 }) do
+              delete_auth user_feedback_path(@user_feedback, format: :json), @admin
+            end
+          end
+
+          should "not allow destroying feedbacks given to themselves" do
+            as(@critic) do
+              @user_feedback = create(:user_feedback, user: @admin)
+            end
+
+            assert_no_difference(%w[UserFeedback.count Notification.count ModAction.count]) do
+              delete_auth user_feedback_path(@user_feedback), @admin
+            end
+          end
+        end
+
         should "restrict access" do
-          assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| delete_auth user_feedback_path(as(@mod) { create(:user_feedback) }), user }
+          assert_access(User::Levels::ADMIN, success_response: :redirect) { |user| delete_auth user_feedback_path(as(@mod) { create(:user_feedback) }), user }
+        end
+      end
+
+      context "delete action" do
+        setup do
+          as(@critic) do
+            @user_feedback = create(:user_feedback, user: @user)
+          end
+        end
+
+        should "delete a feedback" do
+          assert_difference("ModAction.count", 1) do
+            put_auth delete_user_feedback_path(@user_feedback), @critic
+          end
+        end
+
+        context "by a moderator" do
+          should "allow deleting feedbacks given to other users" do
+            assert_difference({ "UserFeedback.count" => 0, "ModAction.count" => 1, "@user.feedback.count" => -1 }) do
+              put_auth delete_user_feedback_path(@user_feedback), @mod
+            end
+          end
+
+          should "not allow deleting feedbacks given to themselves" do
+            as(@critic) do
+              @user_feedback = create(:user_feedback, user: @mod)
+            end
+
+            assert_no_difference(%w[UserFeedback.count ModAction.count @mod.feedback.count]) do
+              put_auth delete_user_feedback_path(@user_feedback), @mod
+            end
+          end
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| put_auth delete_user_feedback_path(as(@mod) { create(:user_feedback) }), user }
+        end
+      end
+
+      context "undelete action" do
+        setup do
+          as(@critic) do
+            @user_feedback = create(:user_feedback, user: @user, is_deleted: true)
+          end
+        end
+
+        should "delete a feedback" do
+          assert_difference("ModAction.count", 1) do
+            put_auth undelete_user_feedback_path(@user_feedback), @critic
+          end
+        end
+
+        context "by a moderator" do
+          should "allow deleting feedbacks given to other users" do
+            assert_difference({ "UserFeedback.count" => 0, "ModAction.count" => 1, "@user.feedback.count" => 1 }) do
+              put_auth undelete_user_feedback_path(@user_feedback), @mod
+            end
+          end
+
+          should "not allow deleting feedbacks given to themselves" do
+            as(@critic) do
+              @user_feedback = create(:user_feedback, user: @mod)
+            end
+
+            assert_no_difference(%w[UserFeedback.count ModAction.count @mod.feedback.count]) do
+              put_auth undelete_user_feedback_path(@user_feedback), @mod
+            end
+          end
+        end
+
+        should "restrict access" do
+          assert_access(User::Levels::MODERATOR, success_response: :redirect) { |user| put_auth undelete_user_feedback_path(as(@mod) { create(:user_feedback, is_deleted: true) }), user }
         end
       end
     end

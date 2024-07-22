@@ -1,22 +1,22 @@
-import Comment from './comments.js';
-import DText from './dtext.js';
-import ForumPost from './forum_posts.js';
-import Utility from './utility.js';
+import Comment from "./comments.js";
+import DText from "./dtext.js";
+import ForumPost from "./forum_posts.js";
+import Utility from "./utility.js";
 
 export default class UserWarnable {
-  static initialize_click_handlers() {
-    $('.item-mark-user-warned').on('click', evt => {
+  static initialize_click_handlers () {
+    $(".item-mark-user-warned").on("click", evt => {
       evt.preventDefault();
       const target = $(evt.target);
-      const type = target.data('item-route');
-      const id = target.data('item-id');
-      const item_type = target.data('item-type');
-      const record_type = target.data('record-type');
+      const type = target.data("item-route");
+      const id = target.data("item-id");
+      const item_type = target.data("item-type");
+      const record_type = target.data("record-type");
 
       const message = record_type === "unmark"
         ? `Are you sure you want to unmark this ${item_type}?`
-        : `Are you sure you want to mark this ${item_type} for having received ${record_type}?`
-      if(!confirm(message)) {
+        : `Are you sure you want to mark this ${item_type} for having received ${record_type}?`;
+      if (!confirm(message)) {
         return;
       }
 
@@ -24,7 +24,7 @@ export default class UserWarnable {
         type: "PUT",
         url: `/${type}/${id}/warning.json`,
         data: {
-          "record_type": record_type
+          "record_type": record_type,
         },
       }).done(data => {
         target.closest("article.comment, article.forum-post").replaceWith(data.html);
@@ -34,13 +34,13 @@ export default class UserWarnable {
         Comment.reinitialize_all();
         ForumPost.reinitialize_all();
         DText.initialize_all_inputs();
-      }).fail(data => {
+      }).fail(() => {
         Utility.error("Failed to mark as warned.");
       });
     });
   }
 
-  static reinitialize_click_handlers() {
+  static reinitialize_click_handlers () {
     $(".item-mark-user-warned").off("click");
     this.initialize_click_handlers();
   }

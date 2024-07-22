@@ -18,6 +18,7 @@ class Artist < ApplicationRecord
   validates :name, tag_name: true, uniqueness: true, if: :name_changed?
   validates :name, length: { maximum: 100 }
   before_destroy :validate_not_dnp_restricted
+  before_destroy :log_destroy
   after_save :log_changes
   after_save :create_version
   after_save :categorize_tag
@@ -570,5 +571,9 @@ class Artist < ApplicationRecord
 
   def update_posts_index
     Post.tag_match_system(name).each(&:update_index)
+  end
+
+  def log_destroy
+    ModAction.log!(:artist_delete, self, artist_id: id, artist_name: name)
   end
 end

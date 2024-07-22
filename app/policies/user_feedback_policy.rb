@@ -9,8 +9,16 @@ class UserFeedbackPolicy < ApplicationPolicy
     user.is_moderator? && (record.nil? || record.editable_by?(user))
   end
 
-  def destroy?
+  def delete?
     user.is_moderator? && (record.nil? || record.deletable_by?(user))
+  end
+
+  def undelete?
+    user.is_moderator? && (record.nil? || record.deletable_by?(user))
+  end
+
+  def destroy?
+    user.is_moderator? && (record.nil? || record.destroyable_by?(user))
   end
 
   def permitted_attributes
@@ -26,6 +34,8 @@ class UserFeedbackPolicy < ApplicationPolicy
   end
 
   def permitted_search_params
-    super + %i[body_matches user_id user_name creator_id creator_name category order]
+    params = super + %i[body_matches user_id user_name creator_id creator_name category order]
+    params += %i[deleted] if user.is_moderator?
+    params
   end
 end

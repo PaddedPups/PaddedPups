@@ -361,9 +361,17 @@ Rails.application.routes.draw do
         collection do
           get :search
         end
+        member do
+          put :delete
+          put :undelete
+        end
       end
       resources :name_change_requests, controller: "users/name_change_requests", as: "user_name_change_requests", only: %i[index show new create]
       resource :revert, controller: "users/reverts", as: "user_revert", only: %i[new create]
+    end
+    member do
+      put :delete
+      put :undelete
     end
   end
   resources :wiki_pages, constraints: id_name_constraint do

@@ -3,4 +3,5 @@
   <%= f.user(:creator) %>
   <%= f.input(:body_matches, label: "Message") %>
   <%= f.input(:category, collection: %w[positive negative neutral], include_blank: true) %>
+  <%= f.input(:deleted, label: "Deleted?", collection: [%w[Excluded excluded], %w[Included included], %w[Only only]], include_blank: true) %>
 <% end %>

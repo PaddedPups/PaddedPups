@@ -2420,7 +2420,8 @@ CREATE TABLE public.user_feedbacks (
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
     creator_ip_addr inet,
-    updater_id integer
+    updater_id integer,
+    is_deleted boolean DEFAULT false NOT NULL
 );
 
 
@@ -5198,6 +5199,7 @@ SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
 ('20240709134926'),
+('20240706061122'),
 ('20240630084744'),
 ('20240627052741'),
 ('20240627045124'),

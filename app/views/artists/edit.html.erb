@@ -2,6 +2,10 @@
 
 <% if @artist.editable_by?(CurrentUser.user) %>
   <%= render "form" %>
+
+<% elsif @artist.is_locked? %>
+  <p>This artist entry is locked and cannot be edited.</p>
+
 <% end %>
 
 <%= render "secondary_links" %>

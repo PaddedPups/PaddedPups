@@ -32,13 +32,33 @@ class UserFeedbackTest < ActiveSupport::TestCase
       assert_equal({ "user_id" => @admin.id, "record_id" => @record.id, "record_type" => @record.category }, @notification.data)
     end
 
-    should "create a notification on delete" do
+    should "create a notification on destroy" do
       @record = create(:user_feedback, user: @user, body: "good job!")
       assert_difference("Notification.count", 1) do
         @record.destroy
       end
       @notification = Notification.last
+      assert_equal("feedback_destroy", @notification.category)
+      assert_equal({ "user_id" => @mod.id, "record_id" => @record.id, "record_type" => @record.category }, @notification.data)
+    end
+
+    should "create a notification on delete" do
+      @record = create(:user_feedback, user: @user, body: "good job!")
+      assert_difference("Notification.count", 1) do
+        @record.update(is_deleted: true)
+      end
+      @notification = Notification.last
       assert_equal("feedback_delete", @notification.category)
+      assert_equal({ "user_id" => @mod.id, "record_id" => @record.id, "record_type" => @record.category }, @notification.data)
+    end
+
+    should "create a notification on undelete" do
+      @record = create(:user_feedback, user: @user, body: "good job!", is_deleted: true)
+      assert_difference("Notification.count", 1) do
+        @record.update(is_deleted: false)
+      end
+      @notification = Notification.last
+      assert_equal("feedback_undelete", @notification.category)
       assert_equal({ "user_id" => @mod.id, "record_id" => @record.id, "record_type" => @record.category }, @notification.data)
     end
 

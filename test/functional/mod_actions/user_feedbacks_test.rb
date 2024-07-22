@@ -28,11 +28,38 @@ module ModActions
       end
 
       should "format user_feedback_delete correctly" do
-        @feedback.destroy
+        @feedback.update(is_deleted: true)
 
         assert_matches(
           actions: %w[user_feedback_delete],
           text:    "Deleted #{@feedback.category} record ##{@feedback.id} for #{user(@user)} with reason:\n[section=Reason]#{@feedback.body}[/section]",
+          subject: @feedback,
+          user_id: @user.id,
+          type:    @feedback.category,
+          reason:  @feedback.body,
+        )
+      end
+
+      should "format user_feedback_undelete correctly" do
+        @feedback.update_column(:is_deleted, true)
+        @feedback.update(is_deleted: false)
+
+        assert_matches(
+          actions: %w[user_feedback_undelete],
+          text:    "Undeleted #{@feedback.category} record ##{@feedback.id} for #{user(@user)} with reason:\n[section=Reason]#{@feedback.body}[/section]",
+          subject: @feedback,
+          user_id: @user.id,
+          type:    @feedback.category,
+          reason:  @feedback.body,
+        )
+      end
+
+      should "format user_feedback_destroy correctly" do
+        @feedback.destroy
+
+        assert_matches(
+          actions: %w[user_feedback_destroy],
+          text:    "Destroyed #{@feedback.category} record ##{@feedback.id} for #{user(@user)} with reason:\n[section=Reason]#{@feedback.body}[/section]",
           subject: @feedback,
           user_id: @user.id,
           type:    @feedback.category,

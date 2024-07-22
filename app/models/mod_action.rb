@@ -445,6 +445,14 @@ class ModAction < ApplicationRecord
       text: ->(mod, user) { "Deleted #{mod.type} record ##{mod.subject_id} for #{user} with reason:\n[section=Reason]#{mod.reason}[/section]" },
       json: %i[type reason user_id],
     },
+    user_feedback_undelete:                     {
+      text: ->(mod, user) { "Undeleted #{mod.type} record ##{mod.subject_id} for #{user} with reason:\n[section=Reason]#{mod.reason}[/section]" },
+      json: %i[type reason user_id],
+    },
+    user_feedback_destroy:                      {
+      text: ->(mod, user) { "Destroyed #{mod.type} record ##{mod.subject_id} for #{user} with reason:\n[section=Reason]#{mod.reason}[/section]" },
+      json: %i[type reason user_id],
+    },
     user_feedback_update:                       {
       text: ->(mod, user) do
         text = "Edited record ##{mod.subject_id} for #{user}"

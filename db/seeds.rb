@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# TODO: rewrite this script to integrate with new upstream script
 require "digest/md5"
 require "tempfile"
 require "net/http"

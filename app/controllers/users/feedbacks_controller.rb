@@ -40,6 +40,24 @@ module Users
       respond_with(@user_feedback)
     end
 
+    def delete
+      @user_feedback = authorize(UserFeedback.find(params[:id]))
+      @user_feedback.update(is_deleted: true)
+      flash[:notice] = @user_feedback.errors.any? ? @user_feedback.errors.full_messages.join("; ") : "Feedback deleted"
+      respond_with(@user_feedback) do |format|
+        format.html { redirect_back(fallback_location: user_feedbacks_path(search: { user_id: @user_feedback.user_id })) }
+      end
+    end
+
+    def undelete
+      @user_feedback = authorize(UserFeedback.find(params[:id]))
+      @user_feedback.update(is_deleted: false)
+      flash[:notice] = @user_feedback.errors.any? ? @user_feedback.errors.full_messages.join("; ") : "Feedback undeleted"
+      respond_with(@user_feedback) do |format|
+        format.html { redirect_back(fallback_location: user_feedbacks_path(search: { user_id: @user_feedback.user_id })) }
+      end
+    end
+
     def destroy
       @user_feedback = authorize(UserFeedback.find(params[:id]))
       @user_feedback.destroy
