@@ -1,6 +1,6 @@
 const RecordBuilder = {};
 
-RecordBuilder.initialize = function() {
+RecordBuilder.initialize = function () {
   fetch("/rules/builder.json")
     .then(response => response.json())
     .then(data => {
@@ -9,26 +9,26 @@ RecordBuilder.initialize = function() {
       RecordBuilder.rules = data.rules;
       RecordBuilder.reinitialize_listeners();
     });
-}
+};
 
-RecordBuilder.get_input = function() {
+RecordBuilder.get_input = function () {
   if ($("#c-users-feedbacks").length) {
     return $(".user_feedback_body textarea");
   } else if ($("#c-bans").length) {
     return $(".ban_reason textarea");
   }
-}
+};
 
-RecordBuilder.generate_record_text = function() {
-  const result = []
+RecordBuilder.generate_record_text = function () {
+  const result = [];
   for (const form of $("form.record-builder")) {
     result.push(RecordBuilder.process_form($(form)));
   }
 
   RecordBuilder.get_input().val(result.join("\n"));
-}
+};
 
-RecordBuilder.process_form = function(form) {
+RecordBuilder.process_form = function (form) {
   const reason = form.data("reason") || "";
 
   const sourceList = (form.data("sources") || "").split("\n").filter(n => n.trim());
@@ -49,14 +49,14 @@ RecordBuilder.process_form = function(form) {
 
   const
     sourceOutputJoined = sourceOutput.join(" "),
-    sourceReason = reason.includes("$S") ?
-      reason.replace("$S", sourceOutputJoined) :
-      ((reason.length > 0 ? (`${reason} `) : "") + sourceOutputJoined),
+    sourceReason = reason.includes("$S")
+      ? reason.replace("$S", sourceOutputJoined)
+      : ((reason.length > 0 ? (`${reason} `) : "") + sourceOutputJoined),
     rulesOutputJoined = rulesOutput.join("\n");
   return sourceReason + (rulesOutputJoined ? (`\n\n${rulesOutputJoined}\n`) : "");
-}
+};
 
-RecordBuilder.process_source = function(source) {
+RecordBuilder.process_source = function (source) {
   return decodeURI(source)
     .trim()
     .replace(/https?:\/\/femboy\.fan\//g, "/") // Make links relative
@@ -69,11 +69,11 @@ RecordBuilder.process_source = function(source) {
     .replace(/comment #(\d+)/, "/comments/$1")
     .replace(/topic #(\d+)/, "/forum_topics/$1")
     .replace(/post changes #(\d+)/, "/posts/versions?search[post_id]=$1");
-}
+};
 
-RecordBuilder.reinitialize_listeners = function() {
+RecordBuilder.reinitialize_listeners = function () {
   $(".add-section-button").off("click");
-  $(".add-section-button").on("click", function(event) {
+  $(".add-section-button").on("click", function (event) {
     event.preventDefault();
     const $button = $(event.currentTarget);
     const $wrapper = $button.closest(".record-wrapper");
@@ -82,7 +82,7 @@ RecordBuilder.reinitialize_listeners = function() {
   });
 
   $(".remove-section-button").off("click");
-  $(".remove-section-button").on("click", function(event) {
+  $(".remove-section-button").on("click", function (event) {
     event.preventDefault();
     const $button = $(event.currentTarget);
     $button.closest(".record-builder").remove();
@@ -90,7 +90,7 @@ RecordBuilder.reinitialize_listeners = function() {
   });
 
   $(".quick-record").off("click", "a.quick-record-link");
-  $(".quick-record").on("click", "a.quick-record-link", function(event) {
+  $(".quick-record").on("click", "a.quick-record-link", function (event) {
     event.preventDefault();
 
     const $button = $(event.currentTarget);
@@ -103,7 +103,7 @@ RecordBuilder.reinitialize_listeners = function() {
   });
 
   $(".record-reason").off("change rb:change");
-  $(".record-reason").on("change rb:change", function(event, preventChange) {
+  $(".record-reason").on("change rb:change", function (event) {
     const $select = $(event.currentTarget);
     const $parent = $select.closest(".record-builder");
     const $selected = $select.find("option:selected");
@@ -115,9 +115,8 @@ RecordBuilder.reinitialize_listeners = function() {
 
   const inputTimers = {};
   $(".custom-reason").off("input");
-  $(".custom-reason").on("input", function(event, preventChange) {
+  $(".custom-reason").on("input", function (event, preventChange) {
     const $input = $(event.currentTarget);
-    const $parent = $input.closest(".record-builder");
     clearTimeout(inputTimers[$input.attr("id")]);
     inputTimers[$input.attr("id")] = setTimeout(() => {
       $input.trigger("rb:input", preventChange);
@@ -125,7 +124,7 @@ RecordBuilder.reinitialize_listeners = function() {
   });
 
   $(".custom-reason").off("propertychange rb:input");
-  $(".custom-reason").on("propertychange rb:input", function(event, preventChange) {
+  $(".custom-reason").on("propertychange rb:input", function (event, preventChange) {
     const $input = $(event.currentTarget);
     const $parent = $input.closest(".record-builder");
     $parent.data("reason", $input.val());
@@ -133,7 +132,7 @@ RecordBuilder.reinitialize_listeners = function() {
   });
 
   $(".record-sources").off("input propertychange");
-  $(".record-sources").on("input propertychange", function(event) {
+  $(".record-sources").on("input propertychange", function (event) {
     const $input = $(event.currentTarget);
     const $parent = $input.closest(".record-builder");
     clearTimeout(inputTimers[$input.attr("id")]);
@@ -144,7 +143,7 @@ RecordBuilder.reinitialize_listeners = function() {
   });
 
   $(".rules-button").off("click");
-  $(".rules-button").on("click", function(event) {
+  $(".rules-button").on("click", function (event) {
     event.preventDefault();
     const $button = $(event.currentTarget);
     const $parent = $button.closest(".record-builder");
@@ -153,7 +152,7 @@ RecordBuilder.reinitialize_listeners = function() {
   });
 
   $(".record-builder").off("rb:buttons");
-  $(".record-builder").on("rb:buttons", function(event, preventChange) {
+  $(".record-builder").on("rb:buttons", function (event, preventChange) {
     const $builder = $(event.currentTarget);
     const $wrapper = $builder.find(".rule-wrapper");
     const buttons = [];
@@ -164,21 +163,21 @@ RecordBuilder.reinitialize_listeners = function() {
     $builder.data("buttons", buttons);
     if (!preventChange) RecordBuilder.generate_record_text();
   });
-}
+};
 
-RecordBuilder.random_id = function(length = 6) {
+RecordBuilder.random_id = function (length = 6) {
   let result = "";
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
     charLength = chars.length;
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * charLength));
   }
   return result;
-}
+};
 
 export default RecordBuilder;
 
-$(function() {
+$(function () {
   if ($("#c-users-feedbacks, #c-bans").length) {
     RecordBuilder.initialize();
   }

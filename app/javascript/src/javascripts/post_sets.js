@@ -47,7 +47,7 @@ PostSet.remove_post = function (set_id, post_id, successNotice) {
       $(window).trigger("danbooru:error", "Error: " + message);
     }).done(function (data) {
       Post.notice_update("dec");
-      if(typeof successNotice === "function") {
+      if (typeof successNotice === "function") {
         $(window).trigger("danbooru:notice", successNotice(data));
       } else {
         $(window).trigger("danbooru:notice", successNotice || "Removed post from set");

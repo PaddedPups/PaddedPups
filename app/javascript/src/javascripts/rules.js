@@ -2,7 +2,7 @@ import Utility from "./utility";
 
 const Rules = { mode: null };
 
-Rules.toggle_buttons = function(hide = true) {
+Rules.toggle_buttons = function (hide = true) {
   const $editOrderLink = $(".edit-order-link");
   const $editCategoryOrderLink = $(".edit-category-order-link");
   const $editQuickOrderLink = $(".edit-quick-order-link");
@@ -11,7 +11,7 @@ Rules.toggle_buttons = function(hide = true) {
   const $editQuickOrderExternalLink = $(".edit-quick-order-external-link");
   const $saveOrderLink = $(".save-order-link");
 
-  if(hide) {
+  if (hide) {
     $saveOrderLink.show();
     $editOrderLink.hide();
     $editOrderExternalLink.hide();
@@ -29,16 +29,16 @@ Rules.toggle_buttons = function(hide = true) {
     $editQuickOrderExternalLink.show();
 
   }
-}
+};
 
-Rules.initialize_listeners = function() {
+Rules.initialize_listeners = function () {
   const $editOrderLink = $(".edit-order-link");
   const $editCategoryOrderLink = $(".edit-category-order-link");
   const $editQuickOrderLink = $(".edit-quick-order-link");
   const $saveOrderLink = $(".save-order-link");
   const $sortableRules = $("#sortable-rules");
 
-  $editOrderLink.on("click.femboyfans.sorting", function(event) {
+  $editOrderLink.on("click.femboyfans.sorting", function (event) {
     event.preventDefault();
     Rules.toggle_buttons();
     Rules.mode = "rules";
@@ -46,7 +46,7 @@ Rules.initialize_listeners = function() {
     Danbooru.notice("Drag and drop to reorder.");
   });
 
-  $editCategoryOrderLink.on("click.femboyfans.sorting", function(event) {
+  $editCategoryOrderLink.on("click.femboyfans.sorting", function (event) {
     event.preventDefault();
     Rules.toggle_buttons();
     Rules.mode = "categories";
@@ -54,7 +54,7 @@ Rules.initialize_listeners = function() {
     Danbooru.notice("Drag and drop to reorder.");
   });
 
-  $editQuickOrderLink.on("click.femboyfans.sorting", function(event) {
+  $editQuickOrderLink.on("click.femboyfans.sorting", function (event) {
     event.preventDefault();
     Rules.toggle_buttons();
     Rules.mode = "quick";
@@ -62,98 +62,98 @@ Rules.initialize_listeners = function() {
     Danbooru.notice("Drag and drop to reorder.");
   });
 
-  $saveOrderLink.on("click.femboyfans.sorting", function(event) {
+  $saveOrderLink.on("click.femboyfans.sorting", function (event) {
     event.preventDefault();
     $saveOrderLink.hide();
     $sortableRules.sortable("disable");
     const path = {
       rules: "/rules/reorder.js",
       categories: "/rules/categories/reorder.js",
-      quick: "/rules/quick/reorder.js"
+      quick: "/rules/quick/reorder.js",
     }[Rules.mode];
     $.ajax({
       url: path,
       type: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       data: Rules.reorder_data(Rules.mode),
       dataType: "json",
-      success(data) {
+      success (data) {
         $("#sortable-rules-container").html(data.html);
-        Danbooru.notice("Order updated.")
+        Danbooru.notice("Order updated.");
         Rules.toggle_buttons(false);
         Rules.reinitialize_listeners();
       },
-      error(data) {
+      error (data) {
         $saveOrderLink.show();
-        if(data.responseJSON.message) {
+        if (data.responseJSON.message) {
           Danbooru.error(`Failed to update order: ${data.responseJSON.message}`);
-        } else if(data.responseJSON.errors) {
+        } else if (data.responseJSON.errors) {
           Danbooru.error(`Failed to update order:<br>${data.responseJSON.errors.map(e => `${e.name}: ${e.message}`).join("<br>")}`);
         } else {
           Danbooru.error("Failed to update order.");
         }
 
         Rules.sortable();
-      }
+      },
     });
   });
-}
+};
 
-Rules.sortable = function() {
+Rules.sortable = function () {
   const $sortableRules = $("#sortable-rules");
-  switch(Rules.mode) {
+  switch (Rules.mode) {
     case "rules": {
       $sortableRules.sortable({
-        items: "tbody.rules tr"
+        items: "tbody.rules tr",
       });
       break;
     }
 
     case "categories": {
       $sortableRules.sortable({
-        items: "tbody"
+        items: "tbody",
       });
       break;
     }
 
     case "quick": {
       $sortableRules.sortable({
-        items: "tbody tr"
+        items: "tbody tr",
       });
       break;
     }
   }
-}
+};
 
-Rules.reinitialize_listeners = function() {
+Rules.reinitialize_listeners = function () {
   $(".edit-order-link").off("click.femboyfans.sorting");
   $(".edit-category-order-link").off("click.femboyfans.sorting");
   $(".edit-quick-order-link").off("click.femboyfans.sorting");
   $(".save-order-link").off("click.femboyfans.sorting");
   Rules.initialize_listeners();
-}
+};
 
-Rules.reorder_data = function(mode) {
-  if(mode === "rules") {
+Rules.reorder_data = function (mode) {
+  if (mode === "rules") {
     const data = [];
-    Utility.chunk(Array.from($("table#sortable-rules tbody")), 2).forEach(([category, rulesContainer], index) => {
+    Utility.chunk(Array.from($("table#sortable-rules tbody")), 2).forEach(([category, rulesContainer]) => {
       const rules = Array.from(rulesContainer.querySelectorAll("tr"));
       const category_id = Number(category.dataset.categoryId);
       data.push(...rules.map((r, index) => ({
         id: Number(r.dataset.id),
         order: index + 1,
-        category_id
+        category_id,
       })));
     });
     return JSON.stringify(data);
   } else if (mode === "categories") {
-    const data = []
+    const data = [];
     Array.from($("table#sortable-rules tbody")).forEach((category, index) => {
       data.push({
         id: Number(category.dataset.categoryId),
-        order: index + 1
+        order: index + 1,
       });
     });
     return JSON.stringify(data);
@@ -162,15 +162,15 @@ Rules.reorder_data = function(mode) {
     Array.from($("table#sortable-rules tbody tr")).forEach((row, index) => {
       data.push({
         id: Number(row.dataset.id),
-        order: index + 1
+        order: index + 1,
       });
     });
     return JSON.stringify(data);
 
   }
-}
+};
 
-$(document).ready(function() {
+$(document).ready(function () {
   if ($("#c-rules #a-order, #c-rules-categories #a-order, #c-rules-quick #a-order").length) {
     Rules.initialize_listeners();
   }

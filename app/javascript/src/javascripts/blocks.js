@@ -2,56 +2,57 @@ import Utility from "./utility";
 
 class Block {
   static entries = JSON.parse(Utility.meta("user-blocks") || "[]");
+
   static hiddenCount = {
     uploads: 0,
     comments: 0,
     forum_posts: 0,
     forum_topics: 0,
   };
+
   static disabled = [];
 
-  static hide($selector, name) {
+  static hide ($selector, name) {
     this.hiddenCount[name] += $selector.length;
     $selector.hide();
   }
 
-  static show($selector, name) {
+  static show ($selector, name) {
     this.hiddenCount[name] -= $selector.length;
     $selector.show();
   }
 
-  static text(name) {
-    const p = (t, n) => n === 1 ? `${n} ${t}` : `${n} ${t}s`
-    let text = "";
+  static text (name) {
+    const p = (t, n) => (n === 1 ? `${n} ${t}` : `${n} ${t}s`);
     const beginnings = {
       uploads: p("post", this.hiddenCount[name]),
       comments: p("comment", this.hiddenCount[name]),
       forum_posts: p("forum post", this.hiddenCount[name]),
-      forum_topics: p("forum topic", this.hiddenCount[name])
+      forum_topics: p("forum topic", this.hiddenCount[name]),
     };
-    return `${beginnings[name]} on this page ${this.hiddenCount[name] === 1 ? "was" : "were"} hidden due to a user being blocked.`
+    return `${beginnings[name]} on this page ${this.hiddenCount[name] === 1 ? "was" : "were"} hidden due to a user being blocked.`;
     // $(".blocked-notice").html(`2 topics on this page were hidden due to a user being blocked. Click <a href="#" class="deactivate-all-blocks">here</a> to temporarily disable blocking.`)
   }
 
-  static updateText() {
+  static updateText () {
     let html = "";
     for (const [name, counts] of Object.entries(this.hiddenCount)) {
-      if(counts === 0) {
-        if(this.disabled.includes(name)) {
-          html += `<p>Hiding of ${name.replace("_", " ").replace("uploads", "posts")} has been disabled. Click <a href="#" class="reactivate-blocks" data-block-type="${name}">here</a> to reenable blocking.</p>`
+      if (counts === 0) {
+        if (this.disabled.includes(name)) {
+          html += `<p>Hiding of ${name.replace("_", " ").replace("uploads", "posts")} has been disabled. Click <a href="#" class="reactivate-blocks" data-block-type="${name}">here</a> to reenable blocking.</p>`;
         }
         continue;
       }
 
       const text = this.text(name);
-      html+= `<p>${text} Click <a href="#" class="deactivate-blocks" data-block-type="${name}">here</a> to temporarily disable blocking these.</p>`
+      html += `<p>${text} Click <a href="#" class="deactivate-blocks" data-block-type="${name}">here</a> to temporarily disable blocking these.</p>`;
     }
 
     $(".blocked-notice").html(html);
     this.reinitialize_listeners();
   }
 
-  static toggle(id, hide = true) {
+  static toggle (id, hide = true) {
     const entry = this.entries.find(e => e.target_id === id);
     if (!entry) {
       return;
@@ -59,23 +60,23 @@ class Block {
 
     const { hide_uploads, hide_comments, hide_forum_topics, hide_forum_posts } = entry;
 
-    if(hide_uploads) {
-      if(hide) {
+    if (hide_uploads) {
+      if (hide) {
         this.hide($(`article.post-preview[data-uploader-id=${entry.target_id}]:visible`), "uploads");
       } else {
         this.show($(`article.post-preview[data-uploader-id=${entry.target_id}]:hidden`), "uploads");
       }
     }
 
-    if(hide_comments) {
-      if(hide) {
+    if (hide_comments) {
+      if (hide) {
         this.hide($(`article.comment[data-creator-id=${entry.target_id}]:visible`), "comments");
       } else {
         this.show($(`article.comment[data-creator-id=${entry.target_id}]:hidden`), "comments");
       }
     }
 
-    if(hide_forum_topics) {
+    if (hide_forum_topics) {
       if (hide) {
         this.hide($(`tr.forum-topic-row[data-creator-id=${entry.target_id}]:visible`), "forum_topics");
       } else {
@@ -83,7 +84,7 @@ class Block {
       }
     }
 
-    if(hide_forum_posts) {
+    if (hide_forum_posts) {
       if (hide) {
         this.hide($(`article.forum-post[data-creator-id=${entry.target_id}]:visible`), "forum_posts");
       } else {
@@ -92,13 +93,16 @@ class Block {
     }
   }
 
-  static activate(id) { return this.toggle(id, true); }
-  static deactivate(id) { return this.toggle(id, false); }
+  static activate (id) { return this.toggle(id, true); }
 
-  static activateAll() { return this.entries.map(e => this.activate(e.target_id)) }
-  static deactivateAll() { return this.entries.map(e => this.deactivate(e.target_id)) }
-  static activateType(name) {
-    if(!this.disabled.includes(name)) {
+  static deactivate (id) { return this.toggle(id, false); }
+
+  static activateAll () { return this.entries.map(e => this.activate(e.target_id)); }
+
+  static deactivateAll () { return this.entries.map(e => this.deactivate(e.target_id)); }
+
+  static activateType (name) {
+    if (!this.disabled.includes(name)) {
       return;
     }
 
@@ -108,8 +112,8 @@ class Block {
     this.updateText();
   }
 
-  static deactivateType(name) {
-    if(this.disabled.includes(name)) {
+  static deactivateType (name) {
+    if (this.disabled.includes(name)) {
       return;
     }
 
@@ -119,12 +123,12 @@ class Block {
     this.updateText();
   }
 
-  static reinitialize_listeners() {
-    $(".deactivate-blocks").off("click.femboyfans.block").on("click.femboyfans.block", function(event) {
+  static reinitialize_listeners () {
+    $(".deactivate-blocks").off("click.femboyfans.block").on("click.femboyfans.block", function (event) {
       event.preventDefault();
       Block.deactivateType($(event.currentTarget).data("block-type"));
     });
-    $(".reactivate-blocks").off("click.femboyfans.block").on("click.femboyfans.block", function(event) {
+    $(".reactivate-blocks").off("click.femboyfans.block").on("click.femboyfans.block", function (event) {
       event.preventDefault();
       Block.activateType($(event.currentTarget).data("block-type"));
     });
@@ -136,4 +140,4 @@ $(document).ready(function () {
   Block.updateText();
 });
 
-export default Block
+export default Block;

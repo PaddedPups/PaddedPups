@@ -4,8 +4,8 @@ import ForumPost from "./forum_posts.js";
 import Utility from "./utility.js";
 
 export default class UserSpam {
-  static initialize_click_handlers() {
-    function handle(event, action) {
+  static initialize_click_handlers () {
+    function handle (event, action) {
       event.preventDefault();
       const $target = $(event.target);
       const type = $target.data("item-route");
@@ -13,7 +13,7 @@ export default class UserSpam {
 
       $.ajax({
         type: "PUT",
-        url: `/${type}/${id}/mark_${action}.json`
+        url: `/${type}/${id}/mark_${action}.json`,
       }).done(data => {
         $target.closest("article.comment, article.forum-post").replaceWith(data.html);
         $(window).trigger("e621:add_deferred_posts", data.posts);
@@ -22,7 +22,7 @@ export default class UserSpam {
         Comment.reinitialize_all();
         ForumPost.reinitialize_all();
         DText.initialize_all_inputs();
-      }).fail(data => {
+      }).fail(() => {
         Utility.error(`Failed to mark as ${action.replaceAll("_", " ")}.`);
       });
     }
@@ -30,7 +30,7 @@ export default class UserSpam {
     $(".item-mark-not-spam").on("click", event => handle(event, "not_spam"));
   }
 
-  static reinitialize_click_handlers() {
+  static reinitialize_click_handlers () {
     $(".item-mark-spam").off("click");
     $(".item-mark-not-spam").off("click");
     this.initialize_click_handlers();

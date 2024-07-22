@@ -185,7 +185,7 @@ PostModeMenu.click = function (e) {
   const mode = $("#mode-box-mode").val();
   const post_id = $(e.target).closest("article").data("id");
 
-  switch(mode) {
+  switch (mode) {
     case "add-fav": Favorite.create(post_id); break;
     case "remove-fav": Favorite.destroy(post_id); break;
     case "edit": PostModeMenu.open_edit(post_id); break;
@@ -211,7 +211,7 @@ PostModeMenu.click = function (e) {
         e.preventDefault();
         return;
       }
-      const postTags = $("#post_" + post_id).data('tags').split(' ');
+      const postTags = $("#post_" + post_id).data("tags").split(" ");
       const tags = new Set(postTags);
       const changes = TagScript.run(tags, tag_script);
       Post.tagScript(post_id, changes);

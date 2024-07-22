@@ -1,7 +1,7 @@
 const HoverZoom = new EventTarget();
 
 const placeholder = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
-HoverZoom.init = function(shiftRequired, stickyShift, playAudio) {
+HoverZoom.init = function (shiftRequired, stickyShift, playAudio) {
   HoverZoom.current = null;
   HoverZoom.shiftPressed = false;
   HoverZoom.pageX = null;
@@ -11,9 +11,9 @@ HoverZoom.init = function(shiftRequired, stickyShift, playAudio) {
   HoverZoom.playAudio = playAudio;
   HoverZoom.init_listeners();
   HoverZoom.init_functionality();
-}
+};
 
-HoverZoom.init_listeners = function() {
+HoverZoom.init_listeners = function () {
   $(document)
     .off("scroll.femboyfans.zoom")
     .off("keydown.femboyfans.zoom")
@@ -30,13 +30,13 @@ HoverZoom.init_listeners = function() {
 
   let throttle = false;
   $(document).on("mousemove.femboyfans.zoom", (event) => {
-    if(throttle) return;
+    if (throttle) return;
     throttle = true;
-    setTimeout(() => { throttle = false }, 25);
+    setTimeout(() => { throttle = false; }, 25);
 
     HoverZoom.pageX = event.pageX;
     HoverZoom.pageY = event.pageY;
-    HoverZoom.emit("mousemove", { x: event.pageX, y: event.pageY, });
+    HoverZoom.emit("mousemove", { x: event.pageX, y: event.pageY });
   });
 
   let scrolling = false;
@@ -44,8 +44,8 @@ HoverZoom.init_listeners = function() {
     .on("mouseenter.femboyfans.zoom", ".post-preview, div.post-thumbnail", (event) => {
       if (scrolling) return;
 
-      const ref = $(event.currentTarget)
-      ref.attr("data-hovering", "true")
+      const ref = $(event.currentTarget);
+      ref.attr("data-hovering", "true");
 
       const post = HoverZoom.post_from_element(ref);
       HoverZoom.current = post;
@@ -59,20 +59,20 @@ HoverZoom.init_listeners = function() {
 
       HoverZoom.current = null;
 
-        HoverZoom.emit("zoom.stop", { post: ref.attr("data-id"), pageX: event.pageX, pageY: event.pageY });
+      HoverZoom.emit("zoom.stop", { post: ref.attr("data-id"), pageX: event.pageX, pageY: event.pageY });
     });
 
   let scrollTimer = 0;
-  $(document).on("scroll.femboyfans.zoom", (event) => {
-    if(scrollTimer) {
+  $(document).on("scroll.femboyfans.zoom", () => {
+    if (scrollTimer) {
       clearTimeout(scrollTimer);
     }
 
     scrollTimer = setTimeout(() => scrolling = false, 100);
     scrolling = true;
-  })
+  });
 
-  if(!HoverZoom.shiftRequired) return;
+  if (!HoverZoom.shiftRequired) return;
   $(document)
     .on("keydown.femboyfans.zoom", (event) => {
       if (HoverZoom.shiftPressed || event.originalEvent.key !== "Shift") return;
@@ -85,27 +85,27 @@ HoverZoom.init_listeners = function() {
     .on("keyup.femboyfans.zoom", (event) => {
       if (!HoverZoom.shiftPressed || event.originalEvent.key !== "Shift") return;
       HoverZoom.shiftPressed = false;
-      if(!HoverZoom.stickyShift) resetOnUnshift();
+      if (!HoverZoom.stickyShift) resetOnUnshift();
     });
 
   $(window)
     .on("blur.femboyfans.zoom", () => {
       HoverZoom.shiftPressed = false;
-      if(!HoverZoom.stickyShift) resetOnUnshift();
+      if (!HoverZoom.stickyShift) resetOnUnshift();
     })
     .on("contextmenu.femboyfans.zoom", () => {
       HoverZoom.shiftPressed = false;
-      if(!HoverZoom.stickyShift) resetOnUnshift();
+      if (!HoverZoom.stickyShift) resetOnUnshift();
     });
 
-  function resetOnUnshift() {
-    if(!HoverZoom.current) return;
+  function resetOnUnshift () {
+    if (!HoverZoom.current) return;
     HoverZoom.emit("zoom.stop", { post: HoverZoom.current.id, pageX: null, pageY: null });
     HoverZoom.current = null;
   }
-}
+};
 
-HoverZoom.init_functionality = function() {
+HoverZoom.init_functionality = function () {
   const zoomContainer = $("div#zoom-container");
   const zoomInfo = zoomContainer.find("#zoom-info");
   const zoomImage = zoomContainer.find("#zoom-image");
@@ -117,14 +117,14 @@ HoverZoom.init_functionality = function() {
   const viewport = $(window);
   HoverZoom.on("zoom.start", (event) => {
     const data = event.detail;
-    if(HoverZoom.shiftRequired && !this.shiftPressed) return;
+    if (HoverZoom.shiftRequired && !this.shiftPressed) return;
 
     const ref = $(`#post_${data.post}, div.post-thumbnail[data-id=${data.post}]`).first();
-    if(ref.hasClass("blacklisted")) return;
+    if (ref.hasClass("blacklisted")) return;
     const post = HoverZoom.post_from_element(ref);
 
     const isApprover = $("body").attr("data-user-is-approver");
-    if(post.flags.includes(PostFlag.DELETED) && !isApprover) return;
+    if (post.flags.includes(PostFlag.DELETED) && !isApprover) return;
 
     const img = ref.find("img").first();
     ref.data("stored-title", img.attr("title") || "");
@@ -132,7 +132,7 @@ HoverZoom.init_functionality = function() {
 
     zoomContainer.attr("data-status", "loading");
 
-    let width = Math.min(post.image.width, viewport.width() * 0.5 - 50),
+    let width = Math.min(post.image.width, (viewport.width() * 0.5) - 50),
       height = width * post.image.ratio;
 
     if (height > (viewport.height() * 0.75)) {
@@ -145,15 +145,15 @@ HoverZoom.init_functionality = function() {
       height: `${height}px`,
     });
 
-    if(post.file.ext === "webm") {
+    if (post.file.ext === "webm") {
       zoomVideo
         .css({
-          display: "",
+          "display": "",
           "background-image": `url(${post.file.sample})`,
         })
         .attr({
           src: post.file.original,
-          poster: post.file.sample
+          poster: post.file.sample,
         });
 
       videoTimeout = setTimeout(() => {
@@ -164,8 +164,8 @@ HoverZoom.init_functionality = function() {
     } else {
       zoomImage
         .css({
-          display: "",
-          "background-image": `url(${post.file.preview})`
+          "display": "",
+          "background-image": `url(${post.file.preview})`,
         })
         .attr("src", post.file.original)
         .one("load", () => {
@@ -175,17 +175,17 @@ HoverZoom.init_functionality = function() {
     }
 
     zoomInfo.html("");
-    if(post.image.width && post.image.height) {
+    if (post.image.width && post.image.height) {
       $("<span>")
         .text(`${post.image.width} x ${post.image.height}${post.file.size !== 0 ? `, ${HoverZoom.format_filesize(post.file.size)}` : ""}`)
         .appendTo(zoomInfo);
     }
 
-    if(post.rating) {
+    if (post.rating) {
       const ratingClass = {
         e: "explicit",
         q: "questionable",
-        s: "safe"
+        s: "safe",
       }[post.rating];
 
       $("<span>")
@@ -194,7 +194,7 @@ HoverZoom.init_functionality = function() {
         .appendTo(zoomInfo);
     }
 
-    if(post.date.ago !== "now") {
+    if (post.date.ago !== "now") {
       $("<span>")
         .text(post.date.ago)
         .appendTo(zoomInfo);
@@ -209,7 +209,7 @@ HoverZoom.init_functionality = function() {
     });
     alignWindow(HoverZoom.pageX, HoverZoom.pageY);
 
-    function alignWindow(x, y) {
+    function alignWindow (x, y) {
       const height = zoomContainer.height(), width = zoomContainer.width(), cursorX = x, cursorY = y - viewport.scrollTop();
 
       const left = (cursorX < (viewport.width() / 2))
@@ -219,7 +219,7 @@ HoverZoom.init_functionality = function() {
 
       zoomContainer.css({
         "left": `${left}px`,
-        "top": `${top}px`
+        "top": `${top}px`,
       });
     }
   });
@@ -229,7 +229,7 @@ HoverZoom.init_functionality = function() {
     const ref = $(`#post_${data.post}, div.post-thumbnail[data-id=${data.post}]`).first();
 
     const img = ref.find("img").first();
-    if(img.data("stored-title")) {
+    if (img.data("stored-title")) {
       img.attr("title", img.data("stored-title"));
       img.removeData("stored-title");
     }
@@ -238,7 +238,7 @@ HoverZoom.init_functionality = function() {
       .attr("data-status", "waiting")
       .css({
         left: 0,
-        top: "100vh"
+        top: "100vh",
       });
     zoomInfo.html("");
     zoomImage
@@ -246,24 +246,24 @@ HoverZoom.init_functionality = function() {
       .attr("src", placeholder);
     zoomVideo
       .css({
-        display: "none",
-        "background-image": ""
+        "display": "none",
+        "background-image": "",
       })
       .prop("muted", !HoverZoom.playAudio);
-    if(zoomVideo.attr("src") !== "") {
+    if (zoomVideo.attr("src") !== "") {
       zoomVideo.attr({
         src: "",
-        poster: ""
+        poster: "",
       });
     }
     clearTimeout(videoTimeout);
     zoomTags.removeAttr("style").html("");
   });
-}
+};
 
-HoverZoom.post_from_element = function(element) {
+HoverZoom.post_from_element = function (element) {
   const cache = element.data("hzcache");
-  if(cache) return cache;
+  if (cache) return cache;
   const tagString = element.attr("data-tags") || "", tags = new Set(tagString.split(" "));
 
   const ext = element.attr("data-file-ext");
@@ -281,7 +281,7 @@ HoverZoom.post_from_element = function(element) {
       preview: element.attr("data-preview-file-url"),
       sample: element.attr("data-large-file-url"),
       original: element.attr("data-file-url"),
-    }
+    };
   } else {
     if (element.attr("data-md5")) {
       md5 = element.attr("data-md5");
@@ -323,7 +323,7 @@ HoverZoom.post_from_element = function(element) {
     score: {
       down: scoreDown,
       up: scoreUp,
-      total: score
+      total: score,
     },
     user_score: 0,
     favorites: Number(element.attr("data-fav-count") || "0"),
@@ -336,7 +336,7 @@ HoverZoom.post_from_element = function(element) {
     date: {
       raw: rawDate,
       ago: element.attr("data-created-ago") || "now",
-      obj: new Date(rawDate)
+      obj: new Date(rawDate),
     },
     tagString,
     tags,
@@ -346,40 +346,40 @@ HoverZoom.post_from_element = function(element) {
       original: urls.original,
       preview: urls.preview,
       sample: urls.sample,
-      size: Number(element.attr("data-file-size") || "0")
+      size: Number(element.attr("data-file-size") || "0"),
     },
     image: {
       width,
       height,
-      ratio: height / width
+      ratio: height / width,
     },
     has: {
       file: element.attr("data-file-url") !== undefined,
       children: element.hasClass("post-status-has-children") || !!element.attr("data-has-active-children"),
       parent: element.hasClass("post-status-has-parent") || !!element.attr("data-has-active-parent"),
-      sample: urls.original !== urls.sample
+      sample: urls.original !== urls.sample,
     },
     meta: {
       duration: null,
       animated: tags.has("animated") || ["webm", "gif"].includes(ext),
       sound: tags.has("sound"),
-      interactive: ext === "webm"
+      interactive: ext === "webm",
     },
     warning: {
       sound: tags.has("sound_warning"),
-      epilepsy: tags.has("epilepsy_warning")
-    }
+      epilepsy: tags.has("epilepsy_warning"),
+    },
   };
   element.data("hzcache", post);
   return post;
-}
+};
 
 const PostFlag = {};
 PostFlag[PostFlag.DELETED = "deleted"] = "DELETED";
 PostFlag[PostFlag.FLAGGED = "flagged"] = "FLAGGED";
 PostFlag[PostFlag.PENDING = "pending"] = "PENDING";
 
-HoverZoom.format_filesize = function(bytes, decimals = 2) {
+HoverZoom.format_filesize = function (bytes, decimals = 2) {
   if (typeof bytes == "string") bytes = Number(bytes);
   if (!bytes || bytes === 0) return "0 B";
 
@@ -390,20 +390,20 @@ HoverZoom.format_filesize = function(bytes, decimals = 2) {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + sizes[i];
-}
+};
 
 const listeners = {};
-HoverZoom.on = function(event, callback) {
+HoverZoom.on = function (event, callback) {
   HoverZoom.addEventListener(event, callback);
-  if(!listeners[event]) listeners[event] = [];
+  if (!listeners[event]) listeners[event] = [];
   listeners[event].push(callback);
   return HoverZoom;
-}
+};
 
-HoverZoom.off = function(event, callback = null) {
-  if(callback === null) {
-    if(listeners[event]) {
-      for(const func of listeners[event]) {
+HoverZoom.off = function (event, callback = null) {
+  if (callback === null) {
+    if (listeners[event]) {
+      for (const func of listeners[event]) {
         HoverZoom.removeEventListener(event, func);
       }
       listeners[event] = [];
@@ -412,11 +412,11 @@ HoverZoom.off = function(event, callback = null) {
     HoverZoom.removeEventListener(event, callback);
   }
   return this;
-}
+};
 
-HoverZoom.emit = function(name, data) {
+HoverZoom.emit = function (name, data) {
   HoverZoom.dispatchEvent(new CustomEvent(name, { detail: data }));
   return this;
-}
+};
 
 export default HoverZoom;

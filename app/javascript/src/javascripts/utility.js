@@ -18,14 +18,14 @@ Utility.test_max_width = function (width) {
   return mq.matches;
 };
 
-Utility.chunk = function(array, chunk_size) {
+Utility.chunk = function (array, chunk_size) {
   const chunks = [];
   for (let i = 0; i < array.length; i += chunk_size) {
     chunks.push(array.slice(i, i + chunk_size));
   }
 
   return chunks;
-}
+};
 
 Utility.notice_timeout_id = undefined;
 
@@ -130,21 +130,21 @@ Utility.regexp_escape = function (string) {
  * @param string
  * @returns {URLSearchParams}
  */
-Utility.get_query_params = function(string) {
+Utility.get_query_params = function (string) {
   const url = new URL(string, window.location.origin);
   return new URLSearchParams(url.search);
-}
+};
 
 /**
  * @param {string} string
  * @param {URLSearchParams} params
  * @returns {string}
  */
-Utility.set_query_params = function(string, params) {
+Utility.set_query_params = function (string, params) {
   const url = new URL(string, window.location.origin);
   url.search = params.toString();
   return url.toString();
-}
+};
 
 $.fn.selectEnd = function () {
   return this.each(function () {

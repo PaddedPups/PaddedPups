@@ -28,7 +28,7 @@ function changeMascot () {
 
 function initMascots () {
   const changeMascotButton = $("#change-mascot");
-  if(Object.keys(window.mascots).length === 0) {
+  if (Object.keys(window.mascots).length === 0) {
     console.log("No mascots to display");
     changeMascotButton.remove();
     return;

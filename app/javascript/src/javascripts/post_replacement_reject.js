@@ -1,6 +1,6 @@
 const PostReplacementReject = {};
 
-PostReplacementReject.init = function() {
+PostReplacementReject.init = function () {
   const input = $("#post_replacement_reason");
   let inputVal = input.val() + "";
 
@@ -17,7 +17,7 @@ PostReplacementReject.init = function() {
         current = current.trim();
         if ($button.hasClass("enabled")) {
           return current
-            .replace(text, "")
+            .replace(text, "");
         } else return (current ? current + " / " : "") + text;
       });
       input.trigger("input");
@@ -33,7 +33,7 @@ PostReplacementReject.init = function() {
       const $button = $(element);
       $button.find("input[type=text]").on("input", () => {
         $button.trigger("e621:refresh");
-      })
+      });
     });
   buttons.trigger("e621:refresh");
 
@@ -45,12 +45,12 @@ PostReplacementReject.init = function() {
   $("#rejection-reason-clear").on("click", () => {
     input.val("").trigger("input");
   });
-}
+};
 
-$(function() {
-  if($("div#c-posts-replacements div#a-reject-with-reason").length) {
+$(function () {
+  if ($("div#c-posts-replacements div#a-reject-with-reason").length) {
     Danbooru.PostReplacementRejection.init();
   }
 });
 
-export default PostReplacementReject
+export default PostReplacementReject;

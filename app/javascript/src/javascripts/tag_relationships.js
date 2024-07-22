@@ -16,7 +16,7 @@ class TagRelationships {
     $.ajax({
       url: `/${route}/${id}/approve.json`,
       type: "PUT",
-      dataType: "json"
+      dataType: "json",
     }).done(function () {
       Utility.notice(`Accepted ${human}.`);
       parent.slideUp("fast");

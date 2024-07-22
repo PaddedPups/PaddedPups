@@ -44,7 +44,7 @@ $(function () {
     Cookie.put("hide_dmail_notice", id);
   });
 
-  $("#hide-notification-notice").on("click.danbooru", function(e) {
+  $("#hide-notification-notice").on("click.danbooru", function (e) {
     e.preventDefault();
     const $notice = $("#notification-notice");
     $notice.hide();

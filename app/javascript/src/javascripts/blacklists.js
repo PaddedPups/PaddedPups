@@ -57,7 +57,7 @@ Blacklist.entryParse = function (string) {
     "optional": [],
     "disabled": false,
     "hits": 0,
-    "score_comparison": null
+    "score_comparison": null,
   };
   const matches = string.match(/\S+/g) || [];
   for (const tag of matches) {
@@ -355,12 +355,12 @@ Blacklist.initialize_collapse = function () {
   Blacklist.collapseUpdate();
 };
 
-Blacklist.init_reveal_on_click = function() {
-  if(!$("#c-posts #a-show").length) return;
+Blacklist.init_reveal_on_click = function () {
+  if (!$("#c-posts #a-show").length) return;
   $("#image-container").on("click", (event) => {
     $(event.currentTarget).removeClass("blacklisted");
   });
-}
+};
 
 $(document).ready(function () {
   Blacklist.initialize_collapse();

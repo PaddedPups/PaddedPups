@@ -1,7 +1,7 @@
-import Utility from "./utility"
-import ZingTouch from "zingtouch"
-import LS from "./local_storage"
-import Note from "./notes"
+import Utility from "./utility";
+import ZingTouch from "zingtouch";
+import LS from "./local_storage";
+import Note from "./notes";
 import { SendQueue } from "./send_queue";
 import Shortcuts from "./shortcuts";
 import PostSet from "./post_sets";
@@ -46,9 +46,9 @@ Post.initialize_all = function () {
     this.initialize_edit_dialog();
   }
 
-  if($("div.set-nav").length) {
+  if ($("div.set-nav").length) {
     const sets = $("div.set-nav span.set-name");
-    for(const set of sets) {
+    for (const set of sets) {
       const removeButton = $(set).find("a#remove-from-set-button");
       removeButton.on("click", (event) => {
         event.preventDefault();
@@ -71,28 +71,28 @@ Post.initialize_all = function () {
   $fields_multiple.on("click", Post.update_tag_count);
 };
 
-Post.initialize_tag_actions = function() {
-  $(".blacklist-tag-toggle").on("click", async function(event) {
+Post.initialize_tag_actions = function () {
+  $(".blacklist-tag-toggle").on("click", async function (event) {
     event.preventDefault();
     const tag = $(event.currentTarget).closest(".tag-actions").data("tag");
     const blacklist = JSON.parse(Utility.meta("blacklisted-tags") || "[]");
     const idx = blacklist.indexOf(tag);
 
-    if(idx === -1) {
+    if (idx === -1) {
       blacklist.push(tag);
     } else {
       blacklist.splice(idx, 1);
     }
 
-    SendQueue.add(function() {
+    SendQueue.add(function () {
       $.ajax({
         method: "POST",
         url: "/users/update.json",
         data: {
-          "user[blacklisted_tags]": blacklist.join("\n")
+          "user[blacklisted_tags]": blacklist.join("\n"),
         },
-        success: function (data) {
-          if(idx === -1) {
+        success: function () {
+          if (idx === -1) {
             Utility.notice(`Added tag "${tag}" to blacklist`);
           } else {
             Utility.notice(`Removed tag "${tag}" from blacklist`);
@@ -102,12 +102,12 @@ Post.initialize_tag_actions = function() {
         },
         error: function (data) {
           Utility.error("Error:" + data);
-        }
+        },
       });
     });
   });
 
-  $(".tag-action-follow").on("click", function(event) {
+  $(".tag-action-follow").on("click", function (event) {
     event.preventDefault();
     const $link = $(event.currentTarget).find("a.follow-button-minor");
     const tag = $(event.currentTarget).closest(".tag-actions").data("tag");
@@ -119,7 +119,7 @@ Post.initialize_tag_actions = function() {
         url: `/tags/${tag}/${followed ? "un" : ""}follow.json`,
         dataType: "json",
         success: function () {
-          if(followed) {
+          if (followed) {
             Utility.notice(`Removed follow for "${tag}"`);
             $link.attr("data-followed", false);
           } else {
@@ -129,11 +129,11 @@ Post.initialize_tag_actions = function() {
         },
         error: function (data) {
           Utility.error("Error:" + data);
-        }
+        },
       });
     });
   });
-}
+};
 
 Post.initialize_moderation = function () {
   $("#unapprove-post-link").on("click", e => {
@@ -917,11 +917,11 @@ Post.unapprove = function (post_id) {
   SendQueue.add(function () {
     $.ajax({
       type: "DELETE",
-      url: `/posts/approvals/${post_id}.json`
-    }).fail(function(data) {
-      var message = $.map(data.responseJSON.errors, function(msg, attr) { return msg; }).join("; ");
+      url: `/posts/approvals/${post_id}.json`,
+    }).fail(function (data) {
+      var message = $.map(data.responseJSON.errors, function (msg) { return msg; }).join("; ");
       $(window).trigger("danbooru:error", "Error: " + message);
-    }).done(function(data) {
+    }).done(function () {
       $(window).trigger("danbooru:notice", "Unapproved post.");
       location.reload();
     }).always(function () {
@@ -930,49 +930,49 @@ Post.unapprove = function (post_id) {
   });
 };
 
-Post.destroy = function(post_id, reason) {
+Post.destroy = function (post_id, reason) {
   $.ajax({
     method: "PUT",
     url: `/posts/${post_id}/expunge.json`,
-    data: { reason }
+    data: { reason },
   })
-  .fail(data => {
-    var message = $.map(data.responseJSON.errors, function(msg, attr) { return msg; }).join("; ");
-    $(window).trigger("danbooru:error", "Error: " + message);
-  }).done(() => {
-    location.href = `/admin/destroyed_posts/${post_id}`;
-  });
+    .fail(data => {
+      var message = $.map(data.responseJSON.errors, function (msg) { return msg; }).join("; ");
+      $(window).trigger("danbooru:error", "Error: " + message);
+    }).done(() => {
+      location.href = `/admin/destroyed_posts/${post_id}`;
+    });
 };
 
-Post.regenerate_image_samples = function(post_id) {
+Post.regenerate_image_samples = function (post_id) {
   $.ajax({
     method: "PUT",
-    url: `/posts/${post_id}/regenerate_thumbnails.json`
+    url: `/posts/${post_id}/regenerate_thumbnails.json`,
   })
-  .fail(data => {
-    Utility.error("Error: " + data.responseJSON.reason);
-  }).done(() => {
-    Utility.notice("Image samples regenerated.");
-  });
+    .fail(data => {
+      Utility.error("Error: " + data.responseJSON.reason);
+    }).done(() => {
+      Utility.notice("Image samples regenerated.");
+    });
 };
 
-Post.regenerate_video_samples = function(post_id) {
+Post.regenerate_video_samples = function (post_id) {
   $.ajax({
     method: "PUT",
-    url: `/posts/${post_id}/regenerate_videos.json`
-})
-  .fail(data => {
-    Utility.error("Error: " + data.responseJSON.reason);
-  }).done(() => {
-    Utility.notice("Video samples will be regenerated in a few minutes.");
-  });
+    url: `/posts/${post_id}/regenerate_videos.json`,
+  })
+    .fail(data => {
+      Utility.error("Error: " + data.responseJSON.reason);
+    }).done(() => {
+      Utility.notice("Video samples will be regenerated in a few minutes.");
+    });
 };
 
 Post.approve = function (post_id, callback) {
   Post.notice_update("inc");
   SendQueue.add(function () {
     $.post(
-      `/posts/approvals.json`,
+      "/posts/approvals.json",
       { post_id },
     ).fail(function (data) {
       var message = $.map(data.responseJSON.errors, (msg) => msg).join("; ") || data.responseJSON.message;
@@ -989,7 +989,7 @@ Post.approve = function (post_id, callback) {
       if (callback) {
         callback();
       }
-    })
+    });
   });
 };
 
@@ -1044,12 +1044,12 @@ Post.vote_down = function (e) {
   Post.vote(id, -1);
 };
 
-Post.unvote = function(id) {
+Post.unvote = function (id) {
   const score = $(`#post_${id}`).attr("data-own-vote");
-  if(score !== undefined && score !== "0") {
+  if (score !== undefined && score !== "0") {
     Post.vote(id, score, false);
   }
-}
+};
 
 Post.vote = function (id, score, prevent_unvote) {
   Post.notice_update("inc");
@@ -1063,12 +1063,12 @@ Post.vote = function (id, score, prevent_unvote) {
       },
       dataType: "json",
       headers: {
-        accept: "*/*;q=0.5,text/javascript"
-      }
-    }).done(function(data) {
+        accept: "*/*;q=0.5,text/javascript",
+      },
+    }).done(function (data) {
       Post.after_vote(id, data);
       $(window).trigger("danbooru:notice", "Vote saved");
-    }).always(function() {
+    }).always(function () {
       Post.notice_update("dec");
     });
   });
@@ -1087,7 +1087,7 @@ Post.vote = function (id, score, prevent_unvote) {
  * @param {Number} post_id
  * @param {PostVote} vote
  */
-Post.after_vote = function(post_id, vote) {
+Post.after_vote = function (post_id, vote) {
   const scoreClasses = "score-neutral score-positive score-negative";
   const post = $(`#post_${post_id}`);
   if (vote.is_locked) {
@@ -1095,11 +1095,11 @@ Post.after_vote = function(post_id, vote) {
   } else {
     post.attr("data-own-vote", vote.our_score);
   }
-  post.attr("data-score-up", vote.up)
-  post.attr("data-score-down", vote.down)
-  post.attr("data-score", vote.score)
-  function scoreToClass(inScore) {
-    if(inScore === 0) return "score-neutral";
+  post.attr("data-score-up", vote.up);
+  post.attr("data-score-down", vote.down);
+  post.attr("data-score", vote.score);
+  function scoreToClass (inScore) {
+    if (inScore === 0) return "score-neutral";
     return inScore > 0 ? "score-positive" : "score-negative";
   }
 
@@ -1118,18 +1118,18 @@ Post.after_vote = function(post_id, vote) {
   const scoreScoreSelector = $(`.post-score-score-${post_id}`);
   const scoreClassesSelector = $(`.post-score-classes-${post_id}`);
   const iconsSelector = $(scoreClassesSelector.find(`.post-score-icon-${post_id}`));
-  scoreScoreSelector.text(vote.score)
+  scoreScoreSelector.text(vote.score);
   scoreScoreSelector.attr("title", `${vote.up} up/${vote.down} down`);
   scoreClassesSelector.removeClass(scoreClasses);
   scoreClassesSelector.addClass(scoreToClass(vote.score));
-  if(iconsSelector.length) {
+  if (iconsSelector.length) {
     const positive = iconsSelector.attr("data-icon-positive");
     const negative = iconsSelector.attr("data-icon-negative");
     const neutral = iconsSelector.attr("data-icon-neutral");
     const icon = vote.score > 0 ? positive : vote.score < 0 ? negative : neutral;
     iconsSelector.text(icon);
   }
-}
+};
 
 Post.set_as_avatar = function (id) {
   SendQueue.add(function () {
@@ -1148,57 +1148,57 @@ Post.set_as_avatar = function (id) {
   });
 };
 
-Post.initialize_hide_notes = function() {
+Post.initialize_hide_notes = function () {
   const container = $("#note-container")
-    .css("display", "")
+    .css("display", "");
   $("#toggle-notes-button")
     .on("click", (event) => {
       event.preventDefault();
       Post.toggle_hide_notes();
     });
   $("#translate")
-    .on("click", async() => {
-      if(container.attr("data-hidden") === "true") {
+    .on("click", async () => {
+      if (container.attr("data-hidden") === "true") {
         Post.toggle_hide_notes(false);
       } else {
         const isHidden = LS.get("hide-notes") === "1";
-        if(isHidden) {
+        if (isHidden) {
           Post.toggle_hide_notes(false, true);
         }
       }
     });
 
   Post.toggle_hide_notes(false, true);
-}
+};
 
-Post.toggle_hide_notes = function(save = true, init = false) {
+Post.toggle_hide_notes = function (save = true, init = false) {
   let isHidden = LS.get("hide-notes") === "1";
-  if(init) {
+  if (init) {
     isHidden = !isHidden;
     save = false;
   }
-  const button = $("#toggle-notes-button")
+  const button = $("#toggle-notes-button");
   const container = $("#note-container");
 
-  if(isHidden) {
+  if (isHidden) {
     container.attr("data-hidden", false);
     button.text("Notes: ON");
-    if(save) LS.put("hide-notes", "0");
+    if (save) LS.put("hide-notes", "0");
   } else {
     container.attr("data-hidden", true);
     button.text("Notes: OFF");
-    if(save) LS.put("hide-notes", "1");
+    if (save) LS.put("hide-notes", "1");
   }
-}
+};
 
-Post.initialize_vote_buttons = function() {
+Post.initialize_vote_buttons = function () {
   const containers = $(".post-preview div#vote-buttons");
-  for(const set of containers) {
-    for(const button of $(set).find("button.vote-button")) {
+  for (const set of containers) {
+    for (const button of $(set).find("button.vote-button")) {
       $(button).on("click.femboyfans.vote", (event) => {
         event.preventDefault();
         const id = $(event.target).parent().parent().attr("data-id");
-        switch($(event.target).attr("data-action")) {
+        switch ($(event.target).attr("data-action")) {
           case "up": {
             Post.vote(id, 1);
             break;
@@ -1212,7 +1212,7 @@ Post.initialize_vote_buttons = function() {
           case "fav": {
             const span = $(event.target).find("span");
             const isFavorited = span.hasClass("is-favorited");
-            if(isFavorited) {
+            if (isFavorited) {
               Favorite.destroy(id);
               span.removeClass("is-favorited");
             } else {
@@ -1228,17 +1228,17 @@ Post.initialize_vote_buttons = function() {
       });
     }
   }
-}
+};
 
-Post.initialize_thumbnail_frame_preview = function() {
+Post.initialize_thumbnail_frame_preview = function () {
   const $input = $("#preview-thumbnail-frame-button");
   $input.off("click.femboyfans");
   $input.on("click.femboyfans", Post.preview_thumbnail_frame);
-}
+};
 
 Post.preview_thumbnail_frame = async function (event) {
   event.preventDefault();
-  const $input = $("#post_thumbnail_frame")
+  const $input = $("#post_thumbnail_frame");
   const $container = $("#preview-thumbnail-frame");
   const value = Number($input.val());
   $container.empty();
@@ -1249,17 +1249,17 @@ Post.preview_thumbnail_frame = async function (event) {
     const url = await Post.get_blob_url_for_frame(value);
     const $link = $("<a>").attr("href", url).attr("target", "_blank");
     $("<img>").attr("src", url).attr("width", "60%").appendTo($link);
-    $link.appendTo($container)
+    $link.appendTo($container);
     $container.find("p").remove();
-  } catch(e) {
+  } catch (e) {
     console.error("Failed to create blob url for frame:", e);
     $container.find("p").text(`Error: ${e.message}`);
   }
-}
+};
 
-Post.get_blob_url_for_frame = async function(frame, post_id = Post.currentPost().id) {
+Post.get_blob_url_for_frame = async function (frame, post_id = Post.currentPost().id) {
   Post._blobFrameMap[post_id] ??= {};
-  if(Post._blobFrameMap[post_id][frame]) {
+  if (Post._blobFrameMap[post_id][frame]) {
     return Post._blobFrameMap[post_id][frame];
   }
   const response = await fetch(`/posts/${post_id}/frame/${frame}`);
@@ -1272,7 +1272,7 @@ Post.get_blob_url_for_frame = async function(frame, post_id = Post.currentPost()
   const url = URL.createObjectURL(await response.blob());
   Post._blobFrameMap[post_id][frame] = url;
   return url;
-}
+};
 
 $(document).ready(function () {
   Post.initialize_all();

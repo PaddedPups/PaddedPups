@@ -224,12 +224,12 @@ services:
       - rubocop
 
   linter:
-    image: e621
+    image: femboyfans
     volumes:
       - .:/app
       - node_modules:/app/node_modules
     entrypoint: yarn run lint
-    profiles: 
+    profiles:
       - linter
 
 volumes:

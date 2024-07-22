@@ -21,7 +21,7 @@ Comment.initialize_all = function () {
     .on("click", ".comment-destroy-link", Comment.destroy);
 
   $(".show-all-comments-for-post-link").on("click", Comment.show_all);
-}
+};
 
 Comment.reinitialize_all = function () {
   if (!$("#c-posts").length && !$("#c-comments").length) return;
@@ -32,7 +32,7 @@ Comment.reinitialize_all = function () {
   Comment.initialize_all();
   DText.initialize_all_inputs();
 
-}
+};
 
 /**
  * Handles the action of clicking on one of the vote buttons.
@@ -42,7 +42,7 @@ Comment.vote_handler = function (event) {
   event.preventDefault();
   const target = $(event.currentTarget);
   Comment.vote(target.data("comment"), target.data("action"));
-}
+};
 
 /**
  * Applies a vote to the specified comment.
@@ -56,9 +56,9 @@ Comment.vote = function (commentID, action) {
     method: "POST",
     url: `/comments/${commentID}/votes.json`,
     data: {
-      "score": action
+      "score": action,
     },
-    dataType: "json"
+    dataType: "json",
   }).done((data) => {
     $(`.comment-vote[data-id="${commentID}"]`)
       .attr({
@@ -70,14 +70,14 @@ Comment.vote = function (commentID, action) {
       .removeClass("score-neutral score-positive score-negative")
       .addClass("score-" + scoreToClass(data.score));
 
-    function scoreToClass(num) {
+    function scoreToClass (num) {
       if (num === 0) return "neutral";
       return num > 0 ? "positive" : "negative";
     }
   }).fail(function (data) {
     Utility.error(data.responseJSON.message ? data.responseJSON.message : "Unable to save the vote.");
   });
-}
+};
 
 /**
  * Handles the click on the "Reply" button.
@@ -87,16 +87,16 @@ Comment.vote = function (commentID, action) {
 Comment.reply = function (event) {
   event.preventDefault();
   const parent = $(event.target).parents("article.comment");
-  const pid = parent.data('post-id');
-  const cid = parent.data('comment-id');
+  const pid = parent.data("post-id");
+  const cid = parent.data("comment-id");
   $.ajax({
     url: `/comments/${cid}.json`,
-    type: 'GET',
-    dataType: 'json',
-    accept: 'text/javascript'
+    type: "GET",
+    dataType: "json",
+    accept: "text/javascript",
   }).done(function (data) {
     let stripped_body = data.body.replace(/\[quote\](?:.|\n|\r)+?\[\/quote\][\n\r]*/gm, "");
-    stripped_body = `[quote]@${parent.data('creator')} said:
+    stripped_body = `[quote]@${parent.data("creator")} said:
 ${stripped_body}
 [/quote]
 
@@ -126,8 +126,8 @@ ${stripped_body}
 Comment.toggle_edit = function (event) {
   event.preventDefault();
   const parent = $(event.target).parents("article.comment");
-  parent.attr("is-editing", !(parent.attr("is-editing") == "true"))
-}
+  parent.attr("is-editing", !(parent.attr("is-editing") == "true"));
+};
 
 /**
  * Handles the click on the "Delete" button.
@@ -145,7 +145,7 @@ Comment.delete = function (event) {
   $.ajax({
     url: `/comments/${cid}/hide.json`,
     type: "PUT",
-    dataType: "json"
+    dataType: "json",
   }).done(() => {
     parent.attr("data-is-deleted", true);
   }).fail(() => {
@@ -167,7 +167,7 @@ Comment.undelete = function (event) {
   $.ajax({
     url: `/comments/${cid}/unhide.json`,
     type: "PUT",
-    dataType: "json"
+    dataType: "json",
   }).done(() => {
     parent.attr("data-is-deleted", false);
   }).fail(() => {
@@ -184,7 +184,7 @@ Comment.undelete = function (event) {
 Comment.toggle_mark = function (event) {
   event.preventDefault();
   const parent = $(event.target).parents("article.comment");
-  parent.attr("is-marking", !(parent.attr("is-marking") == "true"))
+  parent.attr("is-marking", !(parent.attr("is-marking") == "true"));
 };
 
 /**
@@ -202,7 +202,7 @@ Comment.destroy = function (event) {
   $.ajax({
     url: `/comments/${cid}.json`,
     type: "DELETE",
-    dataType: "json"
+    dataType: "json",
   }).done(() => {
     parent.remove();
   }).fail(() => {
@@ -223,7 +223,7 @@ Comment.show_all = function (event) {
   $.ajax({
     url: `/posts/${post_id}/comments.json`,
     type: "GET",
-    dataType: "json"
+    dataType: "json",
   }).done(function (data) {
     $(`#threshold-comments-notice-for-${post_id}`).hide();
 
@@ -231,15 +231,14 @@ Comment.show_all = function (event) {
     Comment.reinitialize_all();
     UserWarnable.reinitialize_click_handlers();
     $(window).trigger("e621:add_deferred_posts", data.posts);
-  }).fail(function (data) {
+  }).fail(function () {
     Utility.error("Failed to fetch all comments for this post.");
   });
 };
-
 
 
 $(() => {
   Comment.initialize_all();
 });
 
-export default Comment
+export default Comment;

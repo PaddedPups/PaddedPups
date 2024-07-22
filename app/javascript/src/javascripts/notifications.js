@@ -2,7 +2,7 @@ import Utility from "./utility";
 
 const Notification = {};
 
-Notification.add_to_links = function() {
+Notification.add_to_links = function () {
   $("#notification-list tbody tr").each((_, tr) => {
     const $tr = $(tr);
     const id = $tr.attr("data-id");
@@ -15,9 +15,9 @@ Notification.add_to_links = function() {
       $link.attr("href", url.toString());
     });
   });
-}
+};
 
-Notification.save_state = function() {
+Notification.save_state = function () {
   // if we're viewing the notification list, clear any saved data
   if ($("#c-notifications #a-index").length) {
     sessionStorage.removeItem("notification_id");
@@ -30,7 +30,7 @@ Notification.save_state = function() {
     }
     return;
   }
-  const params = Utility.get_query_params(window.location.href)
+  const params = Utility.get_query_params(window.location.href);
   // n is passed around so we know what notification we came from
   const id = params.get("n");
   if (!id) {
@@ -40,17 +40,17 @@ Notification.save_state = function() {
   $("body").attr("data-notification-id", id);
   params.delete("n");
   history.replaceState(null, "", Utility.set_query_params(window.location.href, params));
-}
+};
 
-Notification.get_current_notification_id = function() {
+Notification.get_current_notification_id = function () {
   const id = sessionStorage.getItem("notification_id");
   if (!id) {
     return null;
   }
   return Number(id);
-}
+};
 
-Notification.init_return_button = function() {
+Notification.init_return_button = function () {
   const id = Notification.get_current_notification_id();
   if (id === null) {
     return;
@@ -61,16 +61,16 @@ Notification.init_return_button = function() {
   const params = Utility.get_query_params($link.attr("href"));
   params.set("r", id);
   $link.attr("href", Utility.set_query_params($link.attr("href"), params));
-}
+};
 
-Notification.hide_notice = function() {
+Notification.hide_notice = function () {
   if (Notification.get_current_notification_id() === null) {
     return;
   }
   $("div#notification-notice").hide();
-}
+};
 
-$(function() {
+$(function () {
   if ($("#c-notifications #a-index").length) {
     Notification.add_to_links();
   }

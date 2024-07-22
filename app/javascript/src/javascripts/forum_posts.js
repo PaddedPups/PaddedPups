@@ -135,12 +135,12 @@ ForumPost.hide = function (e) {
   $.ajax({
     url: `/forum_posts/${fpid}/hide.json`,
     type: "PUT",
-    dataType: "json"
+    dataType: "json",
   }).done(function () {
     $(`.forum-post[data-forum-post-id="${fpid}"] div.author h4`).append(" (hidden)");
     $(`.forum-post[data-forum-post-id="${fpid}"]`).attr("data-is-hidden", "true");
-  }).fail(function () {
-    const message = Object.values(data.responseJSON.errors).join('; ');
+  }).fail(function (data) {
+    const message = Object.values(data.responseJSON.errors).join("; ");
     Utility.error(`Failed to hide post: ${message}`);
   });
 };
@@ -154,7 +154,7 @@ ForumPost.unhide = function (e) {
   $.ajax({
     url: `/forum_posts/${fpid}/unhide.json`,
     type: "PUT",
-    dataType: "json"
+    dataType: "json",
   }).done(function () {
     const $author = $(`.forum-post[data-forum-post-id="${fpid}"] div.author h4`);
     $author.text($author.text().replace(" (hidden)", ""));
