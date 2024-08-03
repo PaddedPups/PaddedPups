@@ -16,31 +16,26 @@ class WikiPage < ApplicationRecord
   validates :title, uniqueness: { case_sensitive: false }
   validates :title, presence: true
   validates :title, tag_name: true, if: :title_changed?
-  validates :body, presence: true, unless: -> { parent.present? }
+  validates :body, presence: { unless: -> { parent.present? } }
   validates :title, length: { minimum: 1, maximum: 100 }
   validates :body, length: { maximum: FemboyFans.config.wiki_page_max_size }
   validate :validate_name_not_restricted, on: :create
   validate :user_not_limited
   validate :validate_rename
+  validate :validate_redirect
   validate :validate_not_locked
 
   after_save :log_save
+  after_save :update_help_page, if: :saved_change_to_title?
 
   attr_accessor :skip_post_count_rename_check, :edit_reason, :parent_name, :parent_anchor
 
   belongs_to_creator
   belongs_to_updater
+  has_one :help_page
   has_one :tag, foreign_key: "name", primary_key: "title"
   has_one :artist, foreign_key: "name", primary_key: "title"
-  has_one :help_page, foreign_key: "wiki_page", primary_key: "title"
   has_many :versions, -> { order("wiki_page_versions.id ASC") }, class_name: "WikiPageVersion", dependent: :destroy
-
-  def validate_not_used_as_help_page
-    if help_page.present?
-      errors.add(:wiki_page, "is used by a help page")
-      throw(:abort)
-    end
-  end
 
   module LogMethods
     def log_save
@@ -82,9 +77,9 @@ class WikiPage < ApplicationRecord
 
       q = q.attribute_matches(:body, params[:body_matches])
       q = q.attribute_matches(:title, params[:title_matches])
-
       q = q.where_user(:creator_id, :creator, params)
-
+      q = q.attribute_matches(:is_locked, params[:is_locked])
+      q = q.attribute_matches(:parent, params[:parent].try(:tr, " ", "_"))
       q = q.attribute_matches(:is_locked, params[:is_locked])
 
       case params[:order]
@@ -106,7 +101,21 @@ class WikiPage < ApplicationRecord
     end
   end
 
+  module HelpPageMethods
+    def validate_not_used_as_help_page
+      if help_page.present?
+        errors.add(:wiki_page, "is used by a help page")
+        throw(:abort)
+      end
+    end
+
+    def update_help_page
+      HelpPage.find_by(wiki_page: title_before_last_save)&.update(wiki_page: title)
+    end
+  end
+
   include ApiMethods
+  include HelpPageMethods
   include LogMethods
   extend SearchMethods
 
@@ -127,7 +136,12 @@ class WikiPage < ApplicationRecord
   end
 
   def validate_rename
-    return if !will_save_change_to_title? || skip_post_count_rename_check
+    return unless will_save_change_to_title?
+    if !CurrentUser.user.is_admin? && help_page.present?
+      errors.add(:title, "is used as a help page and cannot be changed")
+      return
+    end
+    return if skip_post_count_rename_check
 
     tag_was = Tag.find_by(name: Tag.normalize_name(title_was))
     if tag_was.present? && tag_was.post_count > 0
@@ -152,6 +166,18 @@ class WikiPage < ApplicationRecord
     end
   end
 
+  def validate_redirect
+    return unless will_save_change_to_parent? && parent.present?
+    if WikiPage.find_by(title: parent).blank?
+      errors.add(:parent, "does not exist")
+      return
+    end
+
+    if HelpPage.find_by(wiki_page: title).present?
+      errors.add(:title, "is used as a help page and cannot be redirected")
+    end
+  end
+
   def revert_to(version)
     if id != version.wiki_page_id
       raise(RevertError, "You cannot revert to a previous version of another wiki page.")
@@ -159,6 +185,7 @@ class WikiPage < ApplicationRecord
 
     self.title = version.title
     self.body = version.body
+    self.parent = version.parent
     self.parent = version.parent
   end
 

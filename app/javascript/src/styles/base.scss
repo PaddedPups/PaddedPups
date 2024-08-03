@@ -1,4 +1,5 @@
 @import "base/functions.scss";
+@import "base/palette";
 @import "base/themable.scss"; //Drags in themes automatically
 @import "base/colors.scss";
 @import "base/vars.scss";
@@ -8,6 +9,7 @@
 @import "base/fontawesome.scss";
 
 @import "common/helper_classes.scss";
+@import "common/helper_palette.scss";
 @import "common/autocomplete.scss";
 @import "common/blacklists.scss";
 @import "common/containers.scss";

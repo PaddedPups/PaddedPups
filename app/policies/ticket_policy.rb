@@ -6,7 +6,7 @@ class TicketPolicy < ApplicationPolicy
   end
 
   def show?
-    unbanned? && (!record.is_a?(Ticket) || record.can_see_details?(user))
+    unbanned? && (!record.is_a?(Ticket) || record.can_view?(user))
   end
 
   def create?

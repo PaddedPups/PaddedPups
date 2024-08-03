@@ -1598,37 +1598,41 @@ class Post < ApplicationRecord
       list
     end
 
-    def minimal_attributes
-      preview_dims = preview_dimensions
-      hash = {
-        created_ago:    "#{Class.new.extend(ActionView::Helpers::DateHelper).time_ago_in_words(created_at)} ago",
-        created_at:     created_at.iso8601,
-        down_score:     down_score,
-        file_ext:       file_ext,
-        file_size:      file_size,
-        flags:          status_flags,
-        height:         image_height,
-        id:             id,
-        preview_height: preview_dims[0],
-        preview_width:  preview_dims[1],
-        rating:         rating,
-        score:          score,
-        status:         status,
-        tags:           tag_string,
-        up_score:       up_score,
-        uploader:       uploader_name,
-        uploader_id:    uploader_id,
-        width:          image_width,
+    def thumbnail_attributes
+      attributes = {
+        id:           id,
+        flags:        status_flags,
+        tags:         tag_string,
+        rating:       rating,
+        file_ext:     file_ext,
+
+        width:        image_width,
+        height:       image_height,
+        size:         file_size,
+
+        created_at:   created_at,
+        uploader:     uploader_name,
+        uploader_id:  uploader_id,
+
+        score:        score,
+        fav_count:    fav_count,
+        is_favorited: favorited_by?(CurrentUser.user.id),
+        own_vote:     own_vote,
+
+        pools:        pool_ids,
       }
 
       if visible?
-        hash[:md5] = md5
-        hash[:preview_file_url] = preview_file_url
-        hash[:large_file_url] = large_file_url
-        hash[:cropped_file_url] = crop_file_url
-        hash[:file_url] = file_url
+        attributes[:md5] = md5
+        attributes[:preview_url] = preview_file_url
+        attributes[:large_url] = large_file_url
+        attributes[:file_url] = file_url
+        attributes[:cropped_url] = crop_file_url
+        attributes[:preview_width] = preview_dimensions[1]
+        attributes[:preview_height] = preview_dimensions[0]
       end
-      hash
+
+      attributes
     end
 
     def alternate_samples

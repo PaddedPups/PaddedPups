@@ -6,7 +6,6 @@ class ArtistVersion < ApplicationRecord
 
   belongs_to_updater counter_cache: "artist_update_count"
   belongs_to :artist
-  delegate :visible?, to: :artist
 
   module SearchMethods
     def for_user(user_id)

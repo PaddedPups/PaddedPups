@@ -42,6 +42,7 @@ class Ticket < ApplicationRecord
   # |     Tag    |         Any         |  Janitor+ / Creator  |
   # |    User    |         Any         |  *Janitor+ / Creator |
   # |  Wiki Page |         Any         |  Janitor+ / Creator  |
+  # |    Other   |         None        | Moderator+ / Creator |
   #
   # * Janitor+ can see details if the creator is Janitor+ or the ticket is a commendation, else Moderator+
   module TicketTypes
@@ -50,7 +51,7 @@ class Ticket < ApplicationRecord
         true
       end
 
-      def can_see_details?(user)
+      def can_view?(user)
         user.is_janitor? || user.id == creator_id
       end
 
@@ -64,7 +65,7 @@ class Ticket < ApplicationRecord
         model&.visible_to?(user)
       end
 
-      def can_see_details?(user)
+      def can_view?(user)
         user.is_moderator? || (user.id == creator_id)
       end
     end
@@ -74,7 +75,7 @@ class Ticket < ApplicationRecord
         model&.visible_to?(user) && model.to_id == user.id
       end
 
-      def can_see_details?(user)
+      def can_view?(user)
         user.is_moderator? || (user.id == creator_id)
       end
 
@@ -88,7 +89,7 @@ class Ticket < ApplicationRecord
         model.visible?(user)
       end
 
-      def can_see_details?(user)
+      def can_view?(user)
         user.is_moderator? || (user.id == creator_id)
       end
     end
@@ -98,7 +99,7 @@ class Ticket < ApplicationRecord
         true
       end
 
-      def can_see_details?(user)
+      def can_view?(user)
         user.is_janitor? || user.id == creator_id
       end
 
@@ -116,7 +117,7 @@ class Ticket < ApplicationRecord
         true
       end
 
-      def can_see_details?(user)
+      def can_view?(user)
         user.is_janitor? || user.id == creator_id
       end
 
@@ -130,7 +131,7 @@ class Ticket < ApplicationRecord
         model&.can_view?(user)
       end
 
-      def can_see_details?(user)
+      def can_view?(user)
         user.is_moderator? || user.id == creator_id
       end
 
@@ -144,7 +145,7 @@ class Ticket < ApplicationRecord
         true
       end
 
-      def can_see_details?(user)
+      def can_view?(user)
         user.is_janitor? || (user.id == creator_id)
       end
 
@@ -158,7 +159,7 @@ class Ticket < ApplicationRecord
         true
       end
 
-      def can_see_details?(user)
+      def can_view?(user)
         user.is_moderator? || user.id == creator_id || (user.is_janitor? && (report_type == "commendation" || creator.is_janitor?))
       end
 
@@ -172,7 +173,7 @@ class Ticket < ApplicationRecord
         true
       end
 
-      def can_see_details?(user)
+      def can_view?(user)
         user.is_janitor? || (user.id == creator_id)
       end
 
@@ -187,7 +188,6 @@ class Ticket < ApplicationRecord
       hidden = []
       hidden += %i[claimant_id] unless CurrentUser.is_moderator?
       hidden += %i[creator_id] unless can_see_reporter?(CurrentUser)
-      hidden += %i[model_type model_id reason] unless can_see_details?(CurrentUser)
       super + hidden
     end
   end
@@ -238,6 +238,16 @@ class Ticket < ApplicationRecord
 
     def active
       where(status: %w[pending partial])
+    end
+
+    def visible(user)
+      if user.is_moderator?
+        all
+      elsif user.is_janitor?
+        for_creator(user.id).or(where.not(qtype: %w[Dmail User]))
+      else
+        for_creator(user.id)
+      end
     end
 
     def search(params)
@@ -313,8 +323,8 @@ class Ticket < ApplicationRecord
     end
   end
 
-  def can_see_details?(_user)
-    true
+  def can_view?(_user)
+    user.is_moderator?
   end
 
   def can_see_reporter?(user)

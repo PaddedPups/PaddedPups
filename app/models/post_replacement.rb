@@ -348,6 +348,10 @@ class PostReplacement < ApplicationRecord
     user.is_janitor?
   end
 
+  def upload_as_pending?
+    as_pending.to_s.truthy?
+  end
+
   include ApiMethods
   include StorageMethods
   include FileMethods

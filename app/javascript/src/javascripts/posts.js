@@ -1,12 +1,12 @@
 import Utility from "./utility";
 import ZingTouch from "zingtouch";
-import LS from "./local_storage";
 import Note from "./notes";
 import { SendQueue } from "./send_queue";
 import Shortcuts from "./shortcuts";
+import LStorage from "./utility/storage";
 import PostSet from "./post_sets";
-import Favorite from "./favorites";
 import Blacklist from "./blacklists";
+import Favorite from "./favorites";
 
 let Post = {};
 
@@ -344,9 +344,7 @@ class E6Swipe extends ZingTouch.Swipe {
 }
 
 Post.initialize_gestures = function () {
-  if (LS.get("emg") !== "true") {
-    return;
-  }
+  if (!LStorage.Posts.Gestures) return;
   if (!(("ontouchstart" in window) || (navigator.maxTouchPoints > 0)))
     return;
   // Need activeElement to make sure that this doesn't go off during input.
@@ -508,15 +506,11 @@ Post.initialize_post_relationship_previews = function () {
   };
 
   const flip_saved = function () {
-    if (LS.get("show-relationship-previews") === "1")
-      LS.put("show-relationship-previews", "0");
-    else
-      LS.put("show-relationship-previews", "1");
+    LStorage.Posts.ShowPostChildren = !LStorage.Posts.ShowPostChildren;
   };
 
-  if (LS.get("show-relationship-previews") === "1") {
+  if (LStorage.Posts.ShowPostChildren)
     toggle();
-  }
 
   $("#has-children-relationship-preview-link").on("click.danbooru", function (e) {
     toggle();
@@ -839,9 +833,12 @@ Post.update = function (post_id, params) {
         Post.notice_update("dec");
         Post.update_data(data);
       },
-      error: function () {
+      error: function (data) {
         Post.notice_update("dec");
-        $(window).trigger("danbooru:error", "There was an error updating <a href=\"/posts/" + post_id + "\">post #" + post_id + "</a>");
+        const message = $
+          .map(data.responseJSON.errors, function (msg) { return msg; })
+          .join("; ");
+        $(window).trigger("danbooru:error", `There was an error updating <a href="/posts/${post_id}">post #${post_id}</a>: ${message}`);
       },
     });
   });
@@ -1158,10 +1155,11 @@ Post.initialize_hide_notes = function () {
     });
   $("#translate")
     .on("click", async () => {
+
       if (container.attr("data-hidden") === "true") {
         Post.toggle_hide_notes(false);
       } else {
-        const isHidden = LS.get("hide-notes") === "1";
+        const isHidden = LStorage.HideNotes;
         if (isHidden) {
           Post.toggle_hide_notes(false, true);
         }
@@ -1172,7 +1170,7 @@ Post.initialize_hide_notes = function () {
 };
 
 Post.toggle_hide_notes = function (save = true, init = false) {
-  let isHidden = LS.get("hide-notes") === "1";
+  let isHidden = LStorage.HideNotes;
   if (init) {
     isHidden = !isHidden;
     save = false;
@@ -1183,11 +1181,11 @@ Post.toggle_hide_notes = function (save = true, init = false) {
   if (isHidden) {
     container.attr("data-hidden", false);
     button.text("Notes: ON");
-    if (save) LS.put("hide-notes", "0");
+    if (save) LStorage.HideNotes = false;
   } else {
     container.attr("data-hidden", true);
     button.text("Notes: OFF");
-    if (save) LS.put("hide-notes", "1");
+    if (save) LStorage.HideNotes = true;
   }
 };
 

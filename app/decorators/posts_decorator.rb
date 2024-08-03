@@ -24,36 +24,7 @@ class PostsDecorator < ApplicationDecorator
   end
 
   def data_attributes
-    attributes = {
-      "data-id":           post.id,
-      "data-has-sound":    post.has_tag?("sound"),
-      "data-tags":         post.tag_string,
-      "data-rating":       post.rating,
-      "data-flags":        post.status_flags,
-      "data-uploader-id":  post.uploader_id,
-      "data-uploader":     post.uploader_name,
-      "data-file-ext":     post.file_ext,
-      "data-file-size":    post.file_size,
-      "data-score":        post.score,
-      "data-score-up":     post.up_score,
-      "data-score-down":   post.down_score,
-      "data-fav-count":    post.fav_count,
-      "data-is-favorited": post.favorited_by?(CurrentUser.user.id),
-      "data-own-vote":     post.own_vote,
-      "data-created-at":   post.created_at.iso8601,
-      "data-created-ago":  "#{Class.new.extend(ActionView::Helpers::DateHelper).time_ago_in_words(post.created_at)} ago",
-      "data-width":        post.image_width,
-      "data-height":       post.image_height,
-    }
-
-    if post.visible?
-      attributes["data-md5"] = post.md5
-      attributes["data-file-url"] = post.file_url
-      attributes["data-large-file-url"] = post.large_file_url
-      attributes["data-preview-file-url"] = post.preview_file_url
-    end
-
-    attributes
+    { data: object.thumbnail_attributes }
   end
 
   def cropped_url(options)
