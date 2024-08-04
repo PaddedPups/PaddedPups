@@ -512,8 +512,8 @@ module FemboyFans
         },
         {
           name:   "dnp_artist",
-          reason: "The artist of this post is on the \"avoid posting list\":/help/avoid_posting",
-          text:   "Certain artists have requested that their work is not to be published on this site, and were granted \"Do Not Post\":/help/avoid_posting status.\nSometimes, that status comes with conditions rather than a blanket ban.",
+          reason: "The artist of this post is on the \"avoid posting list\":/avoid_postings",
+          text:   "Certain artists have requested that their work is not to be published on this site, and were granted [[avoid_posting|Do Not Post]] status.\nSometimes, that status comes with conditions; see [[conditional_dnp]] for more information",
         },
         {
           name:   "pay_content",

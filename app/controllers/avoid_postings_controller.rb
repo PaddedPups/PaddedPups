@@ -2,8 +2,8 @@
 
 class AvoidPostingsController < ApplicationController
   respond_to :html, :json
-  before_action :can_edit_avoid_posting_entries_only, except: %i[index show]
   before_action :load_avoid_posting, except: %i[index new create]
+  helper_method :search_params
 
   def index
     @avoid_postings = authorize(AvoidPosting).search(search_params(AvoidPosting)).paginate(params[:page], limit: params[:limit])
@@ -25,32 +25,59 @@ class AvoidPostingsController < ApplicationController
   end
 
   def create
-    @avoid_posting = authorize(AvoidPosting.new(permitted_attributes(AvoidPosting)))
+    pparams = permitted_attributes(AvoidPosting)
+    @avoid_posting = authorize(AvoidPosting).new(pparams)
+    artparams = pparams.try(:[], :artist_attributes)
+    if artparams.present? && (artist = Artist.find_by(name: Artist.normalize_name(artparams[:name])))
+      @avoid_posting.artist = artist
+      notices = []
+      if artist.other_names.present? && (artparams.key?(:other_names_string) || artparams.key?(:other_names))
+        on = artparams[:other_names_string].try(:split) || artparams[:other_names]
+        artparams.delete(:other_names_string)
+        artparams.delete(:other_names)
+        if on.present?
+          artparams[:other_names] = (artist.other_names + on).uniq
+          notices << "Artist already had other names, the provided names were merged into the existing names."
+        end
+      end
+      if artist.linked_user_id.present? && artparams.key?(:linked_user_id)
+        if artparams[:linked_user_id].present?
+          notices << "Artist is already linked to \"#{artist.linked_user.name}\":/users/#{artist.linked_user_id}, no change was made."
+        end
+        artparams.delete(:linked_user_id)
+      end
+      notices = notices.join("\n")
+      # Remove period from last notice
+      flash[:notice] = notices[0..-2] if notices.present?
+      artist.update(artparams)
+    end
     @avoid_posting.save
     respond_with(@avoid_posting)
   end
 
   def update
     authorize(@avoid_posting).update(permitted_attributes(AvoidPosting))
-    notice(@avoid_posting.valid? ? "Avoid posting updated" : @avoid_posting.errors.full_messages.join("; "))
+    notice(@avoid_posting.valid? ? "Avoid posting entry updated" : @avoid_posting.errors.full_messages.join("; "))
     respond_with(@avoid_posting)
   end
 
   def destroy
     authorize(@avoid_posting).destroy
-    notice("Avoid posting destroyed")
-    respond_with(@avoid_posting)
+    notice("Avoid posting entry destroyed")
+    respond_with(@avoid_posting) do |format|
+      format.html { redirect_to(artist_path(@avoid_posting.artist)) }
+    end
   end
 
-  def deactivate
+  def delete
     authorize(@avoid_posting).update(is_active: false)
-    notice("Avoid posting deactivated")
+    notice("Avoid posting entry deleted")
     respond_with(@avoid_posting)
   end
 
-  def reactivate
+  def undelete
     authorize(@avoid_posting).update(is_active: true)
-    notice("Avoid posting reactivated")
+    notice("Avoid posting entry undeleted")
     respond_with(@avoid_posting)
   end
 

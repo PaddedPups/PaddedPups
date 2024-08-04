@@ -87,24 +87,6 @@ class ArtistsControllerTest < ActionDispatch::IntegrationTest
         assert_redirected_to(artist_path(artist.id))
       end
 
-      should "work even if artist is dnp" do
-        attributes = attributes_for(:artist)
-        assert_difference("AvoidPosting.count", 1) do
-          as(create(:owner_user)) do
-            create(:avoid_posting, artist_name: attributes[:name])
-          end
-        end
-
-        assert_difference("Artist.count", 1) do
-          attributes.delete(:is_active)
-          post_auth artists_path, @user, params: { artist: attributes }
-        end
-
-        artist = Artist.find_by(name: attributes[:name])
-        assert_not_nil(artist)
-        assert_redirected_to(artist_path(artist.id))
-      end
-
       should "return expected errors" do
         post_auth artists_path, @user, params: { artist: { name: @artist.name }, format: "json" }
         assert_error_response("name", "has already been taken")
@@ -210,46 +192,21 @@ class ArtistsControllerTest < ActionDispatch::IntegrationTest
       setup do
         @owner_user      = create(:owner_user)
         CurrentUser.user = @owner_user
-        @avoid_posting = create(:avoid_posting, artist_name: @artist.name)
+        @avoid_posting = create(:avoid_posting, artist: @artist)
       end
 
-      should "rename the dnp entry" do
-        put_auth artist_path(@artist), @owner_user, params: { artist: { name: "another_artist", rename_dnp: true } }
-
-        assert_redirected_to(artist_path(@artist))
-        assert_same_elements(%w[artist_rename wiki_page_rename avoid_posting_update], ModAction.last(3).map(&:action))
-        assert_equal("another_artist", @artist.reload.name)
-        assert_equal("another_artist", @artist.wiki_page.reload.title)
-        assert_equal("another_artist", @avoid_posting.reload.artist_name)
-      end
-
-      should "not rename dnp if new name already exists" do
-        name = @avoid_posting.artist_name
-        new_dnp = create(:avoid_posting)
-        put_auth artist_path(@artist), @owner_user, params: { artist: { name: new_dnp.artist_name, rename_dnp: true } }
-
-        assert_equal(name, @artist.reload.name)
-        assert_equal(name, @artist.wiki_page.reload.title)
-        assert_equal(name, @avoid_posting.reload.artist_name)
-      end
-
-      should "not rename dnp if rename_dnp=false" do
-        name = @avoid_posting.artist_name
-        assert_difference("ModAction.count", 2) do
-          put_auth artist_path(@artist), @owner_user, params: { artist: { name: "another_artist", rename_dnp: false } }
+      should "not allow destroying" do
+        assert_no_difference("Artist.count") do
+          delete_auth artist_path(@artist), @owner_user
         end
-
-        assert_same_elements(%w[artist_rename wiki_page_rename], ModAction.last(2).map(&:action))
-        assert_equal("another_artist", @artist.reload.name)
-        assert_equal("another_artist", @artist.wiki_page.reload.title)
-        assert_equal(name, @avoid_posting.reload.artist_name)
       end
 
-      should "not allow deleting" do
-        @janitor = create(:admin_user)
-        delete_auth artist_path(@artist), @janitor
-
-        assert_nothing_raised { @artist.reload }
+      # technical restriction
+      should "not allow destroying even if the dnp is inactive" do
+        @avoid_posting.update(is_active: false)
+        assert_no_difference("Artist.count") do
+          delete_auth artist_path(@artist), @owner_user
+        end
       end
 
       should "not allow editing protected properties" do
@@ -257,7 +214,7 @@ class ArtistsControllerTest < ActionDispatch::IntegrationTest
         name = @artist.name
         other_names = @artist.other_names
         assert_no_difference("ModAction.count") do
-          put_auth artist_path(@artist), @janitor, params: { artist: { name: "another_name", other_names: "some other names", is_active: false } }
+          put_auth artist_path(@artist), @janitor, params: { artist: { name: "another_name", other_names: "some other names" } }
         end
 
         @artist.reload

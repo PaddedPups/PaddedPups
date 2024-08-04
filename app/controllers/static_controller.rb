@@ -23,6 +23,10 @@ class StaticController < ApplicationController
     @page = view_context.safe_wiki("help:staff")
   end
 
+  def avoid_posting
+    @page = view_context.safe_wiki("help:avoid_posting_notice")
+  end
+
   def not_found
     render("static/404", formats: [:html], status: 404)
   end
@@ -79,5 +83,13 @@ class StaticController < ApplicationController
     render(json: route)
   rescue ActionController::RoutingError
     render_expected_error(400, "Invalid url: #{method} #{params[:url]}", format: :json)
+  end
+
+  private
+
+  def format_wiki_page(name)
+    wiki = WikiPage.find_by(title: name)
+    return WikiPage.new(body: "Wiki page \"#{name}\" not found.") if wiki.blank?
+    wiki
   end
 end

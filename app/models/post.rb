@@ -2086,7 +2086,7 @@ class Post < ApplicationRecord
   end
 
   def avoid_posting_artists
-    AvoidPosting.active.where(artist_name: artist_tags.map(&:name))
+    AvoidPosting.active.joins(:artist).where("artists.name": artist_tags.map(&:name))
   end
 
   def followed_tags(user)

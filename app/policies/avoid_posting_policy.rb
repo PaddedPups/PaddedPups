@@ -13,24 +13,20 @@ class AvoidPostingPolicy < ApplicationPolicy
     user.can_edit_avoid_posting_entries?
   end
 
-  def deactivate?
+  def delete?
     user.can_edit_avoid_posting_entries?
   end
 
-  def reactivate?
+  def undelete?
     user.can_edit_avoid_posting_entries?
   end
 
   def permitted_attributes
-    %i[artist_name details staff_notes is_active]
-  end
-
-  def permitted_attributes_for_update
-    super + %i[rename_artist]
+    %i[details staff_notes is_active] + [artist_attributes: [:id, :name, :other_names_string, :linked_user_id, { other_names: [] }]]
   end
 
   def permitted_search_params
-    params = super + %i[creator_name creator_id any_name_matches artist_name artist_id any_other_name_matches details is_active order]
+    params = super + %i[creator_name creator_id any_name_matches artist_id artist_name any_other_name_matches details is_active]
     params += %i[staff_notes] if user.is_staff?
     params += %i[ip_addr] if can_search_ip_addr?
     params

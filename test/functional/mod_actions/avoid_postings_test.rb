@@ -25,19 +25,8 @@ module ModActions
         )
       end
 
-      should "parse avoid_posting_deactivate correctly" do
-        @avoid_posting.update(is_active: false)
-
-        assert_matches(
-          actions:     %w[avoid_posting_deactivate],
-          text:        "Deactivated avoid posting for artist \"#{@avoid_posting.artist_name}\":#{show_or_new_artists_path(name: @avoid_posting.artist_name)}",
-          subject:     @avoid_posting,
-          artist_name: @avoid_posting.artist_name,
-        )
-      end
-
       should "parse avoid_posting_delete correctly" do
-        @avoid_posting.destroy
+        @avoid_posting.update(is_active: false)
 
         assert_matches(
           actions:     %w[avoid_posting_delete],
@@ -47,13 +36,24 @@ module ModActions
         )
       end
 
-      should "parse avoid_posting_reactivate correctly" do
+      should "parse avoid_posting_destroy correctly" do
+        @avoid_posting.destroy
+
+        assert_matches(
+          actions:     %w[avoid_posting_destroy],
+          text:        "Destroyed avoid posting for artist \"#{@avoid_posting.artist_name}\":#{show_or_new_artists_path(name: @avoid_posting.artist_name)}",
+          subject:     @avoid_posting,
+          artist_name: @avoid_posting.artist_name,
+        )
+      end
+
+      should "parse avoid_posting_undelete correctly" do
         @avoid_posting.update_columns(is_active: false)
         @avoid_posting.update(is_active: true)
 
         assert_matches(
-          actions:     %w[avoid_posting_reactivate],
-          text:        "Reactivated avoid posting for artist \"#{@avoid_posting.artist_name}\":#{show_or_new_artists_path(name: @avoid_posting.artist_name)}",
+          actions:     %w[avoid_posting_undelete],
+          text:        "Undeleted avoid posting for artist \"#{@avoid_posting.artist_name}\":#{show_or_new_artists_path(name: @avoid_posting.artist_name)}",
           subject:     @avoid_posting,
           artist_name: @avoid_posting.artist_name,
         )

@@ -72,8 +72,8 @@ Rails.application.routes.draw do
       resources :versions, only: %i[index], controller: "avoid_postings/versions", as: "avoid_posting_versions"
     end
     member do
-      put :deactivate
-      put :reactivate
+      put :delete
+      put :undelete
     end
   end
 
@@ -431,6 +431,7 @@ Rails.application.routes.draw do
   get "/static/toggle_mobile_mode", to: "static#toggle_mobile_mode", as: "toggle_mobile_mode"
   get "/static/theme", to: "static#theme", as: "theme"
   get "/static/staff", to: "static#staff", as: "staff"
+  get "/static/avoid_posting", to: "static#avoid_posting", as: "avoid_posting_static"
   get "/robots", to: "static#robots", as: "robots"
   get "/route", to: "static#recognize_route", as: "recognize_route"
   root to: "static#home"

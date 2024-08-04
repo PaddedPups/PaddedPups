@@ -3,27 +3,24 @@
 class Artist < ApplicationRecord
   class RevertError < StandardError; end
 
-  attr_accessor :url_string_changed, :rename_dnp
+  attr_accessor :url_string_changed
 
   array_attribute :other_names
 
   belongs_to_creator
-  before_validation :normalize_name
-  before_validation :normalize_other_names
-  before_validation :validate_protected_properties_not_changed
-  before_validation :validate_dnp_rename_not_conflicting, if: :will_save_change_to_name?
+  before_validation :normalize_name, unless: :destroyed?
+  before_validation :normalize_other_names, unless: :destroyed?
+  before_validation :validate_protected_properties_not_changed, if: :dnp_restricted?
   validate :validate_user_can_edit
   validate :wiki_page_not_locked
   validate :user_not_limited
   validates :name, tag_name: true, uniqueness: true, if: :name_changed?
   validates :name, length: { maximum: 100 }
-  before_destroy :validate_not_dnp_restricted
   before_destroy :log_destroy
   after_save :log_changes
   after_save :create_version
   after_save :categorize_tag
   after_save :update_wiki
-  after_save :update_dnp, if: :saved_change_to_name?
   after_save :propagate_locked, if: :should_propagate_locked
   after_save :clear_url_string_changed
   after_save :update_posts_index, if: :saved_change_to_linked_user_id?
@@ -33,7 +30,8 @@ class Artist < ApplicationRecord
   has_one :wiki_page, foreign_key: "title", primary_key: "name"
   has_one :tag_alias, foreign_key: "antecedent_name", primary_key: "name"
   has_one :tag, foreign_key: "name", primary_key: "name"
-  has_one :avoid_posting, -> { active }, foreign_key: "artist_name", primary_key: "name"
+  has_one :avoid_posting, -> { active }
+  has_one :inactive_dnp, -> { deleted }, class_name: "AvoidPosting"
   belongs_to :linked_user, class_name: "User", optional: true
   attribute :notes, :string
 
@@ -411,6 +409,10 @@ class Artist < ApplicationRecord
   end
 
   module SearchMethods
+    def named(name)
+      find_by(name: normalize_name(name))
+    end
+
     def any_other_name_matches(regex)
       where(id: Artist.from("unnest(other_names) AS other_name").where("other_name ~ ?", regex))
     end
@@ -491,45 +493,21 @@ class Artist < ApplicationRecord
 
   module AvoidPostingMethods
     def validate_protected_properties_not_changed
-      return if CurrentUser.can_edit_avoid_posting_entries?
-      dnp = will_save_change_to_name? ? AvoidPosting.for_artist(name_was) : AvoidPosting.for_artist(name)
-      return if dnp.blank?
-
       errors.add(:name, "cannot be changed while the artist is on the avoid posting list") if will_save_change_to_name?
       errors.add(:other_names, "cannot be changed while the artist is on the avoid posting list") if will_save_change_to_other_names?
       throw(:abort) if errors.any?
-    end
-
-    def validate_not_dnp_restricted
-      if dnp_restricted?
-        errors.add(:base, "Artist is on the avoid posting list and cannot be deleted")
-        throw(:abort)
-      end
     end
 
     def is_dnp?
       avoid_posting.present?
     end
 
+    def has_any_dnp?
+      is_dnp? || inactive_dnp.present?
+    end
+
     def dnp_restricted?
       is_dnp? && !CurrentUser.can_edit_avoid_posting_entries?
-    end
-
-    def validate_dnp_rename_not_conflicting
-      return unless CurrentUser.can_edit_avoid_posting_entries? && rename_dnp.to_s.truthy?
-      return unless AvoidPosting.exists?(artist_name: name_was)
-      if AvoidPosting.exists?(artist_name: name)
-        errors.add(:base, "Cannot rename artist and dnp, a conflicting dnp entry already exists")
-        throw(:abort)
-      end
-    end
-
-    def update_dnp
-      return unless CurrentUser.can_edit_avoid_posting_entries? && rename_dnp.to_s.truthy?
-      dnp = AvoidPosting.where(artist_name: name_before_last_save)
-      return if dnp.blank?
-      return if AvoidPosting.exists?(artist_name: name)
-      dnp.update(artist_name: name)
     end
   end
 
@@ -543,8 +521,10 @@ class Artist < ApplicationRecord
   include LockMethods
   extend SearchMethods
 
+  # due to technical limitations (foreign keys), artists with any
+  # dnp entry (active or inactive) cannot be deleted
   def deletable_by?(user)
-    !dnp_restricted? && user.is_admin?
+    !has_any_dnp? && user.is_admin?
   end
 
   def editable_by?(user)

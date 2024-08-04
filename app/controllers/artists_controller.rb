@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ArtistsController < ApplicationController
-  before_action :load_artist, only: %i[edit update destroy]
+  before_action :load_artist, only: %i[edit update destroy revert]
   respond_to :html, :json
 
   def index
@@ -26,7 +26,7 @@ class ArtistsController < ApplicationController
     if params[:id] =~ /\A\d+\z/
       @artist = Artist.find(params[:id])
     else
-      @artist = Artist.find_by(name: Artist.normalize_name(params[:id]))
+      @artist = Artist.named(name: params[:id])
       unless @artist
         respond_to do |format|
           format.html do
@@ -76,18 +76,18 @@ class ArtistsController < ApplicationController
   end
 
   def revert
-    @artist = authorize(Artist.find(params[:id]))
+    authorize(@artist)
     @version = @artist.versions.find(params[:version_id])
     @artist.revert_to!(@version)
     respond_with(@artist)
   end
 
   def show_or_new
-    @artist = authorize(Artist).find_by(name: params[:name])
+    @artist = authorize(Artist).named(params[:name])
     if @artist
       redirect_to(artist_path(@artist))
     else
-      @artist = Artist.new(name: params[:name] || "")
+      @artist = Artist.new(name: Artist.normalize_name(params[:name] || ""))
       @post_set = PostSets::Post.new(@artist.name, 1, limit: 10)
       respond_with(@artist)
     end
@@ -99,7 +99,8 @@ class ArtistsController < ApplicationController
     if params[:id] =~ /\A\d+\z/
       @artist = Artist.find(params[:id])
     else
-      @artist = Artist.find_by!(name: Artist.normalize_name(params[:id]))
+      @artist = Artist.named(name: params[:id])
+      raise(ActiveRecord::RecordNotFound) if @artist.blank?
     end
   end
 end

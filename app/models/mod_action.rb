@@ -563,16 +563,16 @@ class ModAction < ApplicationRecord
       text: ->(mod, _user) { "Created avoid posting for artist \"#{mod.artist_name}\":#{url.show_or_new_artists_path(name: mod.artist_name)}" },
       json: %i[artist_name],
     },
-    avoid_posting_deactivate:                   {
-      text: ->(mod, _user) { "Deactivated avoid posting for artist \"#{mod.artist_name}\":#{url.show_or_new_artists_path(name: mod.artist_name)}" },
-      json: %i[artist_name],
-    },
     avoid_posting_delete:                       {
       text: ->(mod, _user) { "Deleted avoid posting for artist \"#{mod.artist_name}\":#{url.show_or_new_artists_path(name: mod.artist_name)}" },
       json: %i[artist_name],
     },
-    avoid_posting_reactivate:                   {
-      text: ->(mod, _user) { "Reactivated avoid posting for artist \"#{mod.artist_name}\":#{url.show_or_new_artists_path(name: mod.artist_name)}" },
+    avoid_posting_destroy:                      {
+      text: ->(mod, _user) { "Destroyed avoid posting for artist \"#{mod.artist_name}\":#{url.show_or_new_artists_path(name: mod.artist_name)}" },
+      json: %i[artist_name],
+    },
+    avoid_posting_undelete:                     {
+      text: ->(mod, _user) { "Undeleted avoid posting for artist \"#{mod.artist_name}\":#{url.show_or_new_artists_path(name: mod.artist_name)}" },
       json: %i[artist_name],
     },
     avoid_posting_update:                       {

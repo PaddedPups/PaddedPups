@@ -212,7 +212,6 @@ CREATE TABLE public.avoid_posting_versions (
     id bigint NOT NULL,
     updater_id bigint NOT NULL,
     avoid_posting_id bigint NOT NULL,
-    artist_name character varying NOT NULL,
     updater_ip_addr inet NOT NULL,
     details character varying DEFAULT ''::character varying NOT NULL,
     staff_notes character varying DEFAULT ''::character varying NOT NULL,
@@ -248,14 +247,14 @@ CREATE TABLE public.avoid_postings (
     id bigint NOT NULL,
     creator_id bigint NOT NULL,
     updater_id bigint NOT NULL,
-    artist_name character varying NOT NULL,
     creator_ip_addr inet NOT NULL,
     updater_ip_addr inet NOT NULL,
     details character varying DEFAULT ''::character varying NOT NULL,
     staff_notes character varying DEFAULT ''::character varying NOT NULL,
     is_active boolean DEFAULT true NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    artist_id bigint NOT NULL
 );
 
 
@@ -3856,10 +3855,10 @@ CREATE INDEX index_avoid_posting_versions_on_updater_id ON public.avoid_posting_
 
 
 --
--- Name: index_avoid_postings_on_artist_name; Type: INDEX; Schema: public; Owner: -
+-- Name: index_avoid_postings_on_artist_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX index_avoid_postings_on_artist_name ON public.avoid_postings USING btree (artist_name);
+CREATE INDEX index_avoid_postings_on_artist_id ON public.avoid_postings USING btree (artist_id);
 
 
 --
@@ -5128,6 +5127,14 @@ ALTER TABLE ONLY public.favorites
 
 
 --
+-- Name: avoid_postings fk_rails_b2ebf2bc30; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.avoid_postings
+    ADD CONSTRAINT fk_rails_b2ebf2bc30 FOREIGN KEY (artist_id) REFERENCES public.artists(id);
+
+
+--
 -- Name: staff_notes fk_rails_bab7e2d92a; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5198,6 +5205,7 @@ ALTER TABLE ONLY public.staff_notes
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20240804065554'),
 ('20240709134926'),
 ('20240706061122'),
 ('20240630084744'),

@@ -90,9 +90,9 @@ x-constants:
     - quick_rules_reorder
     - quick_rule_update
     - avoid_posting_create
-    - avoid_posting_deactivate
     - avoid_posting_delete
-    - avoid_posting_reactivate
+    - avoid_posting_destroy
+    - avoid_posting_undelete
     - avoid_posting_update
   - &modaction-classes
     - Artist
@@ -341,7 +341,7 @@ components:
         - id
         - creator_id
         - updater_id
-        - artist_name
+        - artist_id
         - details
         - is_active
         - created_at
@@ -353,8 +353,8 @@ components:
           type: number
         updater_id:
           type: number
-        artist_name:
-          type: string
+        artist_id:
+          type: number
         staff_notes:
           type: string
           description: Only visible to Janitor+
@@ -374,7 +374,7 @@ components:
         - id
         - updater_id
         - avoid_posting_id
-        - artist_name
+        - artist_id
         - details
         - is_active
         - updated_at
@@ -385,8 +385,8 @@ components:
           type: number
         avoid_posting_id:
           type: number
-        artist_name:
-          type: string
+        artist_id:
+          type: number
         details:
           type: string
         staff_notes:
@@ -1411,7 +1411,7 @@ components:
         artist_name:
           type: string
           description: |
-            Valid for: `avoid_posting_create`, `avoid_posting_deactivate`, `avoid_posting_delete`, `avoid_posting_reactivate`, `avoid_posting_update`
+            Valid for: `avoid_posting_create`, `avoid_posting_delete`, `avoid_posting_destroy`, `avoid_posting_undelete`, `avoid_posting_update`
         post_id:
           type: number
           description: |
@@ -3768,9 +3768,6 @@ paths:
                 is_locked:
                   type: boolean
                   description: Only usable for Janitor+
-                rename_dnp:
-                  type: boolean
-                  description: Only usable for Owner+
       responses:
         204:
           description: Success
@@ -4051,10 +4048,23 @@ paths:
             schema:
               type: object
               required:
-                - artist_name
+                - artist_attributes
               properties:
-                artist_name:
-                  type: string
+                artist_attributes:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    name:
+                      type: string
+                    other_names_string:
+                      type: string
+                    other_names:
+                      type: array
+                      items:
+                        type: string
+                    linked_user_id:
+                      type: ["number", "null"]
                 details:
                   type: string
                 staff_notes:
@@ -4113,15 +4123,24 @@ paths:
             schema:
               type: object
               properties:
-                artist_name:
-                  type: string
+                artist_attributes:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    other_names_string:
+                      type: string
+                    other_names:
+                      type: array
+                      items:
+                        type: string
+                    linked_user_id:
+                      type: ["number", "null"]
                 details:
                   type: string
                 staff_notes:
                   type: string
                 is_active:
-                  type: boolean
-                rename_artist:
                   type: boolean
       responses:
         200:
@@ -4137,6 +4156,28 @@ paths:
         422:
           $ref: "#/components/responses/ExpectedError"
     delete:
+      summary: Destroy Avoid Posting Entry
+      tags:
+        - Avoid Posting Entries
+      security:
+        - basicAuth: []
+      description: Must be Owner+.
+      parameters:
+        - name: idOrArtistName
+          in: path
+          required: true
+          description: The ID of the avoid posting entry, or the name of the artist.
+          schema:
+            type: string
+      responses:
+        204:
+          description: Success
+        403:
+          $ref: "#/components/responses/AccessDenied"
+        404:
+          $ref: "#/components/responses/NotFound"
+  /avoid_postings/{idOrArtistName}/delete.json:
+    put:
       summary: Delete Avoid Posting Entry
       tags:
         - Avoid Posting Entries
@@ -4157,31 +4198,9 @@ paths:
           $ref: "#/components/responses/AccessDenied"
         404:
           $ref: "#/components/responses/NotFound"
-  /avoid_postings/{idOrArtistName}/deactivate.json:
+  /avoid_postings/{idOrArtistName}/undelete.json:
     put:
-      summary: Deactivate Avoid Posting Entry
-      tags:
-        - Avoid Posting Entries
-      security:
-        - basicAuth: []
-      description: Must be Owner+.
-      parameters:
-        - name: idOrArtistName
-          in: path
-          required: true
-          description: The ID of the avoid posting entry, or the name of the artist.
-          schema:
-            type: string
-      responses:
-        204:
-          description: Success
-        403:
-          $ref: "#/components/responses/AccessDenied"
-        404:
-          $ref: "#/components/responses/NotFound"
-  /avoid_postings/{idOrArtistName}/reactivate.json:
-    put:
-      summary: Reactivate Avoid Posting Entry
+      summary: Undelete Avoid Posting Entry
       tags:
         - Avoid Posting Entries
       security:
