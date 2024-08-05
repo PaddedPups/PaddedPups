@@ -531,9 +531,9 @@ module FemboyFans
           text:   "Posts usually get removed for a good reason, and reuploading of deleted content is not acceptable.\nPlease, leave more information in the comments, or simply add the original post as this post's parent.",
         },
         {
-          name:   "real_porn",
-          reason: "Real-life pornography",
-          text:   "Posts featuring real-life pornography are not acceptable on this site.",
+          name:   "underage_human",
+          reason: "Underage Human or Human-like character",
+          text:   "Posts featuring underage [[human]]s or [[humanoid|human-like]] characters, whether real or fictional, are not acceptable under any circumstance.",
         },
         {
           name:   "corrupt",

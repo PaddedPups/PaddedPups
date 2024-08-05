@@ -38,8 +38,8 @@ cl<div align="center">
 4. Copy the sample environment file with `cp .env.sample .env`.
 5. Run the following commands:
     ```
-    docker compose run --rm --no-deps femboyfans /app/bin/presetup
-    docker compose run --rm -e SEED_POST_COUNT=100 femboyfans /app/bin/setup
+    docker compose run --rm --no-deps paddedpups /app/bin/presetup
+    docker compose run --rm -e SEED_POST_COUNT=100 paddedpups /app/bin/setup
     docker compose run --rm reports /app/bin/setup
     docker compose up
     ```

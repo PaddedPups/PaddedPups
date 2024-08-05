@@ -2,11 +2,13 @@
 
 module PostDeletionReasons
   def self.run!
+    PostDeletionReason.connection.execute("TRUNCATE post_deletion_reasons RESTART IDENTITY")
     [
       "Inferior version/duplicate of post #%PARENT_ID%",
       "Previously deleted (post #%PARENT_ID%)",
       "Excessive same base image set",
       "Colored base",
+      "Underage Human or Human-like character",
       { title: "Advert", prompt: "being an advertisement", reason: "Advertisement" },
       "Underage artist",
       "",
