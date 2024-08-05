@@ -19,7 +19,7 @@ class PostsDecorator < ApplicationDecorator
     klass << "post-rating-safe" if post.rating == "s"
     klass << "post-rating-questionable" if post.rating == "q"
     klass << "post-rating-explicit" if post.rating == "e"
-    klass << "post-no-blacklist" if options[:no_blacklist]
+    klass << "blacklistable" unless options[:no_blacklist]
     klass
   end
 

@@ -6,7 +6,7 @@ let PostSet = {};
 
 PostSet.dialog_setup = false;
 
-PostSet.add_post = function (set_id, post_id) {
+PostSet.add_post = function (set_id, post_id, silent = false) {
   if (!set_id) {
     $(window).trigger("danbooru:error", "Error: No set specified");
     return;
@@ -25,12 +25,13 @@ PostSet.add_post = function (set_id, post_id) {
       $(window).trigger("danbooru:error", "Error: " + message);
     }).done(function () {
       Post.notice_update("dec");
+      if (silent) return;
       $(window).trigger("danbooru:notice", "Added post to set");
     });
   });
 };
 
-PostSet.remove_post = function (set_id, post_id, successNotice) {
+PostSet.remove_post = function (set_id, post_id, successNotice, silent = false) {
   if (!set_id) {
     $(window).trigger("danbooru:error", "Error: No set specified");
     return;
@@ -47,6 +48,7 @@ PostSet.remove_post = function (set_id, post_id, successNotice) {
       $(window).trigger("danbooru:error", "Error: " + message);
     }).done(function (data) {
       Post.notice_update("dec");
+      if (silent) return;
       if (typeof successNotice === "function") {
         $(window).trigger("danbooru:notice", successNotice(data));
       } else {

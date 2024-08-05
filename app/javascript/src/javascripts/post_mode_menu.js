@@ -177,8 +177,8 @@ PostModeMenu.click = function (e) {
     case "vote-down": Post.vote(post_id, -1, true); break;
     case "vote-up": Post.vote(post_id, 1, true); break;
     case "remove-vote": Post.unvote(post_id); break;
-    case "add-to-set": PostSet.add_post($("#set-id").val(), post_id); break;
-    case "remove-from-set": PostSet.remove_post($("#set-id").val(), post_id); break;
+    case "add-to-set": PostSet.add_post($("#set-id").val(), post_id, true); break;
+    case "remove-from-set": PostSet.remove_post($("#set-id").val(), post_id, undefined, true); break;
     case "rating-s": Post.update(post_id, { "post[rating]": "s"}); break;
     case "rating-q": Post.update(post_id, { "post[rating]": "q"}); break;
     case "rating-e": Post.update(post_id, { "post[rating]": "e"}); break;

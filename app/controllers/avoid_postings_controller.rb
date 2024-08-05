@@ -28,7 +28,7 @@ class AvoidPostingsController < ApplicationController
     pparams = permitted_attributes(AvoidPosting)
     @avoid_posting = authorize(AvoidPosting).new(pparams)
     artparams = pparams.try(:[], :artist_attributes)
-    if artparams.present? && (artist = Artist.find_by(name: Artist.normalize_name(artparams[:name])))
+    if artparams.present? && (artist = Artist.named(artparams[:name]))
       @avoid_posting.artist = artist
       notices = []
       if artist.other_names.present? && (artparams.key?(:other_names_string) || artparams.key?(:other_names))
@@ -72,13 +72,17 @@ class AvoidPostingsController < ApplicationController
   def delete
     authorize(@avoid_posting).update(is_active: false)
     notice("Avoid posting entry deleted")
-    respond_with(@avoid_posting)
+    respond_with(@avoid_posting) do |format|
+      format.html { redirect_back(fallback_location: avoid_posting_path(@avoid_posting)) }
+    end
   end
 
   def undelete
     authorize(@avoid_posting).update(is_active: true)
     notice("Avoid posting entry undeleted")
-    respond_with(@avoid_posting)
+    respond_with(@avoid_posting) do |format|
+      format.html { redirect_back(fallback_location: avoid_posting_path(@avoid_posting)) }
+    end
   end
 
   private
@@ -88,7 +92,7 @@ class AvoidPostingsController < ApplicationController
     if id =~ /\A\d+\z/
       @avoid_posting = AvoidPosting.find(id)
     else
-      @avoid_posting = AvoidPosting.find_by!(artist_name: id)
+      @avoid_posting = AvoidPosting.joins(:artist).find_by!("artists.name": id)
     end
   end
 end

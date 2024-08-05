@@ -512,7 +512,7 @@ module FemboyFans
         },
         {
           name:   "dnp_artist",
-          reason: "The artist of this post is on the \"avoid posting list\":/avoid_postings",
+          reason: "The artist of this post is on the \"avoid posting list\":/static/avoid_posting",
           text:   "Certain artists have requested that their work is not to be published on this site, and were granted [[avoid_posting|Do Not Post]] status.\nSometimes, that status comes with conditions; see [[conditional_dnp]] for more information",
         },
         {

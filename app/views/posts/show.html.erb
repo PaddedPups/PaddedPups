@@ -68,7 +68,7 @@
       <% end %>
     </div>
 
-    <%= tag.section(id: "image-container", **PostPresenter.data_attributes(@post, include_post: true)) do -%>
+    <%= tag.section(id: "image-container", class: "blacklistable", **PostPresenter.data_attributes(@post, include_post: true)) do -%>
       <div id="note-container"></div>
       <div id="note-preview"></div>
       <%= render "posts/partials/show/embedded", post: @post %>
