@@ -267,8 +267,6 @@ HoverZoom.post_from_element = function (element) {
   const tagString = element.attr("data-tags") || "", tags = new Set(tagString.split(" "));
 
   const ext = element.attr("data-file-ext");
-  const canRetrieveMD5 = element.attr("data-md5") !== undefined || element.attr("data-file-url") !== undefined;
-  const isCompleteFiles = element.attr("data-file-url") !== undefined && element.attr("data-preview-url") !== undefined && element.attr("data-large-url") !== undefined;
   const urls = {
     preview: element.attr("data-preview-url") ?? "/images/deleted-preview.png",
     sample: element.attr("data-large-url") ?? "/images/deleted-preview.png",

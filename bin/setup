@@ -15,7 +15,7 @@ FileUtils.chdir(APP_ROOT) do
   # Add necessary setup steps to this file.
 
   env = ENV.fetch("RAILS_ENV")
-  puts("\n== Copying sample files ==")
+  puts("== Copying sample files ==")
   unless File.exist?("config/local_config.rb")
     FileUtils.cp("docker/local_config.rb", "config/local_config.rb")
   end

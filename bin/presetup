@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+require "fileutils"
+
+# path to your application root.
+APP_ROOT = File.expand_path("..", __dir__)
+
+def system!(*args)
+  system(*args, exception: true)
+end
+
+FileUtils.chdir(APP_ROOT) do
+  puts("== Copying sample files ==")
+  unless File.exist?("config/local_config.rb")
+    FileUtils.cp("docker/local_config.rb", "config/local_config.rb")
+  end
+  puts("== Creating credentials ==")
+  system!("EDITOR=/dev/null rails credentials:edit")
+end
