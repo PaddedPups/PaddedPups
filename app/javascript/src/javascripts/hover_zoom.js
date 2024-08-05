@@ -267,47 +267,18 @@ HoverZoom.post_from_element = function (element) {
   const tagString = element.attr("data-tags") || "", tags = new Set(tagString.split(" "));
 
   const ext = element.attr("data-file-ext");
-  let urls = {}, md5;
   const canRetrieveMD5 = element.attr("data-md5") !== undefined || element.attr("data-file-url") !== undefined;
-  const isCompleteFiles = element.attr("data-file-url") !== undefined && element.attr("data-preview-file-url") !== undefined && element.attr("data-large-file-url") !== undefined;
-  if (canRetrieveMD5 && isCompleteFiles) {
-    if (element.attr("data-md5")) {
-      md5 = element.attr("data-md5");
-    } else if (element.attr("data-file-url")) {
-      md5 = element.attr("data-file-url").split("/").at(-1).split(".")[0];
-    }
-
-    urls = {
-      preview: element.attr("data-preview-file-url"),
-      sample: element.attr("data-large-file-url"),
-      original: element.attr("data-file-url"),
-    };
-  } else {
-    if (element.attr("data-md5")) {
-      md5 = element.attr("data-md5");
-    } else if (element.attr("data-preview-url")) {
-      md5 = element.attr("data-preview-url").split("/").at(-1).split(".")[0];
-    }
-
-    if (md5 === undefined) {
-      urls = {
-        preview: "/images/deleted-preview.png",
-        sample: "/images/deleted-preview.png",
-        original: "/images/deleted-preview.png",
-      };
-    } else {
-      urls = {
-        preview: element.attr("data-preview-url")
-          ? element.attr("data-preview-url")
-          : `https://static.femboy.fan/preview/${md5.substr(0, 2)}/${md5.substr(2, 2)}/${md5}.webp`,
-        sample: element.attr("data-large-file-url")
-          ? element.attr("data-large-file-url")
-          : ((width < 850 || height < 850 || ext === "gif")
-            ? `https://static.femboy.fan/${md5.substr(0, 2)}/${md5.substr(2, 2)}/${md5}.${ext}`
-            : `https://static.femboy.fan/sample/${md5.substr(0, 2)}/${md5.substr(2, 2)}/${md5}.webp`),
-        original: `https://static.femboy.fan/${md5.substr(0, 2)}/${md5.substr(2, 2)}/${md5}.${ext}`,
-      };
-    }
+  const isCompleteFiles = element.attr("data-file-url") !== undefined && element.attr("data-preview-url") !== undefined && element.attr("data-large-url") !== undefined;
+  const urls = {
+    preview: element.attr("data-preview-url") ?? "/images/deleted-preview.png",
+    sample: element.attr("data-large-url") ?? "/images/deleted-preview.png",
+    original: element.attr("data-file-url") ?? "/images/deleted-preview.png",
+  };
+  let md5;
+  if (element.attr("data-md5")) {
+    md5 = element.attr("data-md5");
+  } else if (element.attr("data-file-url")) {
+    md5 = element.attr("data-file-url").split("/").at(-1).split(".")[0];
   }
 
   const rawDate = element.attr("data-created-at") || new Date().toISOString();
