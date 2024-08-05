@@ -65,5 +65,5 @@ server {
 }
 
 upstream app_server {
-  server femboyfans:9000;
+  server paddedpups:9000;
 }

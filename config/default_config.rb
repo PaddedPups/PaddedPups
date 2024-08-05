@@ -7,15 +7,15 @@ module FemboyFans
     end
 
     def app_name
-      "Femboy Fans"
+      "PaddedPups"
     end
 
     def description
-      "Your one-stop shop for femboy furries."
+      "Your one-stop shop for cushioned bums!"
     end
 
     def domain
-      "femboy.fan"
+      "paddedpups.xyz"
     end
 
     # Force rating:s on this version of the site.
@@ -38,7 +38,7 @@ module FemboyFans
     end
 
     def source_code_url
-      "https://github.com/FemboyFans/FemboyFans"
+      "https://github.com/PaddedPups/PaddedPups"
     end
 
     # Stripped of any special characters.
@@ -67,7 +67,7 @@ module FemboyFans
 
     def system_user
       User.find_or_create_by!(name: system_user_name, level: User::Levels::SYSTEM) do |user|
-        user.email                = "system@femboy.fan"
+        user.email                = "system@paddedpups.xyz"
         user.can_approve_posts    = true
         user.unrestricted_uploads = true
       end
@@ -478,7 +478,7 @@ module FemboyFans
       # hierarchical: false - store files in a single directory
       # hierarchical: true - store files in a hierarchical directory structure, based on the MD5 hash
       StorageManager::Local.new(base_dir: Rails.public_path.join("data").to_s, hierarchical: true)
-      # StorageManager::Ftp.new(ftp_hostname, ftp_port, ftp_username, ftp_password, base_dir: "", base_path: "", base_url: "https://static.femboy.fan", hierarchical: true)
+      # StorageManager::Ftp.new(ftp_hostname, ftp_port, ftp_username, ftp_password, base_dir: "", base_path: "", base_url: "https://static.paddedpups.xyz", hierarchical: true)
 
       # Select the storage method based on the post's id and type (preview, large, or original).
       # StorageManager::Hybrid.new do |id, md5, file_ext, type|
@@ -730,7 +730,7 @@ module FemboyFans
         { name: "Already", text: "User already received a record for that message." },
         { name: "Banned", text: "This user is already banned." },
         { name: "Blacklist", text: "If you find the contents of that post objectionable, \"blacklist\":/help/blacklisting it." },
-        { name: "Takedown", text: "Artists and character owners may request a takedown here: https://femboy.fan/static/takedown.\nWe do not accept third party takedowns." },
+        { name: "Takedown", text: "Artists and character owners may request a takedown here: https://paddedpups.xyz/static/takedown.\nWe do not accept third party takedowns." },
       ]
     end
 

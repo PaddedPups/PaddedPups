@@ -12,14 +12,14 @@ Rails.application.configure do
     policy.script_src(:self, "https://www.google.com/recaptcha/", "https://www.gstatic.com/recaptcha/", "https://www.recaptcha.net/", "https://cdnjs.cloudflare.com", "https://plausible.furry.computer")
     policy.style_src(:self, :unsafe_inline, "https://cdnjs.cloudflare.com")
     policy.connect_src(:self, "https://plausible.furry.computer")
-    policy.object_src(:self, "static.femboy.fan")
-    policy.media_src(:self, "static.femboy.fan")
+    policy.object_src(:self, "static.paddedpups.xyz")
+    policy.media_src(:self, "static.paddedpups.xyz")
     policy.frame_ancestors(:none)
     policy.frame_src("https://www.google.com/recaptcha/", "https://www.recaptcha.net/")
     policy.font_src(:self)
-    policy.img_src(:self, :data, :blob, "static.femboy.fan")
+    policy.img_src(:self, :data, :blob, "static.paddedpups.xyz")
     policy.child_src(:none)
-    policy.form_action(:self, "discord.femboy.fan", "discord.com")
+    policy.form_action(:self, "discord.paddedpups.xyz", "discord.com")
     # Specify URI for violation reports
     # policy.report_uri "/csp-violation-report-endpoint"
   end

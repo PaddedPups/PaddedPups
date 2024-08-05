@@ -8,34 +8,29 @@ tags:
   - -female
   - -comic
   - score:>=50
+  - diaper
 
 
+# https://imgur.com/a/S75IHFy
 mascots:
-  - name: Donovan Shy
-    file: https://yiff.rocks/mascots/DonovanShy.png
-    color: "#222222"
-    artist_url: https://twitter.com/Gaokunx3
-    artist_name: Gaokun
+  - name: bg1
+    file: https://i.imgur.com/vIor2DO.png
+    color: "#ffd9cf"
+    artist_url: https://twitter.com/tinyhops
+    artist_name: tinyhops
     active: true
     hide_anonymous: false
-  - name: Donovan Lying
-    file: https://yiff.rocks/mascots/DonovanLying.png
-    color: "#222222"
-    artist_url: https://twitter.com/Gaokunx3
-    artist_name: Gaokun
+  - name: bg2
+    file: https://i.imgur.com/BJdX2DH.png
+    color: "#c5ebe6"
+    artist_url: https://twitter.com/tinyhops
+    artist_name: tinyhops
     active: true
     hide_anonymous: false
-  - name: Donovan Maid
-    file: https://yiff.rocks/mascots/DonovanMaid.png
-    color: "#222222"
-    artist_url: https://twitter.com/Gaokunx3
-    artist_name: Gaokun
+  - name: bg3
+    file: https://i.imgur.com/9EPVRre.png
+    color: "#cae6f8"
+    artist_url: https://twitter.com/tinyhops
+    artist_name: tinyhops
     active: true
     hide_anonymous: false
-  - name: Donovan Sheath
-    file: https://yiff.rocks/mascots/DonovanSheath.png
-    color: "#222222"
-    artist_url: https://twitter.com/gaoNaughtyDoggo
-    artist_name: Gaokun
-    active: true
-    hide_anonymous: true
